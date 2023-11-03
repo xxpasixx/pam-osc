@@ -23,7 +23,7 @@ It is Still in Beta & uses a lot of Recources, what could create Performance iss
 You can find it here: [http://openstagecontrol.ammd.net/](http://openstagecontrol.ammd.net/)
 
 ### 2. Download Repository
-Download it here:
+Download Source Code here: [https://github.com/xxpasixx/pam-osc/releases](https://github.com/xxpasixx/pam-osc/releases)
 
 ### 3. Configure Open Stage Control
 #### Open configuration
