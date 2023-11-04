@@ -8,6 +8,10 @@ Features:
 - Fader Feedback for Motorized Faders
 - LED Button Feedback for Running Sequences
 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=GCBT6tBH6DE
+" target="_blank"><img src="http://img.youtube.com/vi/GCBT6tBH6DE/0.jpg" 
+alt="Youtube Video" width="240" height="180" border="10" /></a>
+
 ## Still in BETA
 Everything is still in Beta.
 Issues could happen. Please create a [Ticket](https://github.com/xxpasixx/pam-osc/issues) if you find something.
@@ -120,6 +124,9 @@ Save & Enable the Plugin
 ## Knewn Limetations
 Currently it is only possible to give Midi Feedback for Channel 1.
 
+Issues with The Behringer X Touch Compact with LED's Going off.
+
 ## Having Troubles ?
 
 ### TODO: Create Help for Common Issues
+Make Sure the IP's are all correct and the PC is the Session Master.
