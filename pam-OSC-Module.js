@@ -1,8 +1,8 @@
 var routing = {
 	xTouch: {
 		buttonFeedbackMapper: (value) => {
-			if(value == "On") return 127;
-			if(value == "Off") return 0;
+			if (value == "On") return 127;
+			if (value == "Off") return 0;
 			return 0;
 		},
 		control: {
@@ -224,12 +224,38 @@ var routing = {
 			54: {
 				exec: 279,
 			},
+
+			// Side Buttons B
+			104: {
+				quicKey: "ESC",
+				minValue: 100,
+			},
+			105: {
+				quicKey: "CLEAR",
+				minValue: 100,
+			},
+			106: {
+				quicKey: "AT",
+				minValue: 100,
+			},
+			107: {
+				quicKey: "STORE",
+				minValue: 100,
+			},
+			108: {
+				quicKey: "FIXTURE",
+				minValue: 100,
+			},
+			109: {
+				quicKey: "HIGHLIGHT",
+				minValue: 100,
+			},
 		}
 	},
 };
 
 //The IP to send
-var ip = "192.168.1.85";
+var ip = "192.168.1.196";
 var oscPort = 9003;
 var prefix = "";
 var page = "1";
@@ -254,7 +280,7 @@ module.exports = {
 	getRoutingNoteByExecId: function (execId) {
 		const returnArray = [];
 		Object.keys(routing).forEach((device) => {
-			const notes = Object.keys(routing[device].note).map((noteId) => ({ id: noteId, value: routing[device].note[noteId].exec  }));
+			const notes = Object.keys(routing[device].note).map((noteId) => ({ id: noteId, value: routing[device].note[noteId].exec }));
 			notes.forEach(note => {
 				if (note.value == execId) {
 					returnArray.push({
@@ -285,10 +311,18 @@ module.exports = {
 					return;
 				}
 
-				if (ctrl <= 71 || (port === 'aki1' && ctrl === 98)) {
+				if (config.minValue && value >= config.minValue) {
+					console.log("min Value");
+					return;
+				}
+
+				if (config.exec) {
 					send(ip, oscPort, prefix + "/Page" + page + "/Key" + config.exec, { type: "i", value: value });
-				} else if (value > 71) {
-					send(ip, oscPort, prefix + config?.pre, config?.val);
+				}
+
+				if (config.quicKey) {
+					console.log("Quickkey seend")
+					send(ip, oscPort, prefix + "/cmd", { type: "s", value: 'Go+ Quickey \"' + config.quicKey + '\"' });
 				}
 			}
 			return;
