@@ -14,12 +14,13 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>. 
 
-local F = string.format;
-local E = Echo;
 
 local executorsToWatch = {}
 local oldValues = {}
 local oldButtonValues = {}
+local oldColorValues = {}
+
+local oscEntry = 3
 
 -- Configure here, what executors you want to watch:
 for i = 101, 115 do
@@ -43,14 +44,25 @@ end
 for _, number in ipairs(executorsToWatch) do
     oldValues[number] = "000"
     oldButtonValues[number] = false
+    oldColorValues[number] = "0,0,0,0"
 end
 
 -- the Speed to check executors
 local tick = 1 / 30 -- 1/30
 
+
+local function getApereanceColor(sequence)
+    local apper = sequence["APPEARANCE"]
+    if apper ~= nil then
+        return apper['BACKR'] .. "," .. apper['BACKG'] .. "," .. apper['BACKB'] .. "," .. apper['BACKALPHA']
+    else
+        return "0,0,0,0"
+    end
+  end
+
+
 local function main()
     Printf("start pam OSC main()")
-    Printf(CurrentExecPage():GetClass())
 
     local destPage = 1
     local forceReload = true
@@ -73,7 +85,7 @@ local function main()
                 oldButtonValues[maKey] = false
             end
             forceReload = true
-            Cmd('SendOSC 2 "/updatePage/current,i,' .. destPage)
+            Cmd('SendOSC ' .. oscEntry .. ' "/updatePage/current,i,' .. destPage)
         end
 
         -- Get all Executors
@@ -82,6 +94,7 @@ local function main()
         for listKey, listValue in pairs(executorsToWatch) do
             local faderValue = 0
             local buttonValue = false
+            local colorValue = "0,0,0,0"
 
             -- Set Fader & button Values
             for maKey, maValue in pairs(executors) do
@@ -96,6 +109,7 @@ local function main()
                     local myobject = maValue.Object
                     if myobject ~= nil then
                         buttonValue = myobject:HasActivePlayback() and true or false
+                        colorValue = getApereanceColor(myobject)
                     end
 
                 end
@@ -105,14 +119,20 @@ local function main()
             if oldValues[listKey] ~= faderValue or forceReload then
                 hasFaderUpdated = true
                 oldValues[listKey] = faderValue
-                Cmd('SendOSC 2 "/Page' .. destPage .. '/Fader' .. listValue .. ',i,' .. (faderValue * 1.27) ..
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Fader' .. listValue .. ',i,' .. (faderValue * 1.27) ..
                         '"')
             end
 
             -- Send Button Value
             if oldButtonValues[listKey] ~= buttonValue or forceReload then
                 oldButtonValues[listKey] = buttonValue
-                Cmd('SendOSC 2 "/Page' .. destPage .. '/Button' .. listValue .. ',s,' .. (buttonValue and "On" or "Off") .. '"')
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Button' .. listValue .. ',s,' .. (buttonValue and "On" or "Off") .. '"')
+            end
+
+            -- Send Color Value
+            if oldColorValues[listKey] ~= colorValue or forceReload then
+                oldColorValues[listKey] = colorValue
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. colorValue .. '"')
             end
         end
         forceReload = false
@@ -124,3 +144,4 @@ local function main()
 end
 
 return main
+

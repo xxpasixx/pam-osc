@@ -181,3 +181,4 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - autostart
 - better Plugin Management in MA
 - dont move Fader when Flash
+- force reload on OSC Start
