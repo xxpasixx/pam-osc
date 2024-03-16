@@ -68,7 +68,7 @@ Wrong: 192.168.178.255
 ![startOSC](img/startOSC.png)
 
 ### 6. Configure GrandMA3
-#### Make Sure the PC you are Using is Session Master
+#### Make Sure the PC you are Using is in a Session and is the Session Master
 
 ![sessionMaster](img/sessionMaster.png)
 
@@ -127,6 +127,42 @@ The left one is the Start, the right one the End.
 
 Save & Enable the Plugin
 
+### 9. Modify Module
+You could add your own Device configuration or adjust the current ones.
+Here is an example:
+```
+xTouch: {
+		buttonFeedbackMapper: (value) => {
+			if (value == "On") return 127;
+			if (value == "Off") return 0;
+			return 0;
+		},
+		control: {
+			1: '201',
+        },
+        note: {
+			0: {
+				exec: 401,
+			},
+            109: {
+				quicKey: "COPY",
+				minValue: 100,
+			},
+            88: { 
+                cmd: "OOPS",
+                minValue: 100 
+            },
+        },
+}
+```
+if you Assign quicKeys, you need to create them in MA.
+
+When should i use Quickey, when cmd ?
+
+CMD could be used for everything that could be executed directy. for example HIGHTLIGHT/OOPS/CLEAR/FULL.
+
+a Quickkey should be used, when you want to add it to the cmd line. For example copy, because you want to add more text after words.
+
 ## Knewn Limetations
 Currently it is only possible to give Midi Feedback for Channel 1.
 
@@ -136,3 +172,12 @@ Issues with The Behringer X Touch Compact with LED's Going off.
 
 ### TODO: Create Help for Common Issues
 Make Sure the IP's are all correct and the PC is the Session Master.
+
+## Upcomming things
+- more predefined Devices
+- colourd button feedback
+- Enconder controll
+- easyer installation
+- autostart
+- better Plugin Management in MA
+- dont move Fader when Flash
