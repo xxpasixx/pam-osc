@@ -56,6 +56,12 @@ Configure your Devices under var routing = {}
 Remove the Devices you don't Need.
 
 Set the ip to the IP of your Grandma. Make sure the IP is Session Master.
+This should be the ip, not the Broadcast for example:
+
+Right: 192.168.178.67
+
+
+Wrong: 192.168.178.255
 
 ### 5. Start Open Stage Control
 
