@@ -1,0 +1,306 @@
+{
+  "control": {
+    "48": "201",
+    "49": "202",
+    "50": "203",
+    "51": "204",
+    "52": "205",
+    "53": "206",
+    "54": "207",
+    "55": "208",
+    "56": "209"
+  },
+  "note": {
+    "0": {
+      "quicKey": "GO",
+      "minValue": 100
+    },
+    "1": {
+      "quicKey": "UPDATE",
+      "minValue": 100
+    },
+    "3": {
+      "quicKey": "STORE",
+      "minValue": 100
+    },
+    "4": {
+      "quicKey": "MA1",
+      "minValue": 100
+    },
+    "5": {
+      "quicKey": "SLASH",
+      "minValue": 100
+    },
+    "7": {
+      "quicKey": "PLEASE",
+      "minValue": 100
+    },
+    "8": {
+      "quicKey": "GOBACK",
+      "minValue": 100
+    },
+    "9": {
+      "quicKey": "EDIT",
+      "minValue": 100
+    },
+    "10": {
+      "quicKey": "ASSIGN",
+      "minValue": 100
+    },
+    "11": {
+      "quicKey": "TIME",
+      "minValue": 100
+    },
+    "12": {
+      "quicKey": "NUM0",
+      "minValue": 100
+    },
+    "13": {
+      "quicKey": "DOT",
+      "minValue": 100
+    },
+    "14": {
+      "quicKey": "IF",
+      "minValue": 100
+    },
+    "15": {
+      "quicKey": "AT",
+      "minValue": 100
+    },
+    "16": {
+      "quicKey": "PAUSE",
+      "minValue": 100
+    },
+    "17": {
+      "quicKey": "PRESET",
+      "minValue": 100
+    },
+    "18": {
+      "quicKey": "SEQUENCE",
+      "minValue": 100
+    },
+    "19": {
+      "quicKey": "CUE",
+      "minValue": 100
+    },
+    "20": {
+      "quicKey": "NUM1",
+      "minValue": 100
+    },
+    "21": {
+      "quicKey": "NUM2",
+      "minValue": 100
+    },
+    "22": {
+      "quicKey": "NUM3",
+      "minValue": 100
+    },
+    "23": {
+      "quicKey": "MINUS",
+      "minValue": 100
+    },
+    "24": {
+      "quicKey": "PAGE_DOWN",
+      "minValue": 100
+    },
+    "25": {
+      "cmd": "FIXTURE",
+      "minValue": 100
+    },
+    "26": {
+      "quicKey": "CHANNEL",
+      "minValue": 100
+    },
+    "27": {
+      "quicKey": "GROUP",
+      "minValue": 100
+    },
+    "28": {
+      "quicKey": "NUM4",
+      "minValue": 100
+    },
+    "29": {
+      "quicKey": "NUM5",
+      "minValue": 100
+    },
+    "30": {
+      "quicKey": "NUM6",
+      "minValue": 100
+    },
+    "31": {
+      "quicKey": "THRU",
+      "minValue": 100
+    },
+    "32": {
+      "quicKey": "PAGE_UP",
+      "minValue": 100
+    },
+    "33": {
+      "quicKey": "LEARN",
+      "minValue": 100
+    },
+    "34": {
+      "quicKey": "<<<<",
+      "minValue": 100
+    },
+    "35": {
+      "quicKey": ">>>>",
+      "minValue": 100
+    },
+    "36": {
+      "quicKey": "NUM7",
+      "minValue": 100
+    },
+    "37": {
+      "quicKey": "NUM8",
+      "minValue": 100
+    },
+    "38": {
+      "quicKey": "NUM9",
+      "minValue": 100
+    },
+    "39": {
+      "quicKey": "PLUS",
+      "minValue": 100
+    },
+    "40": {
+      "quicKey": "SELFIX",
+      "minValue": 100
+    },
+    "41": {
+      "quicKey": "DOWN",
+      "minValue": 100
+    },
+    "42": {
+      "quicKey": "FREEZE",
+      "minValue": 100
+    },
+    "44": {
+      "quicKey": "SELECT",
+      "minValue": 100
+    },
+    "45": {
+      "quicKey": "GOTO",
+      "minValue": 100
+    },
+    "48": {
+      "quicKey": "Set",
+      "minValue": 100
+    },
+    "49": {
+      "quicKey": "UP",
+      "minValue": 100
+    },
+    "50": {
+      "quicKey": "SOLO",
+      "minValue": 100
+    },
+    "51": {
+      "quicKey": "BLIND",
+      "minValue": 100
+    },
+    "52": {
+      "quicKey": "DELETE",
+      "minValue": 100
+    },
+    "53": {
+      "quicKey": "ALIGN",
+      "minValue": 100
+    },
+    "54": {
+      "quicKey": "STOMP",
+      "minValue": 100
+    },
+    "55": {
+      "quicKey": "HELP",
+      "minValue": 100
+    },
+    "56": {
+      "cmd": "PREV",
+      "minValue": 100
+    },
+    "57": {
+      "cmd": "NEXT",
+      "minValue": 100
+    },
+    "58": {
+      "cmd": "HIGHLIGHT",
+      "minValue": 100
+    },
+    "59": {
+      "quicKey": "PREVIEW",
+      "minValue": 100
+    },
+    "60": {
+      "quicKey": "ON",
+      "minValue": 100
+    },
+    "61": {
+      "quicKey": "OFF",
+      "minValue": 100
+    },
+    "62": {
+      "cmd": "MOVE",
+      "minValue": 100
+    },
+    "63": {
+      "quicKey": "COPY",
+      "minValue": 100
+    },
+    "64": {
+      "exec": 201
+    },
+    "65": {
+      "exec": 202
+    },
+    "66": {
+      "exec": 203
+    },
+    "67": {
+      "exec": 204
+    },
+    "68": {
+      "exec": 205
+    },
+    "69": {
+      "exec": 206
+    },
+    "70": {
+      "exec": 207
+    },
+    "71": {
+      "exec": 208
+    },
+    "82": {
+      "quicKey": "ESC",
+      "minValue": 100
+    },
+    "83": {
+      "cmd": "CLEAR",
+      "minValue": 100
+    },
+    "84": {
+      "quicKey": "XKEYS",
+      "minValue": 100
+    },
+    "85": {
+      "quicKey": "LIST",
+      "minValue": 100
+    },
+    "86": {
+      "quicKey": "MENU",
+      "minValue": 100
+    },
+    "88": {
+      "cmd": "OOPS",
+      "minValue": 100
+    },
+    "89": {
+      "cmd": "FULL",
+      "minValue": 100
+    },
+    "98": {
+      "exec": 209
+    }
+  }
+}
