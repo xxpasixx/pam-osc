@@ -1,24 +1,25 @@
 -- pam-OSC. It allows to controll GrandMA3 with Midi Devices over Open Stage Controll and allows for Feedback from MA.
 -- Copyright (C) 2024  xxpasixx
-
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
-
 -- This program is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
-
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>. 
-
-
 local executorsToWatch = {}
 local oldValues = {}
 local oldButtonValues = {}
 local oldColorValues = {}
+local olsMasterEnabledValue = {
+    highlight = false,
+    lowlight = false,
+    solo = false,
+    blind = false
+}
 
 local oscEntry = 3
 
@@ -39,7 +40,6 @@ for i = 401, 415 do
     executorsToWatch[#executorsToWatch + 1] = i
 end
 
-
 -- set the default Values
 for _, number in ipairs(executorsToWatch) do
     oldValues[number] = "000"
@@ -50,7 +50,6 @@ end
 -- the Speed to check executors
 local tick = 1 / 30 -- 1/30
 
-
 local function getApereanceColor(sequence)
     local apper = sequence["APPEARANCE"]
     if apper ~= nil then
@@ -58,8 +57,15 @@ local function getApereanceColor(sequence)
     else
         return "0,0,0,0"
     end
-  end
+end
 
+local function getMasterEnabled(masterName)
+    if MasterPool()['Grand'][masterName]['FADERENABLED'] then
+        return true
+    else
+        return false
+    end
+end
 
 local function main()
     Printf("start pam OSC main()")
@@ -74,6 +80,16 @@ local function main()
     end
 
     while (GetVar(GlobalVars(), "opdateOSC")) do
+        -- Check Master Enabled Values
+
+        for masterKey, masterValue in pairs(olsMasterEnabledValue) do
+            local currValue = getMasterEnabled(masterKey)
+            if currValue ~= masterValue then
+                Cmd('SendOSC ' .. oscEntry .. ' "/masterEnabled/' .. masterKey .. ',i,' .. (currValue and 1 or 0))
+                olsMasterEnabledValue[masterKey] = currValue
+            end
+        end
+
         -- Check Page
         local myPage = CurrentExecPage()
         if myPage.index ~= destPage then
@@ -104,7 +120,7 @@ local function main()
                     faderOptions.token = "FaderMaster"
                     faderOptions.faderDisabled = false;
 
-                    faderValue= maValue:GetFader(faderOptions)                    
+                    faderValue = maValue:GetFader(faderOptions)
 
                     local myobject = maValue.Object
                     if myobject ~= nil then
@@ -119,20 +135,22 @@ local function main()
             if oldValues[listKey] ~= faderValue or forceReload then
                 hasFaderUpdated = true
                 oldValues[listKey] = faderValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Fader' .. listValue .. ',i,' .. (faderValue * 1.27) ..
-                        '"')
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Fader' .. listValue .. ',i,' ..
+                        (faderValue * 1.27) .. '"')
             end
 
             -- Send Button Value
             if oldButtonValues[listKey] ~= buttonValue or forceReload then
                 oldButtonValues[listKey] = buttonValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Button' .. listValue .. ',s,' .. (buttonValue and "On" or "Off") .. '"')
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Button' .. listValue .. ',s,' ..
+                        (buttonValue and "On" or "Off") .. '"')
             end
 
             -- Send Color Value
             if oldColorValues[listKey] ~= colorValue or forceReload then
                 oldColorValues[listKey] = colorValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. colorValue .. '"')
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. colorValue ..
+                        '"')
             end
         end
         forceReload = false
