@@ -1,6 +1,8 @@
 # pam-osc
 Controll Grandma3 with Midi Decvices over Open Stage Control and a Plugin to get Feedback for Motorfaders and Button lights.
 
+# !!! V2 is still in Development !!!
+
 Features:
 - Send Midi Fader Values to Grandma3 Executor on Current Page
 - Send Midi Button Values to Grandma3 Executor on Current Page
