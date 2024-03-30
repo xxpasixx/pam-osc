@@ -129,14 +129,11 @@ Save & Enable the Plugin
 
 ### 9. Modify Module
 You could add your own Device configuration or adjust the current ones.
+Just create or edit the .json files in the mappings folder.
 Here is an example:
 ```
 xTouch: {
-		buttonFeedbackMapper: (value) => {
-			if (value == "On") return 127;
-			if (value == "Off") return 0;
-			return 0;
-		},
+		"buttonFeedbackMapper": "function(value) { if (value == 'On') { return 127;} if (value == 'Off'){ return 0;} return 0; }",
 		control: {
 			1: '201',
         },
@@ -155,6 +152,12 @@ xTouch: {
         },
 }
 ```
+For these CMD's there is a LED Button Feedback:
+- HIGHLIGHT
+- LOWLIGHT
+- SOLO
+- BLIND
+
 if you Assign quicKeys, you need to create them in MA.
 
 When should i use Quickey, when cmd ?
@@ -183,3 +186,5 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - dont move Fader when Flash
 - force reload on OSC Start
 - LED Status should be send frequently (XTouch Issues)
+- add for LED Feedback: Freeze & Prvw
+- add for LED Feedback: Fixture, Channel, Edit, Update, Align, At, Clear
