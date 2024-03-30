@@ -178,7 +178,8 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - colourd button feedback
 - Enconder controll
 - easyer installation
-- autostart
+- autostart documentation
 - better Plugin Management in MA
 - dont move Fader when Flash
 - force reload on OSC Start
+- LED Status should be send frequently (XTouch Issues)
