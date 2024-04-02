@@ -20,6 +20,7 @@ var displayDevice = null;
 var colors = ["0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0"]
 
 const colorUtils = require('./colorUtils.js');
+const utils = require('./utils.js');
 
 var routing = {};
 
@@ -37,7 +38,6 @@ devices.forEach((config) => {
 	routing[name] = value;
 	console.log("loaded mapping: ", config);
 });
-
 
 function stringToAsciiHex(str) {
 	let hexString = '';
@@ -63,6 +63,25 @@ module.exports = {
 					returnArray.push({
 						device: device,
 						midiId: parseInt(control.id),
+					});
+					return;
+				}
+			});
+		});
+		return returnArray;
+	},
+	getRoutingByRltvControlerId: function (id) {
+		const returnArray = [];
+		Object.keys(routing).forEach((device) => {
+			const controls = Object.keys(routing[device].rltvControl).map((controlId) => ({ id: controlId, value: routing[device].rltvControl[controlId].exec, ...routing[device].rltvControl[controlId] }));
+			controls.forEach(control => {
+				if (control.value === id || "" + control.value === "" + id) {
+					returnArray.push({
+						device: device,
+						id: parseInt(control.id),
+						midiId: control.returnChannel,
+						from: control.returnFrom,
+						to: control.returnTo
 					});
 					return;
 				}
@@ -148,11 +167,19 @@ module.exports = {
 		if (host === 'midi') {
 			if (address === '/control') {
 				var [channel, ctrl, value] = args.map(arg => arg.value);
-				if (!routing[port]['control'][ctrl]) {
-					return;
+				if (routing[port]['control'][ctrl]) {
+					send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]['control'][ctrl], { type: "i", value: value });
 				}
-				send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]['control'][ctrl], { type: "i", value: value });
-			} else if (address === '/pitch') {
+
+				if (routing[port]['rltvControl'][ctrl]) {
+					const { exec, currValue, posFrom, posTo, negFrom, negTo } = routing[port]['rltvControl'][ctrl];
+					var newValue = currValue + utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo);
+					newValue = Math.min(Math.max(newValue, 0), 127) || 0;
+					routing[port]['rltvControl'][ctrl].currValue = newValue;
+					send(ip, oscPort, prefix + "/Page" + page + "/Fader" + exec, { type: "i", value: newValue });
+				}
+			}
+			if (address === '/pitch') {
 				var [channel, value] = args.map(arg => arg.value);
 				if (!routing[port]['pitch'][channel]) {
 					return;
@@ -160,7 +187,8 @@ module.exports = {
 				const valueMapped = Math.round((value / 16380) * 127);
 				send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]['pitch'][channel], { type: "i", value: valueMapped });
 
-			} else if (address === '/note') {
+			}
+			if (address === '/note') {
 				var [channel, ctrl, value] = args.map(arg => arg.value);
 				var config = routing[port]['note'][ctrl];
 
@@ -194,12 +222,21 @@ module.exports = {
 			if (addressSplit[2].includes('Fader')) {
 				const mappingsCtrl = module.exports.getRoutingByControlerId(fader);
 				const mappingsPitch = module.exports.getRoutingByPitchId(fader);
+				const mappingsRltvCtrl = module.exports.getRoutingByRltvControlerId(fader);
+
 				mappingsCtrl.forEach((mapping) => {
 					send('midi', mapping.device, '/control', 1, mapping.midiId, args[0].value);
 				});
+
 				mappingsPitch.forEach((mapping) => {
 					const valueMapped = Math.round((args[0].value / 127) * 16380);
 					send('midi', mapping.device, '/pitch', mapping.midiId, valueMapped);
+				});
+
+				mappingsRltvCtrl.forEach((mapping) => {
+					const value = utils.mapValue(args[0].value, 0, 127, mapping.from, mapping.to);
+					routing[mapping.device].rltvControl[mapping.id].currValue = args[0].value;
+					send('midi', mapping.device, '/control', 1, mapping.midiId, value);
 				});
 			}
 			if (addressSplit[2].includes('Button')) {

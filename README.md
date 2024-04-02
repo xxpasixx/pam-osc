@@ -190,3 +190,4 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - LED Status should be send frequently (XTouch Issues)
 - add for LED Feedback: Freeze & Prvw
 - add for LED Feedback: Fixture, Channel, Edit, Update, Align, At, Clear
+- update Ports in Documentation and preConfig

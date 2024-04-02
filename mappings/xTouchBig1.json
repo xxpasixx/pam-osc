@@ -12,32 +12,97 @@
         "8": 208,
         "9": 209
     },
+    "rltvControl": {
+        "16": {
+            "exec": 401,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 48,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "17": {
+            "exec": 402,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 49,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "18": {
+            "exec": 403,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 50,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "19": {
+            "exec": 404,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 51,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "20": {
+            "exec": 405,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 52,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "21": {
+            "exec": 406,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 53,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "22": {
+            "exec": 407,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 54,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "23": {
+            "exec": 408,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 55,
+            "returnFrom": 32,
+            "returnTo": 43
+        }
+    },
     "control": {
-        "10": 401,
-        "11": 402,
-        "12": 403,
-        "13": 404,
-        "14": 405,
-        "15": 406,
-        "16": 407,
-        "17": 408,
-        "18": 476,
-        "19": 477,
-        "20": 376,
-        "21": 377,
-        "22": 478,
-        "23": 479,
-        "24": 378,
-        "25": 479,
-        "28": 210,
-        "29": 211,
-        "30": 212,
-        "31": 213,
-        "32": 214,
-        "33": 215,
-        "34": 216,
-        "35": 217,
-        "36": 218
     },
     "note": {
         "0": {
