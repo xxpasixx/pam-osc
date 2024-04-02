@@ -14,6 +14,7 @@ local executorsToWatch = {}
 local oldValues = {}
 local oldButtonValues = {}
 local oldColorValues = {}
+local oldNameValues = {}
 local olsMasterEnabledValue = {
     highlight = false,
     lowlight = false,
@@ -45,6 +46,7 @@ for _, number in ipairs(executorsToWatch) do
     oldValues[number] = "000"
     oldButtonValues[number] = false
     oldColorValues[number] = "0,0,0,0"
+    oldNameValues[number] = ";"
 end
 
 -- the Speed to check executors
@@ -55,8 +57,12 @@ local function getApereanceColor(sequence)
     if apper ~= nil then
         return apper['BACKR'] .. "," .. apper['BACKG'] .. "," .. apper['BACKB'] .. "," .. apper['BACKALPHA']
     else
-        return "0,0,0,0"
+        return "255,255,255,255"
     end
+end
+
+local function getName(sequence)
+    return sequence["NAME"] .. ";" .. sequence["CUENAME"]
 end
 
 local function getMasterEnabled(masterName)
@@ -111,6 +117,7 @@ local function main()
             local faderValue = 0
             local buttonValue = false
             local colorValue = "0,0,0,0"
+            local nameValue = ";"
 
             -- Set Fader & button Values
             for maKey, maValue in pairs(executors) do
@@ -118,7 +125,7 @@ local function main()
                     local faderOptions = {}
                     faderOptions.value = faderEnd
                     faderOptions.token = "FaderMaster"
-                    faderOptions.faderDisabled = false;
+                    faderOptions.faderDisabled = false
 
                     faderValue = maValue:GetFader(faderOptions)
 
@@ -126,6 +133,7 @@ local function main()
                     if myobject ~= nil then
                         buttonValue = myobject:HasActivePlayback() and true or false
                         colorValue = getApereanceColor(myobject)
+                        nameValue = getName(myobject)
                     end
 
                 end
@@ -152,6 +160,12 @@ local function main()
                 local newValue = string.gsub(colorValue, ",", ";")
                 Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. newValue ..
                         '"')
+            end
+
+            -- Send Name Value
+            if oldNameValues[listKey] ~= nameValue or forceReload then
+                oldNameValues[listKey] = nameValue
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Name' .. listValue .. ',s,' .. nameValue .. '"')
             end
         end
         forceReload = false

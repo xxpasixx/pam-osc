@@ -17,16 +17,7 @@
 
 // Todo: Refactor: This is only a temp solution
 var displayDevice = null;
-var displays = [
-	{ color: "0;0;0;0", seq: "", cue: "" },
-	{ color: "0;0;0;0", seq: "", cue: "" },
-	{ color: "0;0;0;0", seq: "", cue: "" },
-	{ color: "0;0;0;0", seq: "", cue: "" },
-	{ color: "0;0;0;0", seq: "", cue: "" },
-	{ color: "0;0;0;0", seq: "", cue: "" },
-	{ color: "0;0;0;0", seq: "", cue: "" },
-	{ color: "0;0;0;0", seq: "", cue: "" }
-]
+var colors = ["0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0"]
 
 const colorUtils = require('./colorUtils.js');
 
@@ -46,6 +37,21 @@ devices.forEach((config) => {
 	routing[name] = value;
 	console.log("loaded mapping: ", config);
 });
+
+
+function stringToAsciiHex(str) {
+	let hexString = '';
+	for (let i = 0; i < str.length; i++) {
+		const asciiValue = str.charCodeAt(i);
+		const hexValue = asciiValue.toString(16).padStart(2, '0');
+		hexString += hexValue + " ";
+	}
+	return hexString;
+}
+
+function numberIntoHex(nr) {
+	return nr.toString(16).padStart(2, '0');
+}
 
 module.exports = {
 	getRoutingByControlerId: function (id) {
@@ -199,6 +205,12 @@ module.exports = {
 			if (addressSplit[2].includes('Button')) {
 				const mappings = module.exports.getRoutingNoteByExecId(fader);
 				mappings.forEach((mapping) => {
+					// for the MC mode, it is required to send a note on with velocity 0
+					if (routing[mapping.device].mode == "mc" && args[0].value == "Off") {
+						send('midi', mapping.device, '/sysex', '90' + numberIntoHex(mapping.midiId) + ' 00');
+						return;
+					}
+
 					send('midi', mapping.device, '/note', 1, mapping.midiId, mapping.buttonFeedbackMapper(args[0].value));
 				});
 			}
@@ -217,29 +229,35 @@ module.exports = {
 				const mappingsDisplay = module.exports.getRoutingByDisplayId(fader);
 
 				mappingsDisplay.forEach((mapping) => {
-					displays[mapping.displayId].color = args[0].value;
+					colors[mapping.displayId] = args[0].value;
 					displayDevice = mapping.device;
-
-					// send('midi', mapping.device, '/sysex', "f0 00 00 66 14 12 07 48 61 6c 6c 6f 57 65 20 20 f7");
-					// send('midi', mapping.device, '/sysex', "F0 00 20 32 14 4C 00 05 48 41 4C 4C 4F 20 57 41 48 49 44 4B 45 50 F7");
-					// send('midi', mapping.device, '/sysex', "f0 00 00 66 14 12 07 48 61 6c 6c 6f 57 65 20 20 f7");
-					// send('midi', mapping.device, '/sysex', "F0 00 00 66 14 72 00 01 02 03 04 05 06 07 F7");
 				});
 
-
-				if(!displayDevice) {
+				if (!displayDevice) {
 					return;
 				}
 				var midiCommand = "F0 00 00 66 14 72";
-				displays.forEach(display => {
-					const t = colorUtils.parseColorString(display.color);
-
-					const displayColor = colorUtils.findNearestDisplayColor(t);
-					console.log(displayColor);
-					
+				colors.forEach(colorString => {
+					const color = colorUtils.parseColorString(colorString);
+					const displayColor = colorUtils.findNearestDisplayColor(color);
 					midiCommand = midiCommand + displayColor + " ";
 				});
 				send('midi', displayDevice, '/sysex', midiCommand + "F7");
+			}
+
+			if (addressSplit[2].includes('Name')) {
+				const mappingsDisplay = module.exports.getRoutingByDisplayId(fader);
+				const values = args[0].value.split(";");
+
+				mappingsDisplay.forEach((mapping) => {
+					const seqMidiNote = numberIntoHex(mapping.displayId * 7);
+					const cueMidiNote = numberIntoHex(56 + (mapping.displayId * 7));
+					const seq = (values[0] + "       ").substring(0, 7)
+					const cue = (values[1] + "       ").substring(0, 7)
+
+					send('midi', mapping.device, '/sysex', "f0 00 00 66 14 12 " + seqMidiNote + " " + stringToAsciiHex(seq) + "f7");
+					send('midi', mapping.device, '/sysex', "f0 00 00 66 14 12 " + cueMidiNote + " " + stringToAsciiHex(cue) + "f7");
+				});
 			}
 		}
 
