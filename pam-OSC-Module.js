@@ -19,8 +19,9 @@
 var displayDevice = null;
 var colors = ["0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0"]
 
-const colorUtils = require('./colorUtils.js');
 const utils = require('./utils.js');
+const colorUtils = require('./colorUtils.js');
+const routingUtils = require('./routingUtils.js');
 
 var routing = {};
 
@@ -39,128 +40,7 @@ devices.forEach((config) => {
 	console.log("loaded mapping: ", config);
 });
 
-function stringToAsciiHex(str) {
-	let hexString = '';
-	for (let i = 0; i < str.length; i++) {
-		const asciiValue = str.charCodeAt(i);
-		const hexValue = asciiValue.toString(16).padStart(2, '0');
-		hexString += hexValue + " ";
-	}
-	return hexString;
-}
-
-function numberIntoHex(nr) {
-	return nr.toString(16).padStart(2, '0');
-}
-
 module.exports = {
-	getRoutingByControlerId: function (id) {
-		const returnArray = [];
-		Object.keys(routing).forEach((device) => {
-			const controls = Object.keys(routing[device].control).map((controlId) => ({ id: controlId, value: routing[device].control[controlId] }));
-			controls.forEach(control => {
-				if (control.value === id || "" + control.value === "" + id) {
-					returnArray.push({
-						device: device,
-						midiId: parseInt(control.id),
-					});
-					return;
-				}
-			});
-		});
-		return returnArray;
-	},
-	getRoutingByRltvControlerId: function (id) {
-		const returnArray = [];
-		Object.keys(routing).forEach((device) => {
-			const controls = Object.keys(routing[device].rltvControl).map((controlId) => ({ id: controlId, value: routing[device].rltvControl[controlId].exec, ...routing[device].rltvControl[controlId] }));
-			controls.forEach(control => {
-				if (control.value === id || "" + control.value === "" + id) {
-					returnArray.push({
-						device: device,
-						id: parseInt(control.id),
-						midiId: control.returnChannel,
-						from: control.returnFrom,
-						to: control.returnTo
-					});
-					return;
-				}
-			});
-		});
-		return returnArray;
-	},
-	getRoutingByPitchId: function (id) {
-		const returnArray = [];
-		Object.keys(routing).forEach((device) => {
-			const pitchs = Object.keys(routing[device].pitch).map((pitchID) => ({ id: pitchID, value: routing[device].pitch[pitchID] }));
-			pitchs.forEach(pitch => {
-				if (pitch.value === id || "" + pitch.value === "" + id) {
-					returnArray.push({
-						device: device,
-						midiId: parseInt(pitch.id),
-					});
-					return;
-				}
-			});
-		});
-		return returnArray;
-	},
-	getRoutingByDisplayId: function (id) {
-		const returnArray = [];
-		Object.keys(routing).forEach((device) => {
-			const displays = Object.keys(routing[device].display).map((displayID) => ({ id: displayID, value: routing[device].display[displayID] }));
-			displays.forEach(display => {
-				if (display.value === id || "" + display.value === "" + id) {
-					returnArray.push({
-						device: device,
-						displayId: parseInt(display.id),
-					});
-					return;
-				}
-			});
-		});
-		return returnArray;
-	},
-	getRoutingNoteByExecId: function (execId) {
-		const returnArray = [];
-		Object.keys(routing).forEach((device) => {
-			const notes = Object.keys(routing[device].note).map((noteId) => ({ id: noteId, value: routing[device].note[noteId].exec }));
-			notes.forEach(note => {
-				if (note.value == execId) {
-					returnArray.push({
-						device: device,
-						midiId: parseInt(note.id),
-						buttonFeedbackMapper: routing[device].buttonFeedbackMapper,
-					});
-					return;
-				}
-			});
-		});
-		return returnArray;
-	},
-	getRoutingNoteByCMD: function (cmd) {
-		const returnArray = [];
-		Object.keys(routing).forEach((device) => {
-
-			const notes = Object.keys(routing[device].note).map((noteId) => ({ id: noteId, value: routing[device].note[noteId].cmd }));
-			notes.forEach(note => {
-				if (!note.value) {
-					return;
-				}
-
-				if (note.value.toLowerCase() == cmd.toLowerCase()) {
-					returnArray.push({
-						device: device,
-						midiId: parseInt(note.id),
-						buttonFeedbackMapper: routing[device].buttonFeedbackMapper,
-					});
-					return;
-				}
-			});
-		});
-		return returnArray;
-	},
-
 	oscInFilter: function (data) {
 		var { address, args, host, port } = data
 
@@ -220,9 +100,9 @@ module.exports = {
 			const fader = address.substring(address.length - 3, address.length);
 
 			if (addressSplit[2].includes('Fader')) {
-				const mappingsCtrl = module.exports.getRoutingByControlerId(fader);
-				const mappingsPitch = module.exports.getRoutingByPitchId(fader);
-				const mappingsRltvCtrl = module.exports.getRoutingByRltvControlerId(fader);
+				const mappingsCtrl = routingUtils.getRoutingByControlerId(routing, fader);
+				const mappingsPitch = routingUtils.getRoutingByPitchId(routing, fader);
+				const mappingsRltvCtrl = routingUtils.getRoutingByRltvControlerId(routing, fader);
 
 				mappingsCtrl.forEach((mapping) => {
 					send('midi', mapping.device, '/control', 1, mapping.midiId, args[0].value);
@@ -240,11 +120,11 @@ module.exports = {
 				});
 			}
 			if (addressSplit[2].includes('Button')) {
-				const mappings = module.exports.getRoutingNoteByExecId(fader);
+				const mappings = routingUtils.getRoutingNoteByExecId(routing, fader);
 				mappings.forEach((mapping) => {
 					// for the MC mode, it is required to send a note on with velocity 0
 					if (routing[mapping.device].mode == "mc" && args[0].value == "Off") {
-						send('midi', mapping.device, '/sysex', '90' + numberIntoHex(mapping.midiId) + ' 00');
+						send('midi', mapping.device, '/sysex', '90' + utils.numberIntoHex(mapping.midiId) + ' 00');
 						return;
 					}
 
@@ -255,7 +135,7 @@ module.exports = {
 				page = "" + args[0].value;
 			}
 			if (addressSplit[1].includes('masterEnabled')) {
-				const mappings = module.exports.getRoutingNoteByCMD(addressSplit[2]);
+				const mappings = routingUtils.getRoutingNoteByCMD(routing, addressSplit[2]);
 
 				mappings.forEach((mapping) => {
 					send('midi', mapping.device, '/note', 1, mapping.midiId, mapping.buttonFeedbackMapper(args[0].value ? 'On' : 'Off'));
@@ -263,7 +143,7 @@ module.exports = {
 			}
 
 			if (addressSplit[2].includes('Color')) {
-				const mappingsDisplay = module.exports.getRoutingByDisplayId(fader);
+				const mappingsDisplay = routingUtils.getRoutingByDisplayId(routing, fader);
 
 				mappingsDisplay.forEach((mapping) => {
 					colors[mapping.displayId] = args[0].value;
@@ -283,17 +163,17 @@ module.exports = {
 			}
 
 			if (addressSplit[2].includes('Name')) {
-				const mappingsDisplay = module.exports.getRoutingByDisplayId(fader);
+				const mappingsDisplay = routingUtils.getRoutingByDisplayId(routing, fader);
 				const values = args[0].value.split(";");
 
 				mappingsDisplay.forEach((mapping) => {
-					const seqMidiNote = numberIntoHex(mapping.displayId * 7);
-					const cueMidiNote = numberIntoHex(56 + (mapping.displayId * 7));
-					const seq = (values[0] + "       ").substring(0, 7)
-					const cue = (values[1] + "       ").substring(0, 7)
+					const seqMidiNote = utils.numberIntoHex(mapping.displayId * 7);
+					const cueMidiNote = utils.numberIntoHex(56 + (mapping.displayId * 7));
+					const seq = (values[0] + "       ").substring(0, 7);
+					const cue = (values[1] + "       ").substring(0, 7);
 
-					send('midi', mapping.device, '/sysex', "f0 00 00 66 14 12 " + seqMidiNote + " " + stringToAsciiHex(seq) + "f7");
-					send('midi', mapping.device, '/sysex', "f0 00 00 66 14 12 " + cueMidiNote + " " + stringToAsciiHex(cue) + "f7");
+					send('midi', mapping.device, '/sysex', "f0 00 00 66 14 12 " + seqMidiNote + " " + utils.stringToAsciiHex(seq) + "f7");
+					send('midi', mapping.device, '/sysex', "f0 00 00 66 14 12 " + cueMidiNote + " " + utils.stringToAsciiHex(cue) + "f7");
 				});
 			}
 		}
