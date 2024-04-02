@@ -1,6 +1,7 @@
 {
+    "mode": "mc",
     "buttonFeedbackMapper": "function(value) { if (value == 'On') { return 127;} if (value == 'Off'){ return 0;} return 0; }",
-    "control": {
+    "pitch": {
         "1": 201,
         "2": 202,
         "3": 203,
@@ -9,32 +10,107 @@
         "6": 206,
         "7": 207,
         "8": 208,
-        "9": 209,
-        "10": 401,
-        "11": 402,
-        "12": 403,
-        "13": 404,
-        "14": 405,
-        "15": 406,
-        "16": 407,
-        "17": 408,
-        "18": 476,
-        "19": 477,
-        "20": 376,
-        "21": 377,
-        "22": 478,
-        "23": 479,
-        "24": 378,
-        "25": 479,
-        "28": 210,
-        "29": 211,
-        "30": 212,
-        "31": 213,
-        "32": 214,
-        "33": 215,
-        "34": 216,
-        "35": 217,
-        "36": 218
+        "9": 209
+    },
+    "rltvControl": {
+        "16": {
+            "exec": 401,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 48,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "17": {
+            "exec": 402,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 49,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "18": {
+            "exec": 403,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 50,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "19": {
+            "exec": 404,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 51,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "20": {
+            "exec": 405,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 52,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "21": {
+            "exec": 406,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 53,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "22": {
+            "exec": 407,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 54,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "23": {
+            "exec": 408,
+            "currValue": 0,
+            "posFrom": 1,
+            "posTo": 8,
+            "negFrom": 65,
+            "negTo": 72,
+            "returnChannel": 55,
+            "returnFrom": 32,
+            "returnTo": 43
+        },
+        "60": {
+            "attribute": "current",
+            "posFrom": 1,
+            "posTo": 1,
+            "negFrom": 65,
+            "negTo": 65,
+            "amount": 1.0
+        }
+    },
+    "control": {
     },
     "note": {
         "0": {
@@ -62,76 +138,76 @@
             "exec": 408
         },
         "8": {
-            "exec": 476
-        },
-        "9": {
-            "exec": 477
-        },
-        "10": {
-            "exec": 376
-        },
-        "11": {
-            "exec": 377
-        },
-        "12": {
-            "exec": 478
-        },
-        "13": {
-            "exec": 479
-        },
-        "14": {
-            "exec": 378
-        },
-        "15": {
-            "exec": 4379
-        },
-        "16": {
-            "exec": 401
-        },
-        "17": {
-            "exec": 402
-        },
-        "18": {
-            "exec": 403
-        },
-        "19": {
-            "exec": 404
-        },
-        "20": {
-            "exec": 405
-        },
-        "21": {
-            "exec": 406
-        },
-        "22": {
-            "exec": 407
-        },
-        "23": {
-            "exec": 408
-        },
-        "24": {
             "exec": 301
         },
-        "25": {
+        "9": {
             "exec": 302
         },
-        "26": {
+        "10": {
             "exec": 303
         },
-        "27": {
+        "11": {
             "exec": 304
         },
-        "28": {
+        "12": {
             "exec": 305
         },
-        "29": {
+        "13": {
             "exec": 306
         },
-        "30": {
+        "14": {
             "exec": 307
         },
-        "31": {
+        "15": {
             "exec": 308
+        },
+        "16": {
+            "exec": 201
+        },
+        "17": {
+            "exec": 202
+        },
+        "18": {
+            "exec": 203
+        },
+        "19": {
+            "exec": 204
+        },
+        "20": {
+            "exec": 205
+        },
+        "21": {
+            "exec": 206
+        },
+        "22": {
+            "exec": 207
+        },
+        "23": {
+            "exec": 208
+        },
+        "24": {
+            "exec": 101
+        },
+        "25": {
+            "exec": 102
+        },
+        "26": {
+            "exec": 103
+        },
+        "27": {
+            "exec": 104
+        },
+        "28": {
+            "exec": 105
+        },
+        "29": {
+            "exec": 106
+        },
+        "30": {
+            "exec": 107
+        },
+        "31": {
+            "exec": 108
         },
         "32": {
             "exec": 201
@@ -158,73 +234,162 @@
             "exec": 208
         },
         "40": {
-            "exec": 101
-        },
-        "41": {
-            "exec": 102
-        },
-        "42": {
-            "exec": 103
-        },
-        "43": {
-            "exec": 104
-        },
-        "44": {
-            "exec": 105
-        },
-        "45": {
-            "exec": 106
-        },
-        "46": {
-            "exec": 107
-        },
-        "47": {
-            "exec": 108
-        },
-        "48": {
-            "exec": 109
-        },
-        "49": {
-            "exec": 276
-        },
-        "50": {
-            "exec": 277
-        },
-        "51": {
-            "exec": 176
-        },
-        "52": {
-            "exec": 177
-        },
-        "53": {
-            "exec": 278
-        },
-        "54": {
-            "exec": 279
-        },
-        "104": {
-            "quicKey": "ESC",
-            "minValue": 100
-        },
-        "105": {
-            "cmd": "CLEAR",
-            "minValue": 100
-        },
-        "106": {
-            "quicKey": "AT",
-            "minValue": 100
-        },
-        "107": {
-            "quicKey": "STORE",
-            "minValue": 100
-        },
-        "108": {
-            "quicKey": "FIXTURE",
-            "minValue": 100
-        },
-        "109": {
             "cmd": "HIGHLIGHT",
             "minValue": 100
+        },
+        "41": {
+            "cmd": "Preview",
+            "minValue": 100
+        },
+        "42": {
+            "cmd": "SOLO",
+            "minValue": 100
+        },
+        "43": {
+            "cmd": "BLIND",
+            "minValue": 100
+        },
+        "44": {
+            "cmd": "Freeze",
+            "minValue": 100
+        },
+        "46": {
+            "cmd": "Previous Page",
+            "minValue": 100
+        },
+        "47": {
+            "cmd": "Next Page",
+            "minValue": 100
+        },
+        "48": {
+            "local": "encoderFine",
+            "minValue": 100
+        },
+        "49": {
+            "local": "encoderRough",
+            "minValue": 100
+        },
+        "54": {
+            "exec": 191
+        },
+        "55": {
+            "exec": 192
+        },
+        "56": {
+            "exec": 193
+        },
+        "57": {
+            "exec": 194
+        },
+        "58": {
+            "exec": 195
+        },
+        "59": {
+            "exec": 196
+        },
+        "60": {
+            "exec": 197
+        },
+        "61": {
+            "exec": 198
+        },
+        "62": {
+            "exec": 291
+        },
+        "63": {
+            "exec": 292
+        },
+        "64": {
+            "exec": 293
+        },
+        "65": {
+            "exec": 294
+        },
+        "66": {
+            "exec": 295
+        },
+        "67": {
+            "exec": 296
+        },
+        "68": {
+            "exec": 297
+        },
+        "69": {
+            "exec": 298
+        },
+        "84": {
+            "local": "attribute",
+            "attribute": "dimmer"
+        },
+        "85": {
+            "local": "attribute",
+            "attribute": "pan"
+        },
+        "86": {
+            "local": "attribute",
+            "attribute": "tilt"
+        },
+        "87": {
+            "local": "attribute",
+            "attribute": "ColorRGB_R"
+        },
+        "88": {
+            "local": "attribute",
+            "attribute": "ColorRGB_G"
+        },
+        "89": {
+            "local": "attribute",
+            "attribute": "ColorRGB_B"
+        },
+        "90": {
+            "local": "attribute",
+            "attribute": "Zoom"
+        },
+        "91": {
+            "cmd": "Go-",
+            "minValue": 100
+        },
+        "92": {
+            "cmd": "Go+",
+            "minValue": 100
+        },
+        "93": {
+            "cmd": "Off",
+            "minValue": 100
+        },
+        "94": {
+            "cmd": "Top",
+            "minValue": 100
+        },
+        "96": {
+            "cmd": "UP",
+            "minValue": 100
+        },
+        "97": {
+            "cmd": "DOWN",
+            "minValue": 100
+        },
+        "98": {
+            "cmd": "PREVIOUS",
+            "minValue": 100
+        },
+        "99": {
+            "cmd": "NEXT",
+            "minValue": 100
+        },
+        "100": {
+            "cmd": "Set",
+            "minValue": 100
         }
+    },
+    "display": {
+        "0": 201,
+        "1": 202,
+        "2": 203,
+        "3": 204,
+        "4": 205,
+        "5": 206,
+        "6": 207,
+        "7": 208
     }
 }

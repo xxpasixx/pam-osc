@@ -41,6 +41,14 @@ for i = 401, 415 do
     executorsToWatch[#executorsToWatch + 1] = i
 end
 
+for i = 191, 198 do
+    executorsToWatch[#executorsToWatch + 1] = i
+end
+
+for i = 291, 298 do
+    executorsToWatch[#executorsToWatch + 1] = i
+end
+
 -- set the default Values
 for _, number in ipairs(executorsToWatch) do
     oldValues[number] = "000"

@@ -159,13 +159,7 @@ module.exports = {
 			if (addressSplit[2].includes('Button')) {
 				const mappings = routingUtils.getRoutingNoteByExecId(routing, fader);
 				mappings.forEach((mapping) => {
-					// for the MC mode, it is required to send a note on with velocity 0
-					if (routing[mapping.device].mode == "mc" && args[0].value == "Off") {
-						send('midi', mapping.device, '/sysex', '90' + utils.numberIntoHex(mapping.midiId) + ' 00');
-						return;
-					}
-
-					send('midi', mapping.device, '/note', 1, mapping.midiId, mapping.buttonFeedbackMapper(args[0].value));
+					midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, args[0].value);
 				});
 			}
 			if (address.includes('/updatePage/current')) {
@@ -175,7 +169,7 @@ module.exports = {
 				const mappings = routingUtils.getRoutingNoteByCMD(routing, addressSplit[2]);
 
 				mappings.forEach((mapping) => {
-					send('midi', mapping.device, '/note', 1, mapping.midiId, mapping.buttonFeedbackMapper(args[0].value ? 'On' : 'Off'));
+					midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, args[0].value ? 'On' : 'Off');
 				});
 			}
 
