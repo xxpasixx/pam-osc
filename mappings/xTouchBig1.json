@@ -100,6 +100,14 @@
             "returnChannel": 55,
             "returnFrom": 32,
             "returnTo": 43
+        },
+        "60": {
+            "attribute": "dimmer",
+            "posFrom": 1,
+            "posTo": 1,
+            "negFrom": 65,
+            "negTo": 65,
+            "amount": 1.0
         }
     },
     "control": {

@@ -75,6 +75,7 @@ end
 
 local function main()
     Printf("start pam OSC main()")
+    DataPool():Dump()
 
     local destPage = 1
     local forceReload = true

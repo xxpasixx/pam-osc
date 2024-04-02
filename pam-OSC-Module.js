@@ -25,6 +25,9 @@ const routingUtils = require('./routingUtils.js');
 
 var routing = {};
 
+let encoderFine = false;
+let encoderRough = true;
+
 //The IP to send
 var ip = "10.0.16.16";
 var oscPort = 9003;
@@ -51,12 +54,25 @@ module.exports = {
 					send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]['control'][ctrl], { type: "i", value: value });
 				}
 
-				if (routing[port]['rltvControl'][ctrl]) {
+				// handle relative Rotary encoders to act as Absolute
+				if (routing[port]['rltvControl'][ctrl] && routing[port]['rltvControl'][ctrl].exec) {
 					const { exec, currValue, posFrom, posTo, negFrom, negTo } = routing[port]['rltvControl'][ctrl];
 					var newValue = currValue + utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo);
 					newValue = Math.min(Math.max(newValue, 0), 127) || 0;
 					routing[port]['rltvControl'][ctrl].currValue = newValue;
+					
 					send(ip, oscPort, prefix + "/Page" + page + "/Fader" + exec, { type: "i", value: newValue });
+				}
+
+				// handle attribute Encoders
+				if (routing[port]['rltvControl'][ctrl] && routing[port]['rltvControl'][ctrl].attribute) {
+					const { attribute, posFrom, posTo, negFrom, negTo, amount } = routing[port]['rltvControl'][ctrl];
+					
+					let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
+					change = encoderFine ? change / 10 : change;
+					change = encoderRough ? change * 10 : change;
+					const plusMinus = change > 0 ? " + " : " - "
+					send(ip, oscPort, prefix + "/cmd", {type :"s", value:  "Attribute " + attribute + " at " + plusMinus + Math.abs(change)});
 				}
 			}
 			if (address === '/pitch') {
