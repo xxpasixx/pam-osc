@@ -30,19 +30,21 @@ let encoderFine = false;
 let encoderRough = false;
 let currentAttribute = "dimmer";
 
-//The IP to send
-var ip = "10.0.16.16";
-var oscPort = 9003;
 var prefix = "";
 var page = "1";
-var devices = ['xTouchBig1.json'];
 
-devices.forEach((config) => {
-	const name = config.split('.')[0]
-	const value = loadJSON('mappings/' + config, (e) => console.log(e));
+const ipPort = ('' +settings.read("send")).split(":");
+const ip = ipPort[0];
+const oscPort = ipPort[1];
+
+settings.read("midi").forEach(deviceMidi => {
+	const name = deviceMidi.split(":")[0];
+	const fileName = name + ".json";
+
+	const value = loadJSON('mappings/' + fileName, (e) => console.error("The Mapping " + fileName + " could not be found. Please make sure it exists, or rename your MIDI Device name to a existing one"));
 	value.buttonFeedbackMapper = eval('(' + value.buttonFeedbackMapper + ')');
 	routing[name] = value;
-	console.log("loaded mapping: ", config);
+	console.log("loaded mapping: ", fileName);
 });
 
 midiUtils.sendAttributeLED(routing, currentAttribute);
