@@ -21,7 +21,7 @@ local olsMasterEnabledValue = {
     blind = false
 }
 
-local oscEntry = 2
+local oscEntry = 3
 
 -- Configure here, what executors you want to watch:
 for i = 101, 115 do
@@ -149,7 +149,8 @@ local function main()
             -- Send Color Value
             if oldColorValues[listKey] ~= colorValue or forceReload then
                 oldColorValues[listKey] = colorValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. colorValue ..
+                local newValue = string.gsub(colorValue, ",", ";")
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. newValue ..
                         '"')
             end
         end
