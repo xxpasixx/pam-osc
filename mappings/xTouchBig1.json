@@ -102,7 +102,7 @@
             "returnTo": 43
         },
         "60": {
-            "attribute": "dimmer",
+            "attribute": "current",
             "posFrom": 1,
             "posTo": 1,
             "negFrom": 65,
@@ -260,10 +260,12 @@
             "minValue": 100
         },
         "48": {
-            "exec": 109
+            "local": "encoderFine",
+            "minValue": 100
         },
         "49": {
-            "exec": 276
+            "local": "encoderRough",
+            "minValue": 100
         },
         "50": {
             "exec": 277
@@ -279,6 +281,34 @@
         },
         "54": {
             "exec": 279
+        },
+        "84": {
+            "local": "attribute",
+            "attribute": "dimmer"
+        },
+        "85": {
+            "local": "attribute",
+            "attribute": "pan"
+        },
+        "86": {
+            "local": "attribute",
+            "attribute": "tilt"
+        },
+        "87": {
+            "local": "attribute",
+            "attribute": "ColorRGB_R"
+        },
+        "88": {
+            "local": "attribute",
+            "attribute": "ColorRGB_G"
+        },
+        "89": {
+            "local": "attribute",
+            "attribute": "ColorRGB_B"
+        },
+        "90": {
+            "local": "attribute",
+            "attribute": "Zoom"
         },
         "96": {
             "cmd": "UP",

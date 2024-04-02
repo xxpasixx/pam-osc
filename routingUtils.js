@@ -20,9 +20,10 @@ module.exports = {
     getRoutingByDisplayId: getRoutingByDisplayId,
     getRoutingNoteByExecId: getRoutingNoteByExecId,
     getRoutingNoteByCMD: getRoutingNoteByCMD,
+    getRoutingNoteWithAttribute: getRoutingNoteWithAttribute,
 };
 
-function getRoutingByControlerId (routing, id) {
+function getRoutingByControlerId(routing, id) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
         const controls = Object.keys(routing[device].control).map((controlId) => ({ id: controlId, value: routing[device].control[controlId] }));
@@ -39,7 +40,7 @@ function getRoutingByControlerId (routing, id) {
     return returnArray;
 }
 
-function getRoutingByRltvControlerId (routing, id) {
+function getRoutingByRltvControlerId(routing, id) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
         const controls = Object.keys(routing[device].rltvControl).map((controlId) => ({ id: controlId, value: routing[device].rltvControl[controlId].exec, ...routing[device].rltvControl[controlId] }));
@@ -59,7 +60,7 @@ function getRoutingByRltvControlerId (routing, id) {
     return returnArray;
 }
 
-function getRoutingByPitchId (routing, id) {
+function getRoutingByPitchId(routing, id) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
         const pitchs = Object.keys(routing[device].pitch).map((pitchID) => ({ id: pitchID, value: routing[device].pitch[pitchID] }));
@@ -76,7 +77,7 @@ function getRoutingByPitchId (routing, id) {
     return returnArray;
 }
 
-function getRoutingByDisplayId (routing, id) {
+function getRoutingByDisplayId(routing, id) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
         const displays = Object.keys(routing[device].display).map((displayID) => ({ id: displayID, value: routing[device].display[displayID] }));
@@ -93,7 +94,7 @@ function getRoutingByDisplayId (routing, id) {
     return returnArray;
 }
 
-function getRoutingNoteByExecId (routing, execId) {
+function getRoutingNoteByExecId(routing, execId) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
         const notes = Object.keys(routing[device].note).map((noteId) => ({ id: noteId, value: routing[device].note[noteId].exec }));
@@ -111,7 +112,7 @@ function getRoutingNoteByExecId (routing, execId) {
     return returnArray;
 }
 
-function getRoutingNoteByCMD (routing, cmd) {
+function getRoutingNoteByCMD(routing, cmd) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
 
@@ -129,6 +130,25 @@ function getRoutingNoteByCMD (routing, cmd) {
                 });
                 return;
             }
+        });
+    });
+    return returnArray;
+}
+
+function getRoutingNoteWithAttribute(routing) {
+    const returnArray = [];
+    Object.keys(routing).forEach((device) => {
+        const notes = Object.keys(routing[device].note).map((noteId) => ({ id: noteId, value: routing[device].note[noteId].attribute }));
+        notes.forEach(note => {
+            if (!note.value) {
+                return;
+            }
+            returnArray.push({
+                device: device,
+                midiId: parseInt(note.id),
+                buttonFeedbackMapper: routing[device].buttonFeedbackMapper,
+                attribute: note.value,
+            });
         });
     });
     return returnArray;

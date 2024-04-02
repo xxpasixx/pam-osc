@@ -22,11 +22,13 @@ var colors = ["0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", 
 const utils = require('./utils.js');
 const colorUtils = require('./colorUtils.js');
 const routingUtils = require('./routingUtils.js');
+const midiUtils = require('./midiUtils.js');
 
 var routing = {};
 
 let encoderFine = false;
-let encoderRough = true;
+let encoderRough = false;
+let currentAttribute = "dimmer";
 
 //The IP to send
 var ip = "10.0.16.16";
@@ -42,6 +44,8 @@ devices.forEach((config) => {
 	routing[name] = value;
 	console.log("loaded mapping: ", config);
 });
+
+midiUtils.sendAttributeLED(routing, currentAttribute);
 
 module.exports = {
 	oscInFilter: function (data) {
@@ -71,8 +75,9 @@ module.exports = {
 					let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
 					change = encoderFine ? change / 10 : change;
 					change = encoderRough ? change * 10 : change;
-					const plusMinus = change > 0 ? " + " : " - "
-					send(ip, oscPort, prefix + "/cmd", {type :"s", value:  "Attribute " + attribute + " at " + plusMinus + Math.abs(change)});
+					const plusMinus = change > 0 ? " + " : " - ";
+					const attributeToSend = attribute == "current" ? currentAttribute : attribute;
+					send(ip, oscPort, prefix + "/cmd", {type :"s", value:  "Attribute " + attributeToSend + " at " + plusMinus + Math.abs(change)});
 				}
 			}
 			if (address === '/pitch') {
@@ -106,6 +111,22 @@ module.exports = {
 
 				if (config.cmd) {
 					send(ip, oscPort, prefix + "/cmd", { type: "s", value: config.cmd });
+				}
+
+				if (config.local) {
+					if (config.local == "encoderRough") {
+						encoderRough = !encoderRough;
+						midiUtils.sendNoteResponse(routing, port, ctrl, encoderRough ? "On" : "Off");
+					}
+					if (config.local == "encoderFine") {
+						encoderFine = !encoderFine;
+						midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off");
+					}
+					
+					if (config.local == "attribute" && config.attribute) {
+						currentAttribute = config.attribute;
+						midiUtils.sendAttributeLED(routing, currentAttribute);
+					}
 				}
 			}
 			return;

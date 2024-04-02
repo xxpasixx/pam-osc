@@ -168,6 +168,31 @@ CMD could be used for everything that could be executed directy. for example HIG
 
 a Quickkey should be used, when you want to add it to the cmd line. For example copy, because you want to add more text after words.
 
+#### Encoder Attributes
+if you have a RelativeControllEncoder (rltvControl) in you config, you can assign an Attribute from MA.
+Examples:
+- Dimmer
+- Pan
+- Tilt
+- ColorRGB_R
+- ColorRGB_G
+- ColorRGB_B
+- ColorRGB_W
+
+if you assign the atribute "current", you can use other Buttons on your device to controll what attribute you would like to controll.
+if you click the first button, you controll the dimmer, by clicking the second one, you controll the pan:
+```
+"84": {
+    "local": "attribute",
+    "attribute": "dimmer"
+},
+"85": {
+    "local": "attribute",
+    "attribute": "pan"
+},
+```
+The default one is Dimmer.
+
 ## Knewn Limetations
 Currently it is only possible to give Midi Feedback for Channel 1.
 
@@ -181,7 +206,6 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 ## Upcomming things
 - more predefined Devices
 - colourd button feedback
-- Enconder controll
 - easyer installation
 - autostart documentation
 - better Plugin Management in MA (Configuration via GUI)
@@ -192,3 +216,9 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - add for LED Feedback: Fixture, Channel, Edit, Update, Align, At, Clear
 - update Ports in Documentation and preConfig
 - update to configure IP in OSC GUI
+
+### Videos to Create
+- Setup Video XTouchCompact
+- Vegas Fader xTouch (Short)
+- Encoder on xTouch and xTouch Compact
+- General feature Video whats possible (Motor Fader, LED Feedback, Displays, Pagination, Encoder Wheel)
