@@ -22,7 +22,7 @@ local olsMasterEnabledValue = {
     blind = false
 }
 
-local oscEntry = 3
+local oscEntry = 2
 
 -- Configure here, what executors you want to watch:
 for i = 101, 115 do
