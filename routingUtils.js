@@ -43,6 +43,7 @@ function getRoutingByControlerId(routing, id) {
 function getRoutingByRltvControlerId(routing, id) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
+        if(!routing[device].rltvControl) return;
         const controls = Object.keys(routing[device].rltvControl).map((controlId) => ({ id: controlId, value: routing[device].rltvControl[controlId].exec, ...routing[device].rltvControl[controlId] }));
         controls.forEach(control => {
             if (control.value === id || "" + control.value === "" + id) {
@@ -63,6 +64,7 @@ function getRoutingByRltvControlerId(routing, id) {
 function getRoutingByPitchId(routing, id) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
+        if(!routing[device].pitch) return;
         const pitchs = Object.keys(routing[device].pitch).map((pitchID) => ({ id: pitchID, value: routing[device].pitch[pitchID] }));
         pitchs.forEach(pitch => {
             if (pitch.value === id || "" + pitch.value === "" + id) {
@@ -80,6 +82,7 @@ function getRoutingByPitchId(routing, id) {
 function getRoutingByDisplayId(routing, id) {
     const returnArray = [];
     Object.keys(routing).forEach((device) => {
+        if(!routing[device].display) return;
         const displays = Object.keys(routing[device].display).map((displayID) => ({ id: displayID, value: routing[device].display[displayID] }));
         displays.forEach(display => {
             if (display.value === id || "" + display.value === "" + id) {

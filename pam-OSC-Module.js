@@ -60,6 +60,10 @@ module.exports = {
 					send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]['control'][ctrl], { type: "i", value: value });
 				}
 
+
+				if(!routing[port]['rltvControl']) {
+					return;
+				}
 				// handle relative Rotary encoders to act as Absolute
 				if (routing[port]['rltvControl'][ctrl] && routing[port]['rltvControl'][ctrl].exec) {
 					const { exec, currValue, posFrom, posTo, negFrom, negTo } = routing[port]['rltvControl'][ctrl];
@@ -84,7 +88,7 @@ module.exports = {
 			}
 			if (address === '/pitch') {
 				var [channel, value] = args.map(arg => arg.value);
-				if (!routing[port]['pitch'][channel]) {
+				if (!routing[port]['pitch'] || !routing[port]['pitch'][channel]) {
 					return;
 				}
 				const valueMapped = Math.round((value / 16380) * 127);

@@ -25,19 +25,19 @@ local olsMasterEnabledValue = {
 local oscEntry = 2
 
 -- Configure here, what executors you want to watch:
-for i = 101, 115 do
+for i = 101, 122 do
     executorsToWatch[#executorsToWatch + 1] = i
 end
 
-for i = 201, 215 do
+for i = 201, 222 do
     executorsToWatch[#executorsToWatch + 1] = i
 end
 
-for i = 301, 315 do
+for i = 301, 322 do
     executorsToWatch[#executorsToWatch + 1] = i
 end
 
-for i = 401, 415 do
+for i = 401, 422 do
     executorsToWatch[#executorsToWatch + 1] = i
 end
 
