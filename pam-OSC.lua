@@ -70,7 +70,10 @@ local function getApereanceColor(sequence)
 end
 
 local function getName(sequence)
-    return sequence["NAME"] .. ";" .. sequence["CUENAME"]
+    if sequence["CUENAME"] ~= nil then
+        return sequence["NAME"] .. ";" .. sequence["CUENAME"]
+    end
+        return sequence["NAME"] .. ";"
 end
 
 local function getMasterEnabled(masterName)
