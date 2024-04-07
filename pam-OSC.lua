@@ -58,7 +58,7 @@ for _, number in ipairs(executorsToWatch) do
 end
 
 -- the Speed to check executors
-local tick = 1 / 30 -- 1/30
+local tick = 1 / 10 -- 1/10
 
 local function getApereanceColor(sequence)
     local apper = sequence["APPEARANCE"]
@@ -99,6 +99,10 @@ local function main()
 
     while (GetVar(GlobalVars(), "opdateOSC")) do
         -- Check Master Enabled Values
+        if GetVar(GlobalVars(), "forceReload") == true then
+            forceReload = true
+            SetVar(GlobalVars(), "forceReload", false)
+        end
 
         for masterKey, masterValue in pairs(olsMasterEnabledValue) do
             local currValue = getMasterEnabled(masterKey)

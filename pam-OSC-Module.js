@@ -23,6 +23,7 @@ const utils = require('./utils.js');
 const colorUtils = require('./colorUtils.js');
 const routingUtils = require('./routingUtils.js');
 const midiUtils = require('./midiUtils.js');
+const oscUtils = require('./oscUtils.js');
 
 var routing = {};
 
@@ -33,7 +34,7 @@ let currentAttribute = "dimmer";
 var prefix = "";
 var page = "1";
 
-const ipPort = ('' +settings.read("send")).split(":");
+const ipPort = ('' + settings.read("send")).split(":");
 const ip = ipPort[0];
 const oscPort = ipPort[1];
 
@@ -49,6 +50,10 @@ settings.read("midi").forEach(deviceMidi => {
 
 midiUtils.sendAttributeLED(routing, currentAttribute);
 
+setTimeout(function () {
+	oscUtils.triggerForceReload(ip, oscPort, prefix);
+}, 500);
+
 module.exports = {
 	oscInFilter: function (data) {
 		var { address, args, host, port } = data
@@ -61,7 +66,7 @@ module.exports = {
 				}
 
 
-				if(!routing[port]['rltvControl']) {
+				if (!routing[port]['rltvControl']) {
 					return;
 				}
 				// handle relative Rotary encoders to act as Absolute
@@ -70,20 +75,20 @@ module.exports = {
 					var newValue = currValue + utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo);
 					newValue = Math.min(Math.max(newValue, 0), 127) || 0;
 					routing[port]['rltvControl'][ctrl].currValue = newValue;
-					
+
 					send(ip, oscPort, prefix + "/Page" + page + "/Fader" + exec, { type: "i", value: newValue });
 				}
 
 				// handle attribute Encoders
 				if (routing[port]['rltvControl'][ctrl] && routing[port]['rltvControl'][ctrl].attribute) {
 					const { attribute, posFrom, posTo, negFrom, negTo, amount } = routing[port]['rltvControl'][ctrl];
-					
+
 					let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
 					change = encoderFine ? change / 10 : change;
 					change = encoderRough ? change * 10 : change;
 					const plusMinus = change > 0 ? " + " : " - ";
 					const attributeToSend = attribute == "current" ? currentAttribute : attribute;
-					send(ip, oscPort, prefix + "/cmd", {type :"s", value:  "Attribute " + attributeToSend + " at " + plusMinus + Math.abs(change)});
+					send(ip, oscPort, prefix + "/cmd", { type: "s", value: "Attribute " + attributeToSend + " at " + plusMinus + Math.abs(change) });
 				}
 			}
 			if (address === '/pitch') {
@@ -128,7 +133,7 @@ module.exports = {
 						encoderFine = !encoderFine;
 						midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off");
 					}
-					
+
 					if (config.local == "attribute" && config.attribute) {
 						currentAttribute = config.attribute;
 						midiUtils.sendAttributeLED(routing, currentAttribute);

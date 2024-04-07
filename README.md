@@ -44,7 +44,7 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - autostart documentation
 - better Plugin Management in MA (Configuration via GUI)
 - dont move Fader when Flash
-- force reload on OSC Start
+- ~~force reload on OSC Start~~
 - LED Status should be send frequently (XTouch Issues)
 - add for LED Feedback: Freeze & Prvw
 - add for LED Feedback: Fixture, Channel, Edit, Update, Align, At, Clear
