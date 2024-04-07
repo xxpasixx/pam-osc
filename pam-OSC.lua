@@ -23,6 +23,9 @@ local olsMasterEnabledValue = {
 }
 
 local oscEntry = 2
+local automaticResendButtons = true
+local sendNames = true
+local sendColors = true
 
 -- Configure here, what executors you want to watch:
 for i = 101, 122 do
@@ -59,6 +62,7 @@ end
 
 -- the Speed to check executors
 local tick = 1 / 10 -- 1/10
+local resendTick = 0
 
 local function getApereanceColor(sequence)
     local apper = sequence["APPEARANCE"]
@@ -73,7 +77,7 @@ local function getName(sequence)
     if sequence["CUENAME"] ~= nil then
         return sequence["NAME"] .. ";" .. sequence["CUENAME"]
     end
-        return sequence["NAME"] .. ";"
+    return sequence["NAME"] .. ";"
 end
 
 local function getMasterEnabled(masterName)
@@ -86,10 +90,13 @@ end
 
 local function main()
     Printf("start pam OSC main()")
-    DataPool():Dump()
+    Printf("automaticResendButtons: " .. (automaticResendButtons and "true" or "false"))
+    Printf("sendColors: " .. (sendColors and "true" or "false"))
+    Printf("sendNames: " .. (sendNames and "true" or "false"))
 
     local destPage = 1
     local forceReload = true
+    local forceReloadButtons = false
 
     if GetVar(GlobalVars(), "opdateOSC") ~= nil then
         SetVar(GlobalVars(), "opdateOSC", not GetVar(GlobalVars(), "opdateOSC"))
@@ -98,12 +105,20 @@ local function main()
     end
 
     while (GetVar(GlobalVars(), "opdateOSC")) do
-        -- Check Master Enabled Values
         if GetVar(GlobalVars(), "forceReload") == true then
             forceReload = true
             SetVar(GlobalVars(), "forceReload", false)
         end
 
+        if automaticResendButtons then
+            resendTick = resendTick + 1
+        end
+        if resendTick >= 15 then
+            forceReloadButtons = true
+            resendTick = 0
+        end
+
+        -- Check Master Enabled Values
         for masterKey, masterValue in pairs(olsMasterEnabledValue) do
             local currValue = getMasterEnabled(masterKey)
             if currValue ~= masterValue then
@@ -148,8 +163,12 @@ local function main()
                     local myobject = maValue.Object
                     if myobject ~= nil then
                         buttonValue = myobject:HasActivePlayback() and true or false
-                        colorValue = getApereanceColor(myobject)
-                        nameValue = getName(myobject)
+                        if sendColors then
+                            colorValue = getApereanceColor(myobject)
+                        end
+                        if sendNames then
+                            nameValue = getName(myobject)
+                        end
                     end
 
                 end
@@ -164,14 +183,14 @@ local function main()
             end
 
             -- Send Button Value
-            if oldButtonValues[listKey] ~= buttonValue or forceReload then
+            if oldButtonValues[listKey] ~= buttonValue or forceReload or forceReloadButtons then
                 oldButtonValues[listKey] = buttonValue
                 Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Button' .. listValue .. ',s,' ..
                         (buttonValue and "On" or "Off") .. '"')
             end
 
             -- Send Color Value
-            if oldColorValues[listKey] ~= colorValue or forceReload then
+            if sendColors and (oldColorValues[listKey] ~= colorValue or forceReload) then
                 oldColorValues[listKey] = colorValue
                 local newValue = string.gsub(colorValue, ",", ";")
                 Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. newValue ..
@@ -179,12 +198,14 @@ local function main()
             end
 
             -- Send Name Value
-            if oldNameValues[listKey] ~= nameValue or forceReload then
+            if sendNames and (oldNameValues[listKey] ~= nameValue or forceReload) then
                 oldNameValues[listKey] = nameValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Name' .. listValue .. ',s,' .. nameValue .. '"')
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Name' .. listValue .. ',s,' .. nameValue ..
+                        '"')
             end
         end
         forceReload = false
+        forceReloadButtons = false
 
         -- delay
         coroutine.yield(tick)

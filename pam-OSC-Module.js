@@ -17,7 +17,7 @@
 
 // Todo: Refactor: This is only a temp solution
 var displayDevice = null;
-var colors = ["0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0"]
+var colors = ["0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0"];
 
 const utils = require('./utils.js');
 const colorUtils = require('./colorUtils.js');
