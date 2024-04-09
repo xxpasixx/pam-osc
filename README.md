@@ -1,25 +1,23 @@
 # pam-osc
 Controll Grandma3 with Midi Decvices over Open Stage Control and a Plugin to get Feedback for Motorfaders and Button lights.
 
-# !!! V2 is still in Development !!!
 
 Features:
-- Send Midi Fader Values to Grandma3 Executor on Current Page
-- Send Midi Button Values to Grandma3 Executor on Current Page
+- Send Midi Fader, Encoder and Button Values to Grandma3 Executor on Current Page
 - It Uses What you see in the Playback (you can configure Master, Speed, Temp, etc. in Grandma)
+- Send Commands, control Atributes and execute QuickKeys
 - Fader Feedback for Motorized Faders
-- LED Button Feedback for Running Sequences
+- LED Button Feedback for Running Sequences and Highlight, etc.
+- LED Displays with current Sequence and Cue on the xTouch.
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=GCBT6tBH6DE
 " target="_blank"><img src="http://img.youtube.com/vi/GCBT6tBH6DE/0.jpg" 
 alt="Youtube Video" width="240" height="180" border="10" /></a>
 
-## Still in BETA
-Everything is still in Beta.
-Issues could happen. Please create a [Ticket](https://github.com/xxpasixx/pam-osc/issues) if you find something.
+## Might not be stable
+This is not intentional made for Producion Purposes. 
 
-## NOT for Production Purposes
-This is not Recomended for Producion Purposes.
+If you want to use it on a Job, make sure you tested it well in your enviroment before running it on a job.
 
 It is Still in Beta & uses a lot of Recources, what could create Performance issues during the Show.
 
@@ -30,9 +28,8 @@ It is Still in Beta & uses a lot of Recources, what could create Performance iss
 ## Knewn Limetations
 Currently it is only possible to give Midi Feedback for Channel 1.
 
-Issues with The Behringer X Touch Compact with LED's Going off.
-
-## Having Troubles ?
+## Found an Issue ?
+Issues could happen. Please create a [Ticket](https://github.com/xxpasixx/pam-osc/issues) if you find something.
 
 ### TODO: Create Help for Common Issues
 Make Sure the IP's are all correct and the PC is the Session Master.
