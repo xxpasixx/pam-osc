@@ -23,9 +23,6 @@ local olsMasterEnabledValue = {
 }
 
 local oscEntry = 2
-local automaticResendButtons = true
-local sendNames = true
-local sendColors = true
 
 -- Configure here, what executors you want to watch:
 for i = 101, 122 do
@@ -89,6 +86,10 @@ local function getMasterEnabled(masterName)
 end
 
 local function main()
+    local automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
+    local sendColors = GetVar(GlobalVars(), "sendColors") or false
+    local sendNames = GetVar(GlobalVars(), "sendNames") or false
+
     Printf("start pam OSC main()")
     Printf("automaticResendButtons: " .. (automaticResendButtons and "true" or "false"))
     Printf("sendColors: " .. (sendColors and "true" or "false"))
@@ -107,6 +108,9 @@ local function main()
     while (GetVar(GlobalVars(), "opdateOSC")) do
         if GetVar(GlobalVars(), "forceReload") == true then
             forceReload = true
+            automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
+            sendColors = GetVar(GlobalVars(), "sendColors") or false
+            sendNames = GetVar(GlobalVars(), "sendNames") or false
             SetVar(GlobalVars(), "forceReload", false)
         end
 
@@ -149,6 +153,7 @@ local function main()
             local buttonValue = false
             local colorValue = "0,0,0,0"
             local nameValue = ";"
+            local isFlash = false
 
             -- Set Fader & button Values
             for maKey, maValue in pairs(executors) do
@@ -159,6 +164,7 @@ local function main()
                     faderOptions.faderDisabled = false
 
                     faderValue = maValue:GetFader(faderOptions)
+                    isFlash = maValue.KEY == "Flash"
 
                     local myobject = maValue.Object
                     if myobject ~= nil then
@@ -175,7 +181,7 @@ local function main()
             end
 
             -- Send Fader Value
-            if oldValues[listKey] ~= faderValue or forceReload then
+            if (oldValues[listKey] ~= faderValue and not (isFlash and buttonValue and faderValue == 100)) or forceReload then
                 hasFaderUpdated = true
                 oldValues[listKey] = faderValue
                 Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Fader' .. listValue .. ',i,' ..

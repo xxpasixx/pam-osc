@@ -45,11 +45,13 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - better Plugin Management in MA (Configuration via GUI)
 - dont move Fader when Flash
 - ~~force reload on OSC Start~~
-- LED Status should be send frequently (XTouch Issues)
+- ~~LED Status should be send frequently (XTouch Issues)~~
 - add for LED Feedback: Freeze & Prvw
 - add for LED Feedback: Fixture, Channel, Edit, Update, Align, At, Clear
 - ~~update Ports in Documentation and preConfig~~
 - u~~pdate to configure IP in OSC GUI~~
+- Dynamic Attribute Encoder https://forum.malighting.com/forum/thread/9089-get-encoder-pool-in-lua-plugin
+
 
 ### Videos to Create
 - Setup Video XTouchCompact
