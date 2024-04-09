@@ -42,8 +42,8 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - colourd button feedback
 - ~~easyer installation~~
 - autostart documentation
-- better Plugin Management in MA (Configuration via GUI)
-- dont move Fader when Flash
+- ~~better Plugin Management in MA (Configuration via GUI)~~
+- ~~dont move Fader when Flash~~
 - ~~force reload on OSC Start~~
 - ~~LED Status should be send frequently (XTouch Issues)~~
 - add for LED Feedback: Freeze & Prvw
@@ -57,4 +57,3 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - Setup Video XTouchCompact
 - Vegas Fader xTouch (Short)
 - Encoder on xTouch and xTouch Compact
-- General feature Video whats possible (Motor Fader, LED Feedback, Displays, Pagination, Encoder Wheel)
