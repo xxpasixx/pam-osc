@@ -317,6 +317,62 @@
         "69": {
             "exec": 298
         },
+        "70": {
+            "quicKey": "Fixture",
+            "minValue": 100
+        },
+        "71": {
+            "quicKey": "Channel",
+            "minValue": 100
+        },
+        "72": {
+            "quicKey": "Assign",
+            "minValue": 100
+        },
+        "73": {
+            "quicKey": "Time",
+            "minValue": 100
+        },
+        "74": {
+            "quicKey": "Group",
+            "minValue": 100
+        },
+        "75": {
+            "quicKey": "Preset",
+            "minValue": 100
+        },
+        "76": {
+            "quicKey": "Sequence",
+            "minValue": 100
+        },
+        "77": {
+            "quicKey": "Update",
+            "minValue": 100
+        },
+        "78": {
+            "quicKey": "Store",
+            "minValue": 100
+        },
+        "79": {
+            "quicKey": "Move",
+            "minValue": 100
+        },
+        "80": {
+            "quicKey": "Cue",
+            "minValue": 100
+        },
+        "81": {
+            "quicKey": "Edit",
+            "minValue": 100
+        },
+        "82": {
+            "quicKey": "Delete",
+            "minValue": 100
+        },
+        "83": {
+            "quicKey": "Please",
+            "minValue": 100
+        },
         "84": {
             "local": "attribute",
             "attribute": "dimmer"
@@ -359,6 +415,10 @@
         },
         "94": {
             "cmd": "Top",
+            "minValue": 100
+        },
+        "95": {
+            "cmd": "Clear",
             "minValue": 100
         },
         "96": {
