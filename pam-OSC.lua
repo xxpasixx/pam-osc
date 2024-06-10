@@ -21,6 +21,7 @@ local olsMasterEnabledValue = {
     solo = false,
     blind = false
 }
+local oldTimecodes = {}
 
 local oscEntry = 2
 
@@ -210,6 +211,20 @@ local function main()
                         '"')
             end
         end
+        
+        -- Send Timecode
+        local slots = Root().TimecodeSlots
+        	
+        for _, slot in pairs(slots:Children()) do
+        	local time = slot.timestring
+        	
+        	if oldTimecodes[slot.no] ~= time or oldTimecodes[slot.no] == nil or forceReload == true then
+        		oldTimecodes[slot.no] = time
+        			
+        		Cmd('SendOSC ' .. oscEntry .. ' "/Timecode' .. slot.no .. ',s,' .. time .. '"')
+        	end
+        end
+        
         forceReload = false
         forceReloadButtons = false
 
@@ -220,4 +235,3 @@ local function main()
 end
 
 return main
-

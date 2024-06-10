@@ -110,8 +110,7 @@
             "amount": 1.0
         }
     },
-    "control": {
-    },
+    "control": {},
     "note": {
         "0": {
             "exec": 401
@@ -268,6 +267,13 @@
         "49": {
             "local": "encoderRough",
             "minValue": 100
+        },
+        "52": {
+            "timecodeControl": true,
+            "minValue": 100
+        },
+        "53": {
+            "timecodePlayPause": true
         },
         "54": {
             "exec": 191
