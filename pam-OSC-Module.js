@@ -330,47 +330,49 @@ module.exports = {
         });
       }
 
-      if (routing[port].enableTimecodeSend) {
-        if (addressSplit[1]?.includes("Timecode")) {
-          let slot = addressSplit[1].slice(-1);
+      for (let device of Object.keys(routing)) {
+        if (routing[device].enableTimecodeSend) {
+          if (addressSplit[1]?.includes("Timecode")) {
+            let slot = addressSplit[1].slice(-1);
 
-          if (!isNaN(slot)) {
-            slot = parseInt(slot);
+            if (!isNaN(slot)) {
+              slot = parseInt(slot);
 
-            const time = args[0].value;
+              const time = args[0].value;
 
-            const hrsIndex = time.indexOf("h");
-            const minIndex = time.indexOf("m");
-            const secIndex = time.indexOf(":");
+              const hrsIndex = time.indexOf("h");
+              const minIndex = time.indexOf("m");
+              const secIndex = time.indexOf(":");
 
-            const hrs = hrsIndex == -1 ? "0" : time.substring(0, hrsIndex);
-            const mins = minIndex == -1 ? "0" : time.substring(hrsIndex + 1, minIndex);
-            const secs = time.substring(minIndex + 1, secIndex);
-            const mili = time.substring(secIndex + 1);
+              const hrs = hrsIndex == -1 ? "0" : time.substring(0, hrsIndex);
+              const mins = minIndex == -1 ? "0" : time.substring(hrsIndex + 1, minIndex);
+              const secs = time.substring(minIndex + 1, secIndex);
+              const mili = time.substring(secIndex + 1);
 
-            const updateChanges = (key, value) => {
-              if (!timecode.slots[slot]) timecode.slots[slot] = {};
+              const updateChanges = (key, value) => {
+                if (!timecode.slots[slot]) timecode.slots[slot] = {};
 
-              if (timecode.slots[slot][key] != value) timecode.slots[slot][key] = value;
-            };
+                if (timecode.slots[slot][key] != value) timecode.slots[slot][key] = value;
+              };
 
-            updateChanges("hrs", hrs);
-            updateChanges("mins", mins);
-            updateChanges("secs", secs);
-            updateChanges("mili", mili);
+              updateChanges("hrs", hrs);
+              updateChanges("mins", mins);
+              updateChanges("secs", secs);
+              updateChanges("mili", mili);
 
-            if (timecode.selectedSlot == slot) {
-              midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot]);
+              if (timecode.selectedSlot == slot) {
+                midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot]);
+              }
             }
           }
-        }
 
-        // Check if the message from MA3 contains an address in the timecode slot pool
-        if (addressSplit[1]?.startsWith("14.")) {
-          const slotNum = addressSplit[1].substring(3);
+          // Check if the message from MA3 contains an address in the timecode slot pool
+          if (addressSplit[1]?.startsWith("14.")) {
+            const slotNum = addressSplit[1].substring(3);
 
-          if (!isNaN(slotNum) && timecode.slots[slotNum]) {
-            timecode.slots[slotNum].running = args[0].value === "Go+";
+            if (!isNaN(slotNum) && timecode.slots[slotNum]) {
+              timecode.slots[slotNum].running = args[0].value === "Go+";
+            }
           }
         }
       }
