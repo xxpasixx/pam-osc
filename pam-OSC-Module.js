@@ -68,9 +68,11 @@ settings.read("midi").forEach(deviceMidi => {
 
 midiUtils.sendAttributeLED(routing, currentAttribute);
 
-for (let name of Object.keys(routing)) {
-  midiUtils.resetSegments(routing, name);
-  midiUtils.sendSegment(routing, name, 1, timecode.selectedSlot);
+for (let device of Object.keys(routing)) {
+  if (routing[device].enableTimecodeSend) {
+    midiUtils.resetSegments(routing, device);
+    midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
+  }
 }
 
 setTimeout(function () {
@@ -147,53 +149,55 @@ module.exports = {
           return;
         }
 
-        if (config.timecodeSelect) {
-          let slotNum = timecode.selectedSlot;
+        if (routing[port].enableTimecodeSend) {
+          if (config.timecodeSelect) {
+            let slotNum = timecode.selectedSlot;
 
-          slotNum = (slotNum + 1) % 9;
+            slotNum = (slotNum + 1) % 9;
 
-          midiUtils.resetSegments(routing, port);
-          midiUtils.sendSegment(routing, port, 1, slotNum);
+            midiUtils.resetSegments(routing, port);
+            midiUtils.sendSegment(routing, port, 1, slotNum);
 
-          if (timecode.slots[slotNum])
-            midiUtils.updateSegmentsBySlot(routing, timecode.slots[slotNum]);
+            if (timecode.slots[slotNum])
+              midiUtils.updateSegmentsBySlot(routing, timecode.slots[slotNum]);
 
-          timecode.selectedSlot = slotNum;
-        }
+            timecode.selectedSlot = slotNum;
+          }
 
-        if (config.timecodePlayPause && timecode.selectedSlot != 0) {
-          const slotNum = timecode.selectedSlot;
-          const slot = timecode.slots[slotNum];
+          if (config.timecodePlayPause && timecode.selectedSlot != 0) {
+            const slotNum = timecode.selectedSlot;
+            const slot = timecode.slots[slotNum];
 
-          if (value > 0) {
-            timecode.btnTimeout = setTimeout(() => {
-              slot.running = false;
-              slot.cleared = true;
+            if (value > 0) {
+              timecode.btnTimeout = setTimeout(() => {
+                slot.running = false;
+                slot.cleared = true;
 
-              send(ip, oscPort, "/cmd", {
-                type: "s",
-                value: "Off Timecodeslot " + slotNum
-              });
-            }, 500);
-          } else {
-            clearTimeout(timecode.btnTimeout);
+                send(ip, oscPort, "/cmd", {
+                  type: "s",
+                  value: "Off Timecodeslot " + slotNum
+                });
+              }, 500);
+            } else {
+              clearTimeout(timecode.btnTimeout);
 
-            if (slot.cleared) {
-              slot.cleared = false;
-            } else if (slot?.running) {
-              slot.running = false;
+              if (slot.cleared) {
+                slot.cleared = false;
+              } else if (slot?.running) {
+                slot.running = false;
 
-              send(ip, oscPort, "/cmd", {
-                type: "s",
-                value: "Pause Timecodeslot " + slotNum
-              });
-            } else if (slot) {
-              slot.running = true;
+                send(ip, oscPort, "/cmd", {
+                  type: "s",
+                  value: "Pause Timecodeslot " + slotNum
+                });
+              } else if (slot) {
+                slot.running = true;
 
-              send(ip, oscPort, "/cmd", {
-                type: "s",
-                value: "Go+ Timecodeslot " + slotNum
-              });
+                send(ip, oscPort, "/cmd", {
+                  type: "s",
+                  value: "Go+ Timecodeslot " + slotNum
+                });
+              }
             }
           }
         }
@@ -326,45 +330,48 @@ module.exports = {
         });
       }
 
-      if (addressSplit[1]?.includes("Timecode")) {
-        let slot = addressSplit[1].slice(-1);
+      if (routing[port].enableTimecodeSend) {
+        if (addressSplit[1]?.includes("Timecode")) {
+          let slot = addressSplit[1].slice(-1);
 
-        if (!isNaN(slot)) {
-          slot = parseInt(slot);
+          if (!isNaN(slot)) {
+            slot = parseInt(slot);
 
-          const time = args[0].value;
+            const time = args[0].value;
 
-          const hrsIndex = time.indexOf("h");
-          const minIndex = time.indexOf("m");
-          const secIndex = time.indexOf(":");
+            const hrsIndex = time.indexOf("h");
+            const minIndex = time.indexOf("m");
+            const secIndex = time.indexOf(":");
 
-          const hrs = hrsIndex == -1 ? "0" : time.substring(0, hrsIndex);
-          const mins = minIndex == -1 ? "0" : time.substring(hrsIndex + 1, minIndex);
-          const secs = time.substring(minIndex + 1, secIndex);
-          const mili = time.substring(secIndex + 1);
+            const hrs = hrsIndex == -1 ? "0" : time.substring(0, hrsIndex);
+            const mins = minIndex == -1 ? "0" : time.substring(hrsIndex + 1, minIndex);
+            const secs = time.substring(minIndex + 1, secIndex);
+            const mili = time.substring(secIndex + 1);
 
-          const updateChanges = (key, value) => {
-            if (!timecode.slots[slot]) timecode.slots[slot] = {};
+            const updateChanges = (key, value) => {
+              if (!timecode.slots[slot]) timecode.slots[slot] = {};
 
-            if (timecode.slots[slot][key] != value) timecode.slots[slot][key] = value;
-          };
+              if (timecode.slots[slot][key] != value) timecode.slots[slot][key] = value;
+            };
 
-          updateChanges("hrs", hrs);
-          updateChanges("mins", mins);
-          updateChanges("secs", secs);
-          updateChanges("mili", mili);
+            updateChanges("hrs", hrs);
+            updateChanges("mins", mins);
+            updateChanges("secs", secs);
+            updateChanges("mili", mili);
 
-          if (timecode.selectedSlot == slot) {
-            midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot]);
+            if (timecode.selectedSlot == slot) {
+              midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot]);
+            }
           }
         }
-      }
 
-      if (addressSplit[1]?.startsWith("14.")) {
-        const slotNum = addressSplit[1].substring(3);
+        // Check if the message from MA3 contains an address in the timecode slot pool
+        if (addressSplit[1]?.startsWith("14.")) {
+          const slotNum = addressSplit[1].substring(3);
 
-        if (!isNaN(slotNum) && timecode.slots[slotNum]) {
-          timecode.slots[slotNum].running = args[0].value === "Go+";
+          if (!isNaN(slotNum) && timecode.slots[slotNum]) {
+            timecode.slots[slotNum].running = args[0].value === "Go+";
+          }
         }
       }
     }
