@@ -269,7 +269,7 @@
             "minValue": 100
         },
         "52": {
-            "timecodeControl": true,
+            "timecodeSelect": true,
             "minValue": 100
         },
         "53": {

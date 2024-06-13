@@ -147,7 +147,7 @@ module.exports = {
           return;
         }
 
-        if (config.timecodeControl) {
+        if (config.timecodeSelect) {
           let slotNum = timecode.selectedSlot;
 
           slotNum = (slotNum + 1) % 9;
