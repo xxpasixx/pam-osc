@@ -90,11 +90,13 @@ local function main()
     local automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
     local sendColors = GetVar(GlobalVars(), "sendColors") or false
     local sendNames = GetVar(GlobalVars(), "sendNames") or false
+    local sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
 
     Printf("start pam OSC main()")
     Printf("automaticResendButtons: " .. (automaticResendButtons and "true" or "false"))
     Printf("sendColors: " .. (sendColors and "true" or "false"))
     Printf("sendNames: " .. (sendNames and "true" or "false"))
+    Printf("sendTimecode: " .. (sendTimecode and "true" or "false"))
 
     local destPage = 1
     local forceReload = true
@@ -112,6 +114,7 @@ local function main()
             automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
             sendColors = GetVar(GlobalVars(), "sendColors") or false
             sendNames = GetVar(GlobalVars(), "sendNames") or false
+            sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
             SetVar(GlobalVars(), "forceReload", false)
         end
 
@@ -213,16 +216,18 @@ local function main()
         end
         
         -- Send Timecode
-        local slots = Root().TimecodeSlots
-        	
-        for _, slot in pairs(slots:Children()) do
-        	local time = slot.timestring
-        	
-        	if oldTimecodes[slot.no] ~= time or oldTimecodes[slot.no] == nil or forceReload == true then
-        		oldTimecodes[slot.no] = time
-        			
-        		Cmd('SendOSC ' .. oscEntry .. ' "/Timecode' .. slot.no .. ',s,' .. time .. '"')
-        	end
+        if sendTimecode then
+            local slots = Root().TimecodeSlots
+                
+            for _, slot in pairs(slots:Children()) do
+                local time = slot.timestring
+                
+                if oldTimecodes[slot.no] ~= time or oldTimecodes[slot.no] == nil or forceReload == true then
+                    oldTimecodes[slot.no] = time
+                        
+                    Cmd('SendOSC ' .. oscEntry .. ' "/Timecode' .. slot.no .. ',s,' .. time .. '"')
+                end
+            end
         end
         
         forceReload = false
