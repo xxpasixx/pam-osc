@@ -11,29 +11,68 @@
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>. 
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const utils = require('./utils.js');
-const routingUtils = require('./routingUtils.js');
+const utils = require("./utils.js");
+const routingUtils = require("./routingUtils.js");
 
 module.exports = {
-    sendNoteResponse: sendNoteResponse,
-    sendAttributeLED: sendAttributeLED
+  sendNoteResponse: sendNoteResponse,
+  sendAttributeLED: sendAttributeLED,
+  sendSegment: sendSegment,
+  resetSegments: resetSegments,
+  updateSegmentsBySlot: updateSegmentsBySlot
 };
 
 function sendNoteResponse(routing, midiDeviceName, ctrl, value) {
-    // for the MC mode, it is required to send a note on with velocity 0
-    if (routing[midiDeviceName].mode == "mc" && value == "Off") {
-        send('midi', midiDeviceName, '/sysex', '90' + utils.numberIntoHex(ctrl) + ' 00');
-        return;
-    }
+  // for the MC mode, it is required to send a note on with velocity 0
+  if (routing[midiDeviceName].mode == "mc" && value == "Off") {
+    send("midi", midiDeviceName, "/sysex", "90" + utils.numberIntoHex(ctrl) + " 00");
+    return;
+  }
 
-    send('midi', midiDeviceName, '/note', 1, ctrl, routing[midiDeviceName].buttonFeedbackMapper(value));
+  send(
+    "midi",
+    midiDeviceName,
+    "/note",
+    1,
+    ctrl,
+    routing[midiDeviceName].buttonFeedbackMapper(value)
+  );
 }
 
 function sendAttributeLED(routing, currentAttribute) {
-    routingUtils.getRoutingNoteWithAttribute(routing).forEach(mapping => {
-        const value = currentAttribute.toLocaleLowerCase() == mapping.attribute.toLocaleLowerCase();
-        sendNoteResponse(routing, mapping.device, mapping.midiId, value ? "On" : "Off");
-    });
+  routingUtils.getRoutingNoteWithAttribute(routing).forEach(mapping => {
+    const value = currentAttribute.toLocaleLowerCase() == mapping.attribute.toLocaleLowerCase();
+    sendNoteResponse(routing, mapping.device, mapping.midiId, value ? "On" : "Off");
+  });
+}
+
+function sendSegment(routing, midiDeviceName, segment, value) {
+  if (routing[midiDeviceName].mode !== "mc") return;
+
+  send("midi", midiDeviceName, "/control", 1, 75 - segment, value.toString().charCodeAt(0));
+}
+
+function resetSegments(routing, midiDeviceName) {
+  if (routing[midiDeviceName].mode !== "mc") return;
+
+  for (let i = 0; i < 12; i++) {
+    send("midi", midiDeviceName, "/control", 1, 75 - i, 0);
+  }
+}
+
+function updateSegmentsBySlot(routing, slot) {
+  const updateSegs = (startingSeg, value) => {
+    for (let name of Object.keys(routing)) {
+      for (let i = 0; i < value.length; i++) {
+        sendSegment(routing, name, i + startingSeg, value.charAt(i));
+      }
+    }
+  };
+
+  updateSegs(9, slot.mili.padEnd(2, "0"));
+  updateSegs(7, slot.secs.padStart(2, "0"));
+  updateSegs(5, slot.mins.padStart(2, "0"));
+  updateSegs(2, slot.hrs.padStart(3, "0"));
 }

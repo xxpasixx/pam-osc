@@ -155,6 +155,19 @@ function CreateCheckBoxDialog(displayHandle)
     checkBox3.PluginComponent = myHandle
     checkBox3.Clicked = "SendNamesClicked"
 
+    local checkBox4 = checkBoxGrid:Append("CheckBox")
+    checkBox4.Anchors = {
+        left = 1,
+        right = 1,
+        top = 1,
+        bottom = 1
+    }
+    checkBox4.Text = "Send Timecode"
+    checkBox4.TextalignmentH = "Left";
+    checkBox4.State = GetVar(GlobalVars(), "sendTimecode") and 1 or 0;
+    checkBox4.PluginComponent = myHandle
+    checkBox4.Clicked = "SendTimecodeClicked"
+
     signalTable.AutoResendClicked = function(caller)
         if (caller.State == 1) then
             caller.State = 0
@@ -190,6 +203,16 @@ function CreateCheckBoxDialog(displayHandle)
         SetVar(GlobalVars(), "forceReload", true)
     end
 
+    signalTable.SendTimecodeClicked = function(caller)
+        if (caller.State == 1) then
+            caller.State = 0
+            SetVar(GlobalVars(), "sendTimecode", false)
+        else
+            caller.State = 1
+            SetVar(GlobalVars(), "sendTimecode", true)
+        end
+        SetVar(GlobalVars(), "forceReload", true)
+    end
 end
 
 -- Run the plugin.
