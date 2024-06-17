@@ -1,7 +1,7 @@
 {
     "mode": "mc",
     "buttonFeedbackMapper": "function(value) { if (value == 'On') { return 127;} if (value == 'Off'){ return 0;} return 0; }",
-    "enableTimecodeSend ": true,
+    "enableTimecodeSend": true,
     "pitch": {
         "1": 201,
         "2": 202,
