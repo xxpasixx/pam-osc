@@ -1,0 +1,53 @@
+name: MA3 Plugin Build
+
+on:
+  pull_request_target:
+    paths:
+      - '**/*.lua'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: MA3 Plugin Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+
+      - name: Build Release File
+        uses: bootsie123/ma3-plugin-action@v1
+        with:
+          plugins: >-
+            [
+              {
+                "name": "pam-osc Start Stop",
+                "version": "1.0.0.0",
+                "path": "pam-OSC.lua",
+                "pluginGuid": "C1 19 BD 33 A9 FD 10 03 5E 76 48 94 2C 0E 90 FB",
+                "luaGuid": "C1 19 BD 33 96 FC 10 02 7D 74 11 B4 F6 65 C8 40"
+              },
+              {
+                "name": "pam-osc Settings",
+                "version": "1.0.0.0",
+                "path": "SettingsPage.lua",
+                "pluginGuid": "C1 19 BD 33 A9 FD 10 03 5E 76 48 94 2C 0E 90 FC",
+                "luaGuid": "C1 19 BD 33 7E A6 10 02 EB 81 42 CE E9 06 2A 41"
+              }
+            ]
+          outputFile: ./gma3_library/datapools/plugins/pam-osc.xml
+
+      - name: Push Changes
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git add .
+          git commit -am "Automated: update MA3 plugin release file"
+          git push
