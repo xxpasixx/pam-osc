@@ -181,7 +181,7 @@ module.exports = {
             } else {
               clearTimeout(timecode.btnTimeout);
 
-              if (slot.cleared) {
+              if (slot?.cleared) {
                 slot.cleared = false;
               } else if (slot?.running) {
                 slot.running = false;
