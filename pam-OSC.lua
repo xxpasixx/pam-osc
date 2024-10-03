@@ -146,7 +146,7 @@ local function main()
         end
 
         -- Get all Executors
-        local executors = DataPool().Pages:Children()[destPage]:Children()
+        local executors = DataPool().Pages[destPage]:Children()
 
         for listKey, listValue in pairs(executorsToWatch) do
             local faderValue = 0
