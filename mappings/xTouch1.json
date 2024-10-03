@@ -1,6 +1,7 @@
 {
     "mode": "mc",
     "buttonFeedbackMapper": "function(value) { if (value == 'On') { return 127;} if (value == 'Off'){ return 0;} return 0; }",
+    "enableTimecodeSend": true,
     "pitch": {
         "1": 201,
         "2": 202,
@@ -110,8 +111,7 @@
             "amount": 1.0
         }
     },
-    "control": {
-    },
+    "control": {},
     "note": {
         "0": {
             "exec": 401
@@ -268,6 +268,13 @@
         "49": {
             "local": "encoderRough",
             "minValue": 100
+        },
+        "52": {
+            "timecodeSelect": true,
+            "minValue": 100
+        },
+        "53": {
+            "timecodePlayPause": true
         },
         "54": {
             "exec": 191
