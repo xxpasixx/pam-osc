@@ -25,7 +25,7 @@ function getRelativeValue(value, posFrom, posTo, negFrom, negTo) {
         return value - posFrom + 1;
     }
     if (value >= negFrom && value <= negTo) {
-        return (negFrom - value - 1);
+        return (negTo - value + 1) * -1;
     }
 }
 

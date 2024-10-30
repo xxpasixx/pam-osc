@@ -19,15 +19,6 @@
         "15": 406,
         "16": 407,
         "17": 408,
-
-        "18": 291,
-        "19": 292,
-        "20": 293,
-        "21": 294,
-        "22": 295,
-        "23": 296,
-        "24": 297,
-        "25": 298,
         
         "28": 210,
         "29": 211,
@@ -38,6 +29,73 @@
         "34": 216,
         "35": 217,
         "36": 218
+    },
+
+    "rltvControl": {
+        "18": {
+            "attribute": "dimmer",
+            "posFrom": 1,
+            "posTo": 7,
+            "negFrom": 121,
+            "negTo": 127,
+            "amount": 1.0
+        },
+        "19": {
+            "attribute": "Gobo1",
+            "posFrom": 1,
+            "posTo": 7,
+            "negFrom": 121,
+            "negTo": 127,
+            "amount": 1.0
+        },
+        "20": {
+            "attribute": "pan",
+            "posFrom": 1,
+            "posTo": 7,
+            "negFrom": 121,
+            "negTo": 127,
+            "amount": 1.0
+        },
+        "21": {
+            "attribute": "tilt",
+            "posFrom": 1,
+            "posTo": 7,
+            "negFrom": 121,
+            "negTo": 127,
+            "amount": 1.0
+        },
+        "22": {
+            "attribute": "ColorRGB_R",
+            "posFrom": 1,
+            "posTo": 7,
+            "negFrom": 121,
+            "negTo": 127,
+            "amount": 1.0
+        },
+        "23": {
+            "attribute": "ColorRGB_G",
+            "posFrom": 1,
+            "posTo": 7,
+            "negFrom": 121,
+            "negTo": 127,
+            "amount": 1.0
+        },
+        "24": {
+            "attribute": "ColorRGB_B",
+            "posFrom": 1,
+            "posTo": 7,
+            "negFrom": 121,
+            "negTo": 127,
+            "amount": 1.0
+        },
+        "25": {
+            "attribute": "Color1",
+            "posFrom": 1,
+            "posTo": 7,
+            "negFrom": 121,
+            "negTo": 127,
+            "amount": 1.0
+        }
     },
     "note": {
         "0": {
@@ -64,29 +122,14 @@
         "7": {
             "exec": 408
         },
+
         "8": {
-            "exec": 291
+            "local": "encoderFine",
+            "minValue": 100
         },
         "9": {
-            "exec": 292
-        },
-        "10": {
-            "exec": 293
-        },
-        "11": {
-            "exec": 294
-        },
-        "12": {
-            "exec": 295
-        },
-        "13": {
-            "exec": 296
-        },
-        "14": {
-            "exec": 297
-        },
-        "15": {
-            "exec": 298
+            "local": "encoderRough",
+            "minValue": 100
         },
         "16": {
             "exec": 401
