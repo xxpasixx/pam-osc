@@ -21,15 +21,24 @@ module.exports = {
   sendAttributeLED: sendAttributeLED,
   sendSegment: sendSegment,
   resetSegments: resetSegments,
-  updateSegmentsBySlot: updateSegmentsBySlot
+  updateSegmentsBySlot: updateSegmentsBySlot,
+  sendPermanentFeedback: sendPermanentFeedback,
 };
 
-function sendNoteResponse(routing, midiDeviceName, ctrl, value) {
+function sendNoteResponse(routing, midiDeviceName, ctrl, value, buttonFeedbackMapper) {
   // for the MC mode, it is required to send a note on with velocity 0
   if (routing[midiDeviceName].mode == "mc" && value == "Off") {
-    send("midi", midiDeviceName, "/sysex", "90" + utils.numberIntoHex(ctrl) + " 00");
+    send(
+      "midi",
+      midiDeviceName,
+      "/sysex",
+      "90" + utils.numberIntoHex(ctrl) + " 00"
+    );
     return;
   }
+
+  const mapper = buttonFeedbackMapper || routing[midiDeviceName].buttonFeedbackMapper;
+  const mappedValue = typeof value === "string" ? mapper(value) : value;
 
   send(
     "midi",
@@ -37,21 +46,35 @@ function sendNoteResponse(routing, midiDeviceName, ctrl, value) {
     "/note",
     1,
     ctrl,
-    routing[midiDeviceName].buttonFeedbackMapper(value)
+    mappedValue
   );
 }
 
 function sendAttributeLED(routing, currentAttribute) {
-  routingUtils.getRoutingNoteWithAttribute(routing).forEach(mapping => {
-    const value = currentAttribute.toLocaleLowerCase() == mapping.attribute.toLocaleLowerCase();
-    sendNoteResponse(routing, mapping.device, mapping.midiId, value ? "On" : "Off");
+  routingUtils.getRoutingNoteWithAttribute(routing).forEach((mapping) => {
+    const value =
+      currentAttribute.toLocaleLowerCase() ==
+      mapping.attribute.toLocaleLowerCase();
+    sendNoteResponse(
+      routing,
+      mapping.device,
+      mapping.midiId,
+      value ? "On" : "Off"
+    );
   });
 }
 
 function sendSegment(routing, midiDeviceName, segment, value) {
   if (routing[midiDeviceName].mode !== "mc") return;
 
-  send("midi", midiDeviceName, "/control", 1, 75 - segment, value.toString().charCodeAt(0));
+  send(
+    "midi",
+    midiDeviceName,
+    "/control",
+    1,
+    75 - segment,
+    value.toString().charCodeAt(0)
+  );
 }
 
 function resetSegments(routing, midiDeviceName) {
@@ -75,4 +98,16 @@ function updateSegmentsBySlot(routing, slot) {
   updateSegs(7, slot.secs.padStart(2, "0"));
   updateSegs(5, slot.mins.padStart(2, "0"));
   updateSegs(2, slot.hrs.padStart(3, "0"));
+}
+
+function sendPermanentFeedback(routing) {
+  for (let name of Object.keys(routing)) {
+    const device = routing[name];
+    for (let midiNote of Object.keys(device.note)) {
+      const note = device.note[midiNote];
+      if (note.permanentFeedback) {
+        sendNoteResponse(routing, name, parseInt(midiNote), note.permanentFeedback);
+      }
+    }
+  }
 }

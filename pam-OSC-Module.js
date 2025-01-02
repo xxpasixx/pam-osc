@@ -62,11 +62,15 @@ settings.read("midi").forEach(deviceMidi => {
     )
   );
   value.buttonFeedbackMapper = eval("(" + value.buttonFeedbackMapper + ")");
+  for (let note in value.note) {
+    value.note[note].buttonFeedbackMapper = eval("(" + value.note[note].buttonFeedbackMapper + ")");
+  }
   routing[name] = value;
   console.log("loaded mapping: ", fileName);
 });
 
 midiUtils.sendAttributeLED(routing, currentAttribute);
+midiUtils.sendPermanentFeedback(routing);
 
 for (let device of Object.keys(routing)) {
   if (routing[device].enableTimecodeSend) {
@@ -266,7 +270,9 @@ module.exports = {
       if (addressSplit[2]?.includes("Button")) {
         const mappings = routingUtils.getRoutingNoteByExecId(routing, fader);
         mappings.forEach(mapping => {
-          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, args[0].value);
+          const value = mapping.permanentFeedback || args[0].value
+          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value,
+            mapping.buttonFeedbackMapper);
         });
       }
       if (address?.includes("/updatePage/current")) {
@@ -276,11 +282,13 @@ module.exports = {
         const mappings = routingUtils.getRoutingNoteByCMD(routing, addressSplit[2]);
 
         mappings.forEach(mapping => {
+          const value = mapping.permanentFeedback || args[0].value ? "On" : "Off"
           midiUtils.sendNoteResponse(
             routing,
             mapping.device,
             mapping.midiId,
-            args[0].value ? "On" : "Off"
+            value,
+            mapping.buttonFeedbackMapper
           );
         });
       }
