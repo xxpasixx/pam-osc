@@ -16,16 +16,7 @@
 
 // Todo: Refactor: This is only a temp solution
 var displayDevice = null;
-var colors = [
-  "0;0;0;0",
-  "0;0;0;0",
-  "0;0;0;0",
-  "0;0;0;0",
-  "0;0;0;0",
-  "0;0;0;0",
-  "0;0;0;0",
-  "0;0;0;0"
-];
+var colors = ["0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0"];
 
 const utils = require("./utils.js");
 const colorUtils = require("./colorUtils.js");
@@ -40,7 +31,7 @@ let encoderRough = false;
 let currentAttribute = "dimmer";
 let timecode = {
   selectedSlot: 0,
-  slots: {}
+  slots: {},
 };
 
 var prefix = "";
@@ -50,11 +41,11 @@ const ipPort = ("" + settings.read("send")).split(":");
 const ip = ipPort[0];
 const oscPort = ipPort[1];
 
-settings.read("midi").forEach(deviceMidi => {
+settings.read("midi").forEach((deviceMidi) => {
   const name = deviceMidi.split(":")[0];
   const fileName = name + ".json";
 
-  const value = loadJSON("mappings/" + fileName, e =>
+  const value = loadJSON("mappings/" + fileName, (e) =>
     console.error(
       "The Mapping " +
         fileName +
@@ -89,11 +80,11 @@ module.exports = {
 
     if (host === "midi") {
       if (address === "/control") {
-        var [channel, ctrl, value] = args.map(arg => arg.value);
+        var [channel, ctrl, value] = args.map((arg) => arg.value);
         if (routing[port]["control"][ctrl]) {
           send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]["control"][ctrl], {
             type: "i",
-            value: value
+            value: value,
           });
         }
 
@@ -102,22 +93,20 @@ module.exports = {
         }
         // handle relative Rotary encoders to act as Absolute
         if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].exec) {
-          const { exec, currValue, posFrom, posTo, negFrom, negTo } =
-            routing[port]["rltvControl"][ctrl];
+          const { exec, currValue, posFrom, posTo, negFrom, negTo } = routing[port]["rltvControl"][ctrl];
           var newValue = currValue + utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo);
           newValue = Math.min(Math.max(newValue, 0), 127) || 0;
           routing[port]["rltvControl"][ctrl].currValue = newValue;
 
           send(ip, oscPort, prefix + "/Page" + page + "/Fader" + exec, {
             type: "i",
-            value: newValue
+            value: newValue,
           });
         }
 
         // handle attribute Encoders
         if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].attribute) {
-          const { attribute, posFrom, posTo, negFrom, negTo, amount } =
-            routing[port]["rltvControl"][ctrl];
+          const { attribute, posFrom, posTo, negFrom, negTo, amount } = routing[port]["rltvControl"][ctrl];
 
           let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
           change = encoderFine ? change / 10 : change;
@@ -126,23 +115,23 @@ module.exports = {
           const attributeToSend = attribute == "current" ? currentAttribute : attribute;
           send(ip, oscPort, prefix + "/cmd", {
             type: "s",
-            value: "Attribute " + attributeToSend + " at " + plusMinus + Math.abs(change)
+            value: "Attribute " + attributeToSend + " at " + plusMinus + Math.abs(change),
           });
         }
       }
       if (address === "/pitch") {
-        var [channel, value] = args.map(arg => arg.value);
+        var [channel, value] = args.map((arg) => arg.value);
         if (!routing[port]["pitch"] || !routing[port]["pitch"][channel]) {
           return;
         }
         const valueMapped = Math.round((value / 16380) * 127);
         send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]["pitch"][channel], {
           type: "i",
-          value: valueMapped
+          value: valueMapped,
         });
       }
       if (address === "/note") {
-        var [channel, ctrl, value] = args.map(arg => arg.value);
+        var [channel, ctrl, value] = args.map((arg) => arg.value);
         var config = routing[port]["note"][ctrl];
 
         if (!config) {
@@ -162,8 +151,7 @@ module.exports = {
             midiUtils.resetSegments(routing, port);
             midiUtils.sendSegment(routing, port, 1, slotNum);
 
-            if (timecode.slots[slotNum])
-              midiUtils.updateSegmentsBySlot(routing, timecode.slots[slotNum]);
+            if (timecode.slots[slotNum]) midiUtils.updateSegmentsBySlot(routing, timecode.slots[slotNum]);
 
             timecode.selectedSlot = slotNum;
           }
@@ -179,7 +167,7 @@ module.exports = {
 
                 send(ip, oscPort, "/cmd", {
                   type: "s",
-                  value: "Off Timecodeslot " + slotNum
+                  value: "Off Timecodeslot " + slotNum,
                 });
               }, 500);
             } else {
@@ -192,14 +180,14 @@ module.exports = {
 
                 send(ip, oscPort, "/cmd", {
                   type: "s",
-                  value: "Pause Timecodeslot " + slotNum
+                  value: "Pause Timecodeslot " + slotNum,
                 });
               } else if (slot) {
                 slot.running = true;
 
                 send(ip, oscPort, "/cmd", {
                   type: "s",
-                  value: "Go+ Timecodeslot " + slotNum
+                  value: "Go+ Timecodeslot " + slotNum,
                 });
               }
             }
@@ -209,19 +197,22 @@ module.exports = {
         if (config.exec) {
           send(ip, oscPort, prefix + "/Page" + page + "/Key" + config.exec, {
             type: "i",
-            value: value
+            value: value,
           });
         }
 
         if (config.quicKey) {
           send(ip, oscPort, prefix + "/cmd", {
             type: "s",
-            value: 'Go+ Quickey "' + config.quicKey + '"'
+            value: 'Go+ Quickey "' + config.quicKey + '"',
           });
         }
 
         if (config.cmd) {
-          send(ip, oscPort, prefix + "/cmd", { type: "s", value: config.cmd });
+          send(ip, oscPort, prefix + "/cmd", {
+            type: "s",
+            value: config.cmd,
+          });
         }
 
         if (config.local) {
@@ -252,16 +243,16 @@ module.exports = {
         const mappingsPitch = routingUtils.getRoutingByPitchId(routing, fader);
         const mappingsRltvCtrl = routingUtils.getRoutingByRltvControlerId(routing, fader);
 
-        mappingsCtrl.forEach(mapping => {
+        mappingsCtrl.forEach((mapping) => {
           send("midi", mapping.device, "/control", 1, mapping.midiId, args[0].value);
         });
 
-        mappingsPitch.forEach(mapping => {
+        mappingsPitch.forEach((mapping) => {
           const valueMapped = Math.round((args[0].value / 127) * 16380);
           send("midi", mapping.device, "/pitch", mapping.midiId, valueMapped);
         });
 
-        mappingsRltvCtrl.forEach(mapping => {
+        mappingsRltvCtrl.forEach((mapping) => {
           const value = utils.mapValue(args[0].value, 0, 127, mapping.from, mapping.to);
           routing[mapping.device].rltvControl[mapping.id].currValue = args[0].value;
           send("midi", mapping.device, "/control", 1, mapping.midiId, value);
@@ -269,10 +260,9 @@ module.exports = {
       }
       if (addressSplit[2]?.includes("Button")) {
         const mappings = routingUtils.getRoutingNoteByExecId(routing, fader);
-        mappings.forEach(mapping => {
-          const value = mapping.permanentFeedback || args[0].value
-          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value,
-            mapping.buttonFeedbackMapper);
+        mappings.forEach((mapping) => {
+          const value = mapping.permanentFeedback || args[0].value;
+          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper);
         });
       }
       if (address?.includes("/updatePage/current")) {
@@ -281,22 +271,16 @@ module.exports = {
       if (addressSplit[1]?.includes("masterEnabled")) {
         const mappings = routingUtils.getRoutingNoteByCMD(routing, addressSplit[2]);
 
-        mappings.forEach(mapping => {
-          const value = mapping.permanentFeedback || args[0].value ? "On" : "Off"
-          midiUtils.sendNoteResponse(
-            routing,
-            mapping.device,
-            mapping.midiId,
-            value,
-            mapping.buttonFeedbackMapper
-          );
+        mappings.forEach((mapping) => {
+          const value = mapping.permanentFeedback || args[0].value ? "On" : "Off";
+          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper);
         });
       }
 
       if (addressSplit[2]?.includes("Color")) {
         const mappingsDisplay = routingUtils.getRoutingByDisplayId(routing, fader);
 
-        mappingsDisplay.forEach(mapping => {
+        mappingsDisplay.forEach((mapping) => {
           colors[mapping.displayId] = args[0].value;
           displayDevice = mapping.device;
         });
@@ -305,7 +289,7 @@ module.exports = {
           return;
         }
         var midiCommand = "F0 00 00 66 14 72";
-        colors.forEach(colorString => {
+        colors.forEach((colorString) => {
           const color = colorUtils.parseColorString(colorString);
           const displayColor = colorUtils.findNearestDisplayColor(color);
           midiCommand = midiCommand + displayColor + " ";
@@ -317,7 +301,7 @@ module.exports = {
         const mappingsDisplay = routingUtils.getRoutingByDisplayId(routing, fader);
         const values = args[0].value.split(";");
 
-        mappingsDisplay.forEach(mapping => {
+        mappingsDisplay.forEach((mapping) => {
           const seqMidiNote = utils.numberIntoHex(mapping.displayId * 7);
           const cueMidiNote = utils.numberIntoHex(56 + mapping.displayId * 7);
           const seq = (values[0] + "       ").substring(0, 7);
@@ -387,5 +371,5 @@ module.exports = {
     }
 
     return { address, args, host, port };
-  }
+  },
 };

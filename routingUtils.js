@@ -47,13 +47,11 @@ function getRoutingByRltvControlerId(routing, id) {
   const returnArray = [];
   Object.keys(routing).forEach((device) => {
     if (!routing[device].rltvControl) return;
-    const controls = Object.keys(routing[device].rltvControl).map(
-      (controlId) => ({
-        id: controlId,
-        value: routing[device].rltvControl[controlId].exec,
-        ...routing[device].rltvControl[controlId],
-      })
-    );
+    const controls = Object.keys(routing[device].rltvControl).map((controlId) => ({
+      id: controlId,
+      value: routing[device].rltvControl[controlId].exec,
+      ...routing[device].rltvControl[controlId],
+    }));
     controls.forEach((control) => {
       if (control.value === id || "" + control.value === "" + id) {
         returnArray.push({
@@ -115,16 +113,13 @@ function getRoutingByDisplayId(routing, id) {
 function getRoutingNoteByExecId(routing, execId) {
   const returnArray = [];
   Object.keys(routing).forEach((device) => {
-    const filteredNotes = Object.entries(routing[device].note).filter(
-      ([noteId, note]) => note.exec == execId
-    );
+    const filteredNotes = Object.entries(routing[device].note).filter(([noteId, note]) => note.exec == execId);
 
     filteredNotes.forEach(([noteId, note]) => {
       returnArray.push({
         device: device,
         midiId: parseInt(noteId),
-        buttonFeedbackMapper:
-          note.buttonFeedbackMapper || routing[device].buttonFeedbackMapper,
+        buttonFeedbackMapper: note.buttonFeedbackMapper || routing[device].buttonFeedbackMapper,
         ...note,
       });
     });
@@ -143,8 +138,7 @@ function getRoutingNoteByCMD(routing, cmd) {
       returnArray.push({
         device: device,
         midiId: parseInt(noteId),
-        buttonFeedbackMapper:
-          note.buttonFeedbackMapper || routing[device].buttonFeedbackMapper,
+        buttonFeedbackMapper: note.buttonFeedbackMapper || routing[device].buttonFeedbackMapper,
         ...note,
       });
     });

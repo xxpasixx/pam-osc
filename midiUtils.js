@@ -28,53 +28,27 @@ module.exports = {
 function sendNoteResponse(routing, midiDeviceName, ctrl, value, buttonFeedbackMapper) {
   // for the MC mode, it is required to send a note on with velocity 0
   if (routing[midiDeviceName].mode == "mc" && value == "Off") {
-    send(
-      "midi",
-      midiDeviceName,
-      "/sysex",
-      "90" + utils.numberIntoHex(ctrl) + " 00"
-    );
+    send("midi", midiDeviceName, "/sysex", "90" + utils.numberIntoHex(ctrl) + " 00");
     return;
   }
 
   const mapper = buttonFeedbackMapper || routing[midiDeviceName].buttonFeedbackMapper;
   const mappedValue = typeof value === "string" ? mapper(value) : value;
 
-  send(
-    "midi",
-    midiDeviceName,
-    "/note",
-    1,
-    ctrl,
-    mappedValue
-  );
+  send("midi", midiDeviceName, "/note", 1, ctrl, mappedValue);
 }
 
 function sendAttributeLED(routing, currentAttribute) {
   routingUtils.getRoutingNoteWithAttribute(routing).forEach((mapping) => {
-    const value =
-      currentAttribute.toLocaleLowerCase() ==
-      mapping.attribute.toLocaleLowerCase();
-    sendNoteResponse(
-      routing,
-      mapping.device,
-      mapping.midiId,
-      value ? "On" : "Off"
-    );
+    const value = currentAttribute.toLocaleLowerCase() == mapping.attribute.toLocaleLowerCase();
+    sendNoteResponse(routing, mapping.device, mapping.midiId, value ? "On" : "Off");
   });
 }
 
 function sendSegment(routing, midiDeviceName, segment, value) {
   if (routing[midiDeviceName].mode !== "mc") return;
 
-  send(
-    "midi",
-    midiDeviceName,
-    "/control",
-    1,
-    75 - segment,
-    value.toString().charCodeAt(0)
-  );
+  send("midi", midiDeviceName, "/control", 1, 75 - segment, value.toString().charCodeAt(0));
 }
 
 function resetSegments(routing, midiDeviceName) {

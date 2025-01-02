@@ -11,40 +11,40 @@
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>. 
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module.exports = {
-    getRelativeValue: getRelativeValue,
-    mapValue: mapValue,
-    stringToAsciiHex: stringToAsciiHex,
-    numberIntoHex: numberIntoHex,
+  getRelativeValue: getRelativeValue,
+  mapValue: mapValue,
+  stringToAsciiHex: stringToAsciiHex,
+  numberIntoHex: numberIntoHex,
 };
 
 function getRelativeValue(value, posFrom, posTo, negFrom, negTo) {
-    if (value >= posFrom && value <= posTo) {
-        return value - posFrom + 1;
-    }
-    if (value >= negFrom && value <= negTo) {
-        return (negTo - value + 1) * -1;
-    }
+  if (value >= posFrom && value <= posTo) {
+    return value - posFrom + 1;
+  }
+  if (value >= negFrom && value <= negTo) {
+    return (negTo - value + 1) * -1;
+  }
 }
 
 function mapValue(value, fromLow, fromHigh, toLow, toHigh) {
-    const percent = (value - fromLow) / (fromHigh - fromLow);
-    const result = percent * (toHigh - toLow) + toLow
-    return Math.min(Math.max(result, toLow), toHigh);
+  const percent = (value - fromLow) / (fromHigh - fromLow);
+  const result = percent * (toHigh - toLow) + toLow;
+  return Math.min(Math.max(result, toLow), toHigh);
 }
 
 function stringToAsciiHex(str) {
-    let hexString = '';
-    for (let i = 0; i < str.length; i++) {
-        const asciiValue = str.charCodeAt(i);
-        const hexValue = asciiValue.toString(16).padStart(2, '0');
-        hexString += hexValue + " ";
-    }
-    return hexString;
+  let hexString = "";
+  for (let i = 0; i < str.length; i++) {
+    const asciiValue = str.charCodeAt(i);
+    const hexValue = asciiValue.toString(16).padStart(2, "0");
+    hexString += hexValue + " ";
+  }
+  return hexString;
 }
 
 function numberIntoHex(nr) {
-    return nr.toString(16).padStart(2, '0');
+  return nr.toString(16).padStart(2, "0");
 }
