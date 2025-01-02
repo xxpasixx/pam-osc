@@ -45,6 +45,7 @@ settings.read("midi").forEach((deviceMidi) => {
   const name = deviceMidi.split(":")[0];
   const fileName = name + ".json";
 
+
   const value = loadJSON("mappings/" + fileName, (e) =>
     console.error(
       "The Mapping " +
@@ -53,9 +54,14 @@ settings.read("midi").forEach((deviceMidi) => {
     )
   );
   value.buttonFeedbackMapper = eval("(" + value.buttonFeedbackMapper + ")");
+  console.log("asdf")
   for (let note in value.note) {
+    if (!value.note[note].buttonFeedbackMapper) {
+      continue;
+    }
     value.note[note].buttonFeedbackMapper = eval("(" + value.note[note].buttonFeedbackMapper + ")");
   }
+  console.log("🚀 ~ settings.read ~ value:", value)
   routing[name] = value;
   console.log("loaded mapping: ", fileName);
 });
