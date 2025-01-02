@@ -1,0 +1,277 @@
+{
+  "mode": "mc",
+  "buttonFeedbackMapper": "function(value) { if (value == 'On') { return 127;} if (value == 'Off'){ return 0;} return 0; }",
+  "control": {
+    "48": "201",
+    "49": "202",
+    "50": "203",
+    "51": "204",
+    "52": "205",
+    "53": "206",
+    "54": "207",
+    "55": "208",
+    "56": "209"
+  },
+  "note": {
+    "0": {
+      "exec": 301,
+      "buttonFeedbackMapper": "function(value) { if (value == 'On') { return 3;} if (value == 'Off'){ return 0;} return 0; }"
+    },
+    "1": {
+      "exec": 302
+    },
+    "2": {
+      "exec": 303
+    },
+    "3": {
+      "exec": 304
+    },
+    "4": {
+      "exec": 305
+    },
+    "5": {
+      "exec": 306
+    },
+    "6": {
+      "exec": 307
+    },
+    "7": {
+      "exec": 308
+    },
+    "8": {
+      "exec": 401
+    },
+    "9": {
+      "exec": 402
+    },
+    "10": {
+      "exec": 403
+    },
+    "11": {
+      "exec": 404
+    },
+    "12": {
+      "exec": 405
+    },
+    "13": {
+      "exec": 406
+    },
+    "14": {
+      "exec": 407
+    },
+    "15": {
+      "exec": 408
+    },
+    "16": {
+      "exec": 110
+    },
+    "17": {
+      "exec": 111
+    },
+    "18": {
+      "exec": 112
+    },
+    "19": {
+      "exec": 113
+    },
+    "20": {
+      "exec": 114
+    },
+    "21": {
+      "exec": 115
+    },
+    "22": {
+      "exec": 116
+    },
+    "23": {
+      "exec": 117
+    },
+    "24": {
+      "exec": 210
+    },
+    "25": {
+      "exec": 211
+    },
+    "26": {
+      "exec": 212
+    },
+    "27": {
+      "exec": 213
+    },
+    "28": {
+      "exec": 214
+    },
+    "29": {
+      "exec": 215
+    },
+    "30": {
+      "exec": 216
+    },
+    "31": {
+      "exec": 217
+    },
+    "32": {
+      "exec": 310
+    },
+    "33": {
+      "exec": 311
+    },
+    "34": {
+      "exec": 312
+    },
+    "35": {
+      "exec": 313
+    },
+    "36": {
+      "exec": 314
+    },
+    "37": {
+      "exec": 315
+    },
+    "38": {
+      "exec": 316
+    },
+    "39": {
+      "exec": 317
+    },
+    "40": {
+      "exec": 410
+    },
+    "41": {
+      "exec": 411
+    },
+    "42": {
+      "exec": 412
+    },
+    "43": {
+      "exec": 413
+    },
+    "44": {
+      "exec": 414
+    },
+    "45": {
+      "exec": 415
+    },
+    "46": {
+      "exec": 416
+    },
+    "47": {
+      "exec": 417
+    },
+    "48": {
+      "exec": 191
+    },
+    "49": {
+      "exec": 192
+    },
+    "50": {
+      "exec": 193
+    },
+    "51": {
+      "exec": 194
+    },
+    "52": {
+      "exec": 195
+    },
+    "53": {
+      "exec": 196
+    },
+    "54": {
+      "exec": 197
+    },
+    "55": {
+      "exec": 198
+    },
+    "56": {
+      "exec": 291
+    },
+    "57": {
+      "exec": 292
+    },
+    "58": {
+      "exec": 293
+    },
+    "59": {
+      "exec": 294
+    },
+    "60": {
+      "exec": 295
+    },
+    "61": {
+      "exec": 296
+    },
+    "62": {
+      "exec": 297
+    },
+    "63": {
+      "exec": 298
+    },
+    "64": {
+      "exec": 201
+    },
+    "65": {
+      "exec": 202
+    },
+    "66": {
+      "exec": 203
+    },
+    "67": {
+      "exec": 204
+    },
+    "68": {
+      "exec": 205
+    },
+    "69": {
+      "exec": 206
+    },
+    "70": {
+      "exec": 207
+    },
+    "71": {
+      "exec": 208
+    },
+    "72": {
+      "exec": 209
+    },
+    "82": {
+      "quicKey": "ESC",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "83": {
+      "cmd": "CLEAR",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "84": {
+      "quicKey": "STORE",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "85": {
+      "cmd": "HIGHLIGHT",
+      "minValue": 100,
+      "buttonFeedbackMapper": "function(value) { if (value == 'On') { return 2;} if (value == 'Off'){ return 0;} return 0; }"
+    },
+    "86": {
+      "cmd": "BLIND",
+      "minValue": 100,
+      "buttonFeedbackMapper": "function(value) { if (value == 'On') { return 2;} if (value == 'Off'){ return 0;} return 0; }"
+    },
+    "87": {
+      "quicKey": "MOVE",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "88": {
+      "cmd": "FULL",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "89": {
+      "cmd": "OOPS",
+      "minValue": 100,
+      "permanentFeedback": 127
+    }
+  }
+}
