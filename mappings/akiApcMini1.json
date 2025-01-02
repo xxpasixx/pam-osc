@@ -14,8 +14,7 @@
   },
   "note": {
     "0": {
-      "exec": 301,
-      "buttonFeedbackMapper": "function(value) { if (value == 'On') { return 3;} if (value == 'Off'){ return 0;} return 0; }"
+      "exec": 301
     },
     "1": {
       "exec": 302
