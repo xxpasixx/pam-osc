@@ -61,9 +61,7 @@ settings.read("midi").forEach((deviceMidi) => {
     }
     value.note[note].buttonFeedbackMapper = eval("(" + value.note[note].buttonFeedbackMapper + ")");
   }
-  console.log("🚀 ~ settings.read ~ value:", value)
   routing[name] = value;
-  console.log("loaded mapping: ", fileName);
 });
 
 midiUtils.sendAttributeLED(routing, currentAttribute);
