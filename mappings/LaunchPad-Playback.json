@@ -1,0 +1,350 @@
+{
+"control": {
+	"104": "201",
+	"105": "202",
+	"106": "203",
+	"107": "204",
+	"108": "205",
+	"109": "206",
+	"110": "207",
+	"111": "208"
+},
+"note": {
+	"11": {
+		"exec": 101,
+		"permanentFeedback": 21
+    	},
+	"12": {
+		"exec": 102,
+		"permanentFeedback": 21
+    	},
+	"13": {
+		"exec": 103,
+		"permanentFeedback": 21
+    	},
+	"14": {
+		"exec": 104,
+		"permanentFeedback": 21
+    	},
+	"15": {
+		"exec": 105,
+		"permanentFeedback": 21
+    	},
+	"16": {
+		"exec": 106,
+		"permanentFeedback": 21
+    	},
+	"17": {
+		"exec": 107,
+		"permanentFeedback": 21
+    	},
+	"18": {
+		"exec": 108,
+		"permanentFeedback": 21
+    	},
+	"19": {
+		"quicKey": "Store",
+		"minValue": 100,
+		"permanentFeedback": 21
+        },
+	"21": {
+		"exec": 301,
+		"permanentFeedback": 45
+    	},
+	"22": {
+		"exec": 302,
+		"permanentFeedback": 45
+    	},
+	"23": {
+		"exec": 303,
+		"permanentFeedback": 45
+    	},
+	"24": {
+		"exec": 304,
+		"permanentFeedback": 45
+    	},
+	"25": {
+		"exec": 305,
+		"permanentFeedback": 45
+    	},
+	"26": {
+		"exec": 306,
+		"permanentFeedback": 45
+    	},
+	"27": {
+		"exec": 307,
+		"permanentFeedback": 45
+    	},
+	"28": {
+		"exec": 308,
+		"permanentFeedback": 45
+    	},
+	"29": {
+		"quicKey": "Clear",
+		"minValue": 100,
+		"permanentFeedback": 9
+        },
+	"31": {
+		"exec": 401,
+		"permanentFeedback": 5
+    	},
+	"32": {
+		"exec": 402,
+		"permanentFeedback": 5
+    	},
+	"33": {
+		"exec": 403,
+		"permanentFeedback": 5
+    	},
+	"34": {
+		"exec": 404,
+		"permanentFeedback": 5
+    	},
+	"35": {
+		"exec": 405,
+		"permanentFeedback": 5
+    	},
+	"36": {
+		"exec": 406,
+		"permanentFeedback": 5
+    	},
+	"37": {
+		"exec": 407,
+		"permanentFeedback": 5
+    	},
+	"38": {
+		"exec": 408,
+		"permanentFeedback": 5
+    	},
+	"39": {
+		"quicKey": "Off",
+		"minValue": 100,
+		"permanentFeedback": 5
+        },
+	"41": {
+		"cmd": "At Preset 2.1",
+		"minValue": 100,
+		"permanentFeedback": 13
+    	},
+	"42": {
+		"cmd": "At Preset 2.2",
+		"minValue": 100,
+		"permanentFeedback": 13
+    	},
+	"43": {
+		"cmd": "At Preset 2.3",
+		"minValue": 100,
+		"permanentFeedback": 13
+    	},
+	"44": {
+		"cmd": "At Preset 2.4",
+		"minValue": 100,
+		"permanentFeedback": 13
+    	},
+	"45": {
+		"cmd": "At Preset 2.5",
+		"minValue": 100,
+		"permanentFeedback": 13
+    	},
+	"46": {
+		"cmd": "At Preset 6.1",
+		"minValue": 100,
+		"permanentFeedback": 33
+    	},
+	"47": {
+		"cmd": "At Preset 6.3",
+		"minValue": 100,
+		"permanentFeedback": 33
+    	},
+	"48": {
+		"cmd": "At Preset 6.5",
+		"minValue": 100,
+		"permanentFeedback": 33
+    	},
+	"49": {
+		"quicKey": "Oops",
+		"minValue": 100,
+		"permanentFeedback": 9
+        },
+	"51": {
+		"cmd": "At Preset 4.9",
+		"minValue": 100,
+		"permanentFeedback": 41
+    	},
+	"52": {
+		"cmd": "At Preset 4.10",
+		"minValue": 100,
+		"permanentFeedback": 45
+    	},
+	"53": {
+		"cmd": "At Preset 4.11",
+		"minValue": 100,
+		"permanentFeedback": 49
+    	},
+	"54": {
+		"cmd": "At Preset 4.12",
+		"minValue": 100,
+		"permanentFeedback": 53
+    	},
+	"55": {
+		"cmd": "At Preset 4.13",
+		"minValue": 100,
+		"permanentFeedback": 57
+    	},
+	"56": {
+		"cmd": "At Preset 4.14",
+		"minValue": 100,
+		"permanentFeedback": 11
+    	},
+	"57": {
+		"cmd": "At Preset 4.15",
+		"minValue": 100,
+		"permanentFeedback": 11
+    	},
+	"58": {
+		"cmd": "At Preset 4.16",
+		"minValue": 100,
+		"permanentFeedback": 11
+    	},
+	"59": {
+		"quicKey": "Please",
+		"minValue": 100,
+		"permanentFeedback": 21
+        },
+	"61": {
+		"cmd": "At Preset 4.1",
+		"minValue": 100,
+		"permanentFeedback": 3
+    	},
+	"62": {
+		"cmd": "At Preset 4.2",
+		"minValue": 100,
+		"permanentFeedback": 5
+    	},
+	"63": {
+		"cmd": "At Preset 4.3",
+		"minValue": 100,
+		"permanentFeedback": 9
+    	},
+	"64": {
+		"cmd": "At Preset 4.4",
+		"minValue": 100,
+		"permanentFeedback": 13
+    	},
+	"65": {
+		"cmd": "At Preset 4.5",
+		"minValue": 100,
+		"permanentFeedback": 17
+    	},
+	"66": {
+		"cmd": "At Preset 4.6",
+		"minValue": 100,
+		"permanentFeedback": 21
+    	},
+	"67": {
+		"cmd": "At Preset 4.7",
+		"minValue": 100,
+		"permanentFeedback": 29
+    	},
+	"68": {
+		"cmd": "At Preset 4.8",
+		"minValue": 100,
+		"permanentFeedback": 37
+    	},
+	"69": {
+		"quicKey": "Esc",
+		"minValue": 100,
+		"permanentFeedback": 49
+        },
+	"71": {
+		"cmd": "At Preset 1.1",
+		"minValue": 100,
+		"permanentFeedback": 0
+    	},
+	"72": {
+		"cmd": "At Preset 1.4",
+		"minValue": 100,
+		"permanentFeedback": 1
+    	},
+	"73": {
+		"cmd": "At Preset 1.7",
+		"minValue": 100,
+		"permanentFeedback": 2
+    	},
+	"74": {
+		"cmd": "At Preset 1.10",
+		"minValue": 100,
+		"permanentFeedback": 2
+    	},
+	"75": {
+		"cmd": "At Preset 1.13",
+		"minValue": 100,
+		"permanentFeedback": 3
+    	},
+	"76": {
+		"cmd": "At Preset 1.20",
+		"minValue": 100,
+		"permanentFeedback": 11
+    	},
+	"77": {
+		"cmd": "At Preset 1.21",
+		"minValue": 100,
+		"permanentFeedback": 11
+    	},
+	"78": {
+		"cmd": "At Preset 1.22",
+		"minValue": 100,
+		"permanentFeedback": 11
+    	},
+	"79": {
+		"cmd": "EditRecipe Programmer",
+		"minValue": 100,
+		"permanentFeedback": 45
+        },
+	"81": {
+		"cmd": "SelectFixtures Group 7",
+		"minValue": 100,
+		"permanentFeedback": 21
+    	},
+	"82": {
+		"cmd": "SelectFixtures Group 8",
+		"minValue": 100,
+		"permanentFeedback": 25
+    	},
+	"83": {
+		"cmd": "SelectFixtures Group 9",
+		"minValue": 100,
+		"permanentFeedback": 17
+    	},
+	"84": {
+		"cmd": "SelectFixtures Group 5",
+		"minValue": 100,
+		"permanentFeedback": 49
+    	},
+	"85": {
+		"cmd": "SelectFixtures Group 6",
+		"minValue": 100,
+		"permanentFeedback": 53
+    	},
+	"86": {
+		"cmd": "SelectFixtures Group 11",
+		"minValue": 100,
+		"permanentFeedback": 45
+    	},
+	"87": {
+		"cmd": "SelectFixtures Group 12",
+		"minValue": 100,
+		"permanentFeedback": 41
+    	},
+	"88": {
+		"cmd": "SelectFixtures Group 13",
+		"minValue": 100,
+		"permanentFeedback": 5
+    	},
+	"89": {
+		"cmd": "SaveShow",
+		"minValue": 100,
+		"permanentFeedback": 21
+        }
+  }
+}

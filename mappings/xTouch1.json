@@ -15,7 +15,7 @@
     },
     "rltvControl": {
         "16": {
-            "exec": 401,
+            "exec": 301,
             "currValue": 0,
             "posFrom": 1,
             "posTo": 8,
@@ -26,7 +26,7 @@
             "returnTo": 43
         },
         "17": {
-            "exec": 402,
+            "exec": 302,
             "currValue": 0,
             "posFrom": 1,
             "posTo": 8,
@@ -37,7 +37,7 @@
             "returnTo": 43
         },
         "18": {
-            "exec": 403,
+            "exec": 303,
             "currValue": 0,
             "posFrom": 1,
             "posTo": 8,
@@ -48,7 +48,7 @@
             "returnTo": 43
         },
         "19": {
-            "exec": 404,
+            "exec": 304,
             "currValue": 0,
             "posFrom": 1,
             "posTo": 8,
@@ -59,7 +59,7 @@
             "returnTo": 43
         },
         "20": {
-            "exec": 405,
+            "exec": 305,
             "currValue": 0,
             "posFrom": 1,
             "posTo": 8,
@@ -70,7 +70,7 @@
             "returnTo": 43
         },
         "21": {
-            "exec": 406,
+            "exec": 306,
             "currValue": 0,
             "posFrom": 1,
             "posTo": 8,
@@ -81,7 +81,7 @@
             "returnTo": 43
         },
         "22": {
-            "exec": 407,
+            "exec": 307,
             "currValue": 0,
             "posFrom": 1,
             "posTo": 8,
@@ -92,7 +92,7 @@
             "returnTo": 43
         },
         "23": {
-            "exec": 408,
+            "exec": 308,
             "currValue": 0,
             "posFrom": 1,
             "posTo": 8,
@@ -138,52 +138,52 @@
             "exec": 408
         },
         "8": {
-            "exec": 301
-        },
-        "9": {
-            "exec": 302
-        },
-        "10": {
-            "exec": 303
-        },
-        "11": {
-            "exec": 304
-        },
-        "12": {
-            "exec": 305
-        },
-        "13": {
-            "exec": 306
-        },
-        "14": {
-            "exec": 307
-        },
-        "15": {
-            "exec": 308
-        },
-        "16": {
             "exec": 201
         },
-        "17": {
+        "9": {
             "exec": 202
         },
-        "18": {
+        "10": {
             "exec": 203
         },
-        "19": {
+        "11": {
             "exec": 204
         },
-        "20": {
+        "12": {
             "exec": 205
         },
-        "21": {
+        "13": {
             "exec": 206
         },
-        "22": {
+        "14": {
             "exec": 207
         },
-        "23": {
+        "15": {
             "exec": 208
+        },
+        "16": {
+            "exec": 301
+        },
+        "17": {
+            "exec": 302
+        },
+        "18": {
+            "exec": 303
+        },
+        "19": {
+            "exec": 304
+        },
+        "20": {
+            "exec": 305
+        },
+        "21": {
+            "exec": 306
+        },
+        "22": {
+            "exec": 307
+        },
+        "23": {
+            "exec": 308
         },
         "24": {
             "exec": 101
@@ -210,56 +210,68 @@
             "exec": 108
         },
         "32": {
-            "exec": 201
+            "exec": 101
         },
         "33": {
-            "exec": 202
+            "exec": 102
         },
         "34": {
-            "exec": 203
+            "exec": 103
         },
         "35": {
-            "exec": 204
+            "exec": 104
         },
         "36": {
-            "exec": 205
+            "exec": 105
         },
         "37": {
-            "exec": 206
+            "exec": 106
         },
         "38": {
-            "exec": 207
+            "exec": 107
         },
         "39": {
-            "exec": 208
+            "exec": 108
         },
         "40": {
-            "cmd": "HIGHLIGHT",
-            "minValue": 100
+            "cmd": "Call ViewButton 1.1",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "41": {
-            "cmd": "Preview",
-            "minValue": 100
+            "cmd": "Call ViewButton 1.4",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "42": {
-            "cmd": "SOLO",
-            "minValue": 100
+            "cmd": "Call ViewButton 1.2",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "43": {
-            "cmd": "BLIND",
-            "minValue": 100
+            "cmd": "Menu 'PlaybackControl'",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "44": {
-            "cmd": "Freeze",
-            "minValue": 100
+            "cmd": "Call ViewButton 1.3",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+	"45": {
+            "cmd": "Menu 'CommandControl'",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "46": {
             "cmd": "Previous Page",
-            "minValue": 100
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "47": {
             "cmd": "Next Page",
-            "minValue": 100
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "48": {
             "local": "encoderFine",
@@ -267,6 +279,14 @@
         },
         "49": {
             "local": "encoderRough",
+            "minValue": 100
+        },
+	"50": {
+            "cmd": "HIGHLIGHT",
+            "minValue": 100
+        },
+	"51": {
+            "cmd": "BLIND",
             "minValue": 100
         },
         "52": {
@@ -277,176 +297,236 @@
             "timecodePlayPause": true
         },
         "54": {
-            "exec": 191
-        },
-        "55": {
-            "exec": 192
-        },
-        "56": {
-            "exec": 193
-        },
-        "57": {
-            "exec": 194
-        },
-        "58": {
-            "exec": 195
-        },
-        "59": {
-            "exec": 196
-        },
-        "60": {
-            "exec": 197
-        },
-        "61": {
-            "exec": 198
-        },
-        "62": {
-            "exec": 291
-        },
-        "63": {
-            "exec": 292
-        },
-        "64": {
-            "exec": 293
-        },
-        "65": {
-            "exec": 294
-        },
-        "66": {
-            "exec": 295
-        },
-        "67": {
-            "exec": 296
-        },
-        "68": {
-            "exec": 297
-        },
-        "69": {
-            "exec": 298
-        },
-        "70": {
-            "quicKey": "Fixture",
-            "minValue": 100
-        },
-        "71": {
-            "quicKey": "Channel",
-            "minValue": 100
-        },
-        "72": {
-            "quicKey": "Assign",
-            "minValue": 100
-        },
-        "73": {
-            "quicKey": "Time",
-            "minValue": 100
-        },
-        "74": {
-            "quicKey": "Group",
-            "minValue": 100
-        },
-        "75": {
-            "quicKey": "Preset",
-            "minValue": 100
-        },
-        "76": {
-            "quicKey": "Sequence",
-            "minValue": 100
-        },
-        "77": {
-            "quicKey": "Update",
-            "minValue": 100
-        },
-        "78": {
-            "quicKey": "Store",
-            "minValue": 100
-        },
-        "79": {
-            "quicKey": "Move",
-            "minValue": 100
-        },
-        "80": {
-            "quicKey": "Cue",
-            "minValue": 100
-        },
-        "81": {
-            "quicKey": "Edit",
-            "minValue": 100
-        },
-        "82": {
-            "quicKey": "Delete",
-            "minValue": 100
-        },
-        "83": {
-            "quicKey": "Please",
-            "minValue": 100
-        },
-        "84": {
             "local": "attribute",
             "attribute": "dimmer"
         },
-        "85": {
+        "55": {
             "local": "attribute",
             "attribute": "pan"
         },
-        "86": {
+        "56": {
             "local": "attribute",
             "attribute": "tilt"
         },
-        "87": {
-            "local": "attribute",
-            "attribute": "ColorRGB_R"
-        },
-        "88": {
-            "local": "attribute",
-            "attribute": "ColorRGB_G"
-        },
-        "89": {
-            "local": "attribute",
-            "attribute": "ColorRGB_B"
-        },
-        "90": {
+        "57": {
             "local": "attribute",
             "attribute": "Zoom"
         },
-        "91": {
+        "58": {
+            "local": "attribute",
+            "attribute": "ColorRGB_R"
+        },
+        "59": {
+            "local": "attribute",
+            "attribute": "ColorRGB_G"
+        },
+        "60": {
+            "local": "attribute",
+            "attribute": "ColorRGB_B"
+        },
+	"61": {
+            "local": "attribute",
+            "attribute": "ColorRGB_W"
+        },
+        "62": {
+            "quicKey": "Fixture",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "63": {
+            "quicKey": "Channel",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "64": {
+	    "quicKey": "Group",
+            "minValue": 100 ,
+      	    "permanentFeedback": 127       
+	},
+        "65": {
+            "quicKey": "Preset",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "66": {
+            "quicKey": "Sequence",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "67": {
+            "quicKey": "Cue",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "68": {
+            "cmd": "Menu 'MenuSelector'",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "69": {
+            "cmd": "SaveShow",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "70": {
+            "quicKey": "Esc",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "71": {
+            "quicKey": "Select",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "72": {
+            "quicKey": "Freeze",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "73": {
+            "quicKey": "Solo",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "74": {
+            "quicKey": "Please",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "75": {
+            "quicKey": "Delete",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "76": {
+            "quicKey": "Oops",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "77": {
+            "quicKey": "Copy",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "78": {
+            "quicKey": "Move",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "79": {
+            "cmd": "EditRecipe Programmer",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "80": {
             "cmd": "Go-",
-            "minValue": 100
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "81": {
+            "cmd": "Go+",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "82": {
+            "quicKey": "Stomp",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "83": {
+            "quicKey": "Off",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "84": {
+            "quicKey": "Full",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "85": {
+            "quicKey": "Align",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "86": {
+            "quicKey": "Assign",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "87": {
+            "quicKey": "Edit",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "88": {
+            "quicKey": "Update",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "89": {
+            "quicKey": "Store",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "90": {
+            "quicKey": "Clear",
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "91": {
+            "cmd": "Top Timecode",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "92": {
-            "cmd": "Go+",
-            "minValue": 100
+            "cmd": "Go+ Timecode",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "93": {
-            "cmd": "Off",
-            "minValue": 100
+            "cmd": "Pause Timecode",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "94": {
-            "cmd": "Top",
-            "minValue": 100
+            "cmd": "Go+ Timecode",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "95": {
-            "cmd": "Clear",
-            "minValue": 100
+            "cmd": "Record Timecode",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "96": {
             "cmd": "UP",
-            "minValue": 100
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "97": {
             "cmd": "DOWN",
-            "minValue": 100
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "98": {
             "cmd": "PREVIOUS",
-            "minValue": 100
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "99": {
             "cmd": "NEXT",
-            "minValue": 100
+            "minValue": 100,
+      	    "permanentFeedback": 127
         },
         "100": {
             "cmd": "Set",
-            "minValue": 100
+            "minValue": 100,
+      	    "permanentFeedback": 127
+        },
+        "101": {
+            "cmd": "Store",
+            "minValue": 100,
+      	    "permanentFeedback": 127
         }
     },
     "display": {
