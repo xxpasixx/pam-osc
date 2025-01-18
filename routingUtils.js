@@ -116,10 +116,12 @@ function getRoutingNoteByExecId(routing, execId) {
     const filteredNotes = Object.entries(routing[device].note).filter(([noteId, note]) => note.exec == execId);
 
     filteredNotes.forEach(([noteId, note]) => {
+      const midiChannel = note.midiChannel || routing[device].midiChannel || 1;
       returnArray.push({
         device: device,
         midiId: parseInt(noteId),
         buttonFeedbackMapper: note.buttonFeedbackMapper || routing[device].buttonFeedbackMapper,
+        midiChannel,
         ...note,
       });
     });

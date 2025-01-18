@@ -25,7 +25,7 @@ module.exports = {
   sendPermanentFeedback: sendPermanentFeedback,
 };
 
-function sendNoteResponse(routing, midiDeviceName, ctrl, value, buttonFeedbackMapper) {
+function sendNoteResponse(routing, midiDeviceName, ctrl, value, buttonFeedbackMapper, midiChannel = 1) {
   // for the MC mode, it is required to send a note on with velocity 0
   if (routing[midiDeviceName].mode == "mc" && value == "Off") {
     send("midi", midiDeviceName, "/sysex", "90" + utils.numberIntoHex(ctrl) + " 00");
@@ -35,7 +35,7 @@ function sendNoteResponse(routing, midiDeviceName, ctrl, value, buttonFeedbackMa
   const mapper = buttonFeedbackMapper || routing[midiDeviceName].buttonFeedbackMapper;
   const mappedValue = typeof value === "string" ? mapper(value) : value;
 
-  send("midi", midiDeviceName, "/note", 1, ctrl, mappedValue);
+  send("midi", midiDeviceName, "/note", midiChannel, ctrl, mappedValue);
 }
 
 function sendAttributeLED(routing, currentAttribute) {
@@ -80,7 +80,8 @@ function sendPermanentFeedback(routing) {
     for (let midiNote of Object.keys(device.note)) {
       const note = device.note[midiNote];
       if (note.permanentFeedback) {
-        sendNoteResponse(routing, name, parseInt(midiNote), note.permanentFeedback);
+        const midiChannel = note.midiChannel || device.midiChannel || 1;
+        sendNoteResponse(routing, name, parseInt(midiNote), note.permanentFeedback, null, midiChannel);
       }
     }
   }

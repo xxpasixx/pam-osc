@@ -222,11 +222,11 @@ module.exports = {
         if (config.local) {
           if (config.local == "encoderRough") {
             encoderRough = !encoderRough;
-            midiUtils.sendNoteResponse(routing, port, ctrl, encoderRough ? "On" : "Off");
+            midiUtils.sendNoteResponse(routing, port, ctrl, encoderRough ? "On" : "Off", 1);
           }
           if (config.local == "encoderFine") {
             encoderFine = !encoderFine;
-            midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off");
+            midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off", 1);
           }
 
           if (config.local == "attribute" && config.attribute) {
@@ -266,7 +266,7 @@ module.exports = {
         const mappings = routingUtils.getRoutingNoteByExecId(routing, fader);
         mappings.forEach((mapping) => {
           const value = mapping.permanentFeedback || args[0].value;
-          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper);
+          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midiChannel);
         });
       }
       if (address?.includes("/updatePage/current")) {
@@ -277,7 +277,7 @@ module.exports = {
 
         mappings.forEach((mapping) => {
           const value = mapping.permanentFeedback || args[0].value ? "On" : "Off";
-          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper);
+          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midiChannel);
         });
       }
 
