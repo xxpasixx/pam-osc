@@ -222,11 +222,11 @@ module.exports = {
         if (config.local) {
           if (config.local == "encoderRough") {
             encoderRough = !encoderRough;
-            midiUtils.sendNoteResponse(routing, port, ctrl, encoderRough ? "On" : "Off", 1);
+            midiUtils.sendNoteResponse(routing, port, ctrl, encoderRough ? "On" : "Off", null, 1);
           }
           if (config.local == "encoderFine") {
             encoderFine = !encoderFine;
-            midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off", 1);
+            midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off", null, 1);
           }
 
           if (config.local == "attribute" && config.attribute) {
