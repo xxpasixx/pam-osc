@@ -54,7 +54,6 @@ settings.read("midi").forEach((deviceMidi) => {
     )
   );
   value.buttonFeedbackMapper = eval("(" + value.buttonFeedbackMapper + ")");
-  console.log("asdf")
   for (let note in value.note) {
     if (!value.note[note].buttonFeedbackMapper) {
       continue;
