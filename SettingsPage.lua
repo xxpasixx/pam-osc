@@ -102,7 +102,7 @@ function CreateCheckBoxDialog(displayHandle)
     -- This is row 2 of the dlgFrame.
     local checkBoxGrid = dlgFrame:Append("UILayoutGrid")
     checkBoxGrid.Columns = 2
-    checkBoxGrid.Rows = 2
+    checkBoxGrid.Rows = 3
     checkBoxGrid.Anchors = {
         left = 0,
         right = 0,
@@ -168,6 +168,20 @@ function CreateCheckBoxDialog(displayHandle)
     checkBox4.PluginComponent = myHandle
     checkBox4.Clicked = "SendTimecodeClicked"
 
+    local checkBox5 = checkBoxGrid:Append("CheckBox")
+    checkBox5.Anchors = {
+        left = 0,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+    checkBox5.Text = "Expand Timecode"
+    checkBox5.TextalignmentH = "Left";
+    checkBox5.State = GetVar(GlobalVars(), "expandTimecode") and 1 or 0;
+    checkBox5.PluginComponent = myHandle
+    checkBox5.Clicked = "ExpandTimecodeClicked"
+
+
     signalTable.AutoResendClicked = function(caller)
         if (caller.State == 1) then
             caller.State = 0
@@ -210,6 +224,17 @@ function CreateCheckBoxDialog(displayHandle)
         else
             caller.State = 1
             SetVar(GlobalVars(), "sendTimecode", true)
+        end
+        SetVar(GlobalVars(), "forceReload", true)
+    end
+
+    signalTable.ExpandTimecodeClicked = function(caller)
+        if (caller.State == 1) then
+            caller.State = 0
+            SetVar(GlobalVars(), "expandTimecode", false)
+        else
+            caller.State = 1
+            SetVar(GlobalVars(), "expandTimecode", true)
         end
         SetVar(GlobalVars(), "forceReload", true)
     end

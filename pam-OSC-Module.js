@@ -29,13 +29,14 @@ var routing = {};
 let encoderFine = false;
 let encoderRough = false;
 let currentAttribute = "dimmer";
+let expandTimecode = true;
 let timecode = {
   selectedSlot: 0,
   slots: {},
 };
 
 var prefix = "";
-var page = "1";
+var page = "01";
 
 const ipPort = ("" + settings.read("send")).split(":");
 const ip = ipPort[0];
@@ -67,10 +68,20 @@ midiUtils.sendAttributeLED(routing, currentAttribute);
 midiUtils.sendPermanentFeedback(routing);
 
 for (let device of Object.keys(routing)) {
+
   if (routing[device].enableTimecodeSend) {
     midiUtils.resetSegments(routing, device);
-    midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
-  }
+    if (expandTimecode) {
+      midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
+    } else {
+      midiUtils.sendSegment(routing, device, 2, timecode.selectedSlot);
+      midiUtils.sendPageID(routing, device, page);
+      midiUtils.sendSegment(routing, device, 3, "-");
+    }
+    
+   
+  } 
+  
 }
 
 setTimeout(function () {
@@ -113,7 +124,7 @@ module.exports = {
 
           let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
           change = encoderFine ? change / 10 : change;
-          change = encoderRough ? change * 10 : change;
+          change = encoderRough ? change * 10 : change; 
           const plusMinus = change > 0 ? " + " : " - ";
           const attributeToSend = attribute == "current" ? currentAttribute : attribute;
           send(ip, oscPort, prefix + "/cmd", {
@@ -152,9 +163,18 @@ module.exports = {
             slotNum = (slotNum + 1) % 9;
 
             midiUtils.resetSegments(routing, port);
-            midiUtils.sendSegment(routing, port, 1, slotNum);
+            
+            if (expandTimecode) {
+              midiUtils.sendSegment(routing, port, 1, slotNum);
+            } else {
+              midiUtils.sendSegment(routing, port, 2, slotNum);
+              midiUtils.sendPageID(routing, port, page);
+              midiUtils.sendSegment(routing, port, 3, "-");
+            }
+            
+            
 
-            if (timecode.slots[slotNum]) midiUtils.updateSegmentsBySlot(routing, timecode.slots[slotNum]);
+            if (timecode.slots[slotNum]) midiUtils.updateSegmentsBySlot(routing, timecode.slots[slotNum], shorten_hours = !expandTimecode);
 
             timecode.selectedSlot = slotNum;
           }
@@ -269,7 +289,18 @@ module.exports = {
         });
       }
       if (address?.includes("/updatePage/current")) {
-        page = "" + args[0].value;
+        if (address?.includes("/updatePage/current")) {
+          const tempPage = args[0].value < 10 ? "0" + args[0].value : "" + args[0].value;
+        
+          if (tempPage.length > 2) {
+            page = tempPage.slice(-2); // Strip to the last 2 digits
+            //TODO: Light Button to indicate that the page is over 99
+          } else {
+            page = tempPage;
+          }
+        
+        }
+
       }
       if (addressSplit[1]?.includes("masterEnabled")) {
         const mappings = routingUtils.getRoutingNoteByCMD(routing, addressSplit[2]);
@@ -325,7 +356,23 @@ module.exports = {
         });
       }
 
+      if (address === "/expandTimecode") {
+        expandTimecode = args[0].value;
+        for (let device of Object.keys(routing)) {
+          midiUtils.resetSegments(routing, device);
+        }
+        
+
+      }
+
       for (let device of Object.keys(routing)) {
+        if (expandTimecode) {
+          midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot); 
+        } else {
+          midiUtils.sendSegment(routing, device, 2, timecode.selectedSlot);
+          midiUtils.sendPageID(routing, device, page);
+          midiUtils.sendSegment(routing, device, 3, "-");
+        }
         if (routing[device].enableTimecodeSend) {
           if (addressSplit[1]?.includes("Timecode")) {
             let slot = addressSplit[1].slice(-1);
@@ -356,7 +403,8 @@ module.exports = {
               updateChanges("mili", mili);
 
               if (timecode.selectedSlot == slot) {
-                midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot]);
+                
+                midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot], !expandTimecode);;
               }
             }
           }

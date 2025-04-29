@@ -15,6 +15,8 @@ local oldValues = {}
 local oldButtonValues = {}
 local oldColorValues = {}
 local oldNameValues = {}
+local oldExpandedTimecode = false
+
 local olsMasterEnabledValue = {
     highlight = false,
     lowlight = false,
@@ -91,12 +93,14 @@ local function main()
     local sendColors = GetVar(GlobalVars(), "sendColors") or false
     local sendNames = GetVar(GlobalVars(), "sendNames") or false
     local sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
+    local expandedTimecode = GetVar(GlobalVars(), "expandTimecode") or false
 
     Printf("start pam OSC main()")
     Printf("automaticResendButtons: " .. (automaticResendButtons and "true" or "false"))
     Printf("sendColors: " .. (sendColors and "true" or "false"))
     Printf("sendNames: " .. (sendNames and "true" or "false"))
     Printf("sendTimecode: " .. (sendTimecode and "true" or "false"))
+    Printf("expandedTimecode: " .. (expandedTimecode and "true" or "false"))
 
     local destPage = 1
     local forceReload = true
@@ -115,6 +119,7 @@ local function main()
             sendColors = GetVar(GlobalVars(), "sendColors") or false
             sendNames = GetVar(GlobalVars(), "sendNames") or false
             sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
+            expandedTimecode = GetVar(GlobalVars(), "expandTimecode") or false
             SetVar(GlobalVars(), "forceReload", false)
         end
 
@@ -213,6 +218,19 @@ local function main()
                 Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Name' .. listValue .. ',s,' .. nameValue ..
                         '"')
             end
+
+
+            if oldExpandedTimecode ~= expandedTimecode or forceReload then
+                oldExpandedTimecode = expandedTimecode
+                if expandedTimecode then
+                    Cmd('SendOSC ' .. oscEntry .. ' "/expandTimecode,T,"')
+                else
+                    Cmd('SendOSC ' .. oscEntry .. ' "/expandTimecode,F,"')
+                end
+            end
+
+            
+            
         end
         
         -- Send Timecode
@@ -229,6 +247,8 @@ local function main()
                 end
             end
         end
+
+        
         
         forceReload = false
         forceReloadButtons = false
