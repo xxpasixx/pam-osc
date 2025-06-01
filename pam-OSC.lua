@@ -16,6 +16,7 @@ local oldButtonValues = {}
 local oldColorValues = {}
 local oldNameValues = {}
 local oldExpandedTimecode = false
+local oldSelectedFeatureGroup = ""
 
 local olsMasterEnabledValue = {
     highlight = false,
@@ -233,6 +234,16 @@ local function main()
             
         end
         
+        
+
+        -- Send Selected Attribute
+        local selectedFeatureGroup = SelectedFeature().name
+        if selectedFeatureGroup ~= oldSelectedFeatureGroup or forceReload then
+            oldSelectedFeatureGroup = selectedFeatureGroup
+            Printf(selectedFeatureGroup)
+            Cmd('SendOSC ' .. oscEntry .. ' "/selectedFeatureGroup,s,' .. selectedFeatureGroup .. '"')
+        end
+
         -- Send Timecode
         if sendTimecode then
             local slots = Root().TimecodeSlots

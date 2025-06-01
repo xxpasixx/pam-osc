@@ -28,7 +28,8 @@ var routing = {};
 
 let encoderFine = false;
 let encoderRough = false;
-let currentAttribute = "dimmer";
+let currentAttribute = "Dim";
+let currentEncoder = "1"
 let expandTimecode = true;
 let timecode = {
   selectedSlot: 0,
@@ -118,18 +119,41 @@ module.exports = {
           });
         }
 
-        // handle attribute Encoders
-        if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].attribute) {
-          const { attribute, posFrom, posTo, negFrom, negTo, amount } = routing[port]["rltvControl"][ctrl];
-
+        // handle feature Group Encoders
+        if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].encoder) {
+          const { encoder, posFrom, posTo, negFrom, negTo, amount } = routing[port]["rltvControl"][ctrl];
+          console.log("Encoder: " + encoder);
           let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
           change = encoderFine ? change / 10 : change;
           change = encoderRough ? change * 10 : change; 
           const plusMinus = change > 0 ? " + " : " - ";
-          const attributeToSend = attribute == "current" ? currentAttribute : attribute;
+          const encoderToSend = encoder == "current" ? currentEncoder : encoder;
+          console.log("HERE")
+          // Build separate commands for Up and Down
+          let cmdString;
+          if (change > 0) {
+            switch (encoderToSend) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 9`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 14`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 19`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 24`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 29`; break;
+              default:  cmdString = `None`;
+            }
+          } else {
+            const absVal = Math.abs(change);
+            switch (encoderToSend) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 10`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 15`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 20`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 25`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 30`; break;
+              default:  cmdString = `Encoder${encoderToSend}Down ${absVal}`;
+            }
+          }
           send(ip, oscPort, prefix + "/cmd", {
             type: "s",
-            value: "Attribute " + attributeToSend + " at " + plusMinus + Math.abs(change),
+            value: cmdString,
           });
         }
       }
@@ -236,6 +260,8 @@ module.exports = {
             type: "s",
             value: config.cmd,
           });
+          // Update LED for command button
+          
         }
 
         if (config.local) {
@@ -248,12 +274,44 @@ module.exports = {
             midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off", null, 1);
           }
 
+
+          //Handles the feature group but keeping legacy attribute name
+          //TODO: Switch to Feature Group in Naming scheme
           if (config.local == "attribute" && config.attribute) {
             currentAttribute = config.attribute;
             midiUtils.sendAttributeLED(routing, currentAttribute);
           }
+
+          if (config.local == "encoder" && config.encoder) {
+            currentEncoder = config.encoder;
+            console.log("Current Encoder: " + currentEncoder);
+            //send button led and implement functions in the corresponding Midi Utils
+            midiUtils.sendEncoderLED(routing, currentEncoder);
+          }
+          
+          if (config.local == "encoderKlick") {
+            console.log("Encoder Klick: " + currentEncoder);
+            switch (currentEncoder) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 1`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 2`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 3`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 4`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 5`; break;
+              default:  cmdString = `None`;
+            }
+
+            send(ip, oscPort, prefix + "/cmd", {
+            type: "s",
+            value: cmdString,
+          });
+            
+            //send button led and implement functions in the corresponding Midi Utils
+            //midiUtils.sendEncoderLED(routing, currentEncoder);
+          }
+
         }
       }
+      
       return;
     }
 
@@ -289,6 +347,7 @@ module.exports = {
         });
       }
       if (address?.includes("/updatePage/current")) {
+        console.log("Update Page: " + args[0].value);
         if (address?.includes("/updatePage/current")) {
           const tempPage = args[0].value < 10 ? "0" + args[0].value : "" + args[0].value;
         
@@ -363,6 +422,31 @@ module.exports = {
         }
         
 
+      }
+
+      if (address === "/selectedFeatureGroup") {
+        // Only light the selected feature group LED, turn off all others by unique ID
+        const map = {
+          Dimmer: 1,
+          PanTilt: 2,
+          Gobo: 3,
+          RGB: 4,
+          CMY: 4,
+          Color: 4,
+          Beam: 5,
+          Focus: 6,
+          FIXTURE: 7,
+          Control: 7
+        };
+        const newAttr = args[0].value;
+        currentAttribute = newAttr;
+        const selectedId = map[newAttr];
+        const uniqueIds = [...new Set(Object.values(map))];
+        uniqueIds.forEach(id => {
+          const cmd = `FeatureGroup ${id}`;
+          midiUtils.sendCMDLED(routing, cmd, id === selectedId);
+        });
+        return;
       }
 
       for (let device of Object.keys(routing)) {

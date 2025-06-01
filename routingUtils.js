@@ -21,6 +21,7 @@ module.exports = {
   getRoutingNoteByExecId: getRoutingNoteByExecId,
   getRoutingNoteByCMD: getRoutingNoteByCMD,
   getRoutingNoteWithAttribute: getRoutingNoteWithAttribute,
+  getRoutingNoteWithEncoder: getRoutingNoteWithEncoder,
 };
 
 function getRoutingByControlerId(routing, id) {
@@ -165,6 +166,23 @@ function getRoutingNoteWithAttribute(routing) {
         buttonFeedbackMapper: routing[device].buttonFeedbackMapper,
         attribute: note.value,
       });
+    });
+  });
+  return returnArray;
+}
+
+// New: retrieve note mappings for encoder buttons
+function getRoutingNoteWithEncoder(routing) {
+  const returnArray = [];
+  Object.keys(routing).forEach((device) => {
+    Object.entries(routing[device].note).forEach(([noteId, note]) => {
+      if (note.local === "encoder" && note.encoder) {
+        returnArray.push({
+          device,
+          midiId: parseInt(noteId),
+          encoder: note.encoder,
+        });
+      }
     });
   });
   return returnArray;

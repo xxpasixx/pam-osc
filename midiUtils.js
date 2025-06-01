@@ -23,7 +23,9 @@ module.exports = {
   resetSegments: resetSegments,
   updateSegmentsBySlot: updateSegmentsBySlot,
   sendPermanentFeedback: sendPermanentFeedback,
-  sendPageID:sendPageID
+  sendPageID:sendPageID,
+  sendCMDLED: sendCMDLED,
+  sendEncoderLED: sendEncoderLED
 };
 
 function sendNoteResponse(routing, midiDeviceName, ctrl, value, buttonFeedbackMapper, midiChannel = 1) {
@@ -110,4 +112,20 @@ function sendPermanentFeedback(routing) {
       }
     }
   }
+}
+
+function sendCMDLED(routing, cmd, value) {
+  const mappings = routingUtils.getRoutingNoteByCMD(routing, cmd);
+  mappings.forEach((mapping) => {
+    const val = mapping.permanentFeedback !== undefined ? mapping.permanentFeedback : (value ? "On" : "Off");
+    sendNoteResponse(routing, mapping.device, mapping.midiId, val, mapping.buttonFeedbackMapper, mapping.midiChannel);
+  });
+}
+
+// New: send LEDs for encoder buttons, turning the current encoder on and others off
+function sendEncoderLED(routing, currentEncoder) {
+  routingUtils.getRoutingNoteWithEncoder(routing).forEach((mapping) => {
+    const isActive = mapping.encoder.toString() === currentEncoder.toString();
+    sendNoteResponse(routing, mapping.device, mapping.midiId, isActive ? "On" : "Off");
+  });
 }
