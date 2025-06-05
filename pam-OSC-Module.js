@@ -366,7 +366,9 @@ module.exports = {
 
         mappings.forEach((mapping) => {
           const value = mapping.permanentFeedback || args[0].value ? "On" : "Off";
-          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midiChannel);
+          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midi
+            
+          );
         });
       }
 
