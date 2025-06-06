@@ -28,14 +28,16 @@ var routing = {};
 
 let encoderFine = false;
 let encoderRough = false;
-let currentAttribute = "dimmer";
+let currentAttribute = "Dim";
+let currentEncoder = "1"
+let expandTimecode = false;
 let timecode = {
   selectedSlot: 0,
   slots: {},
 };
 
 var prefix = "";
-var page = "1";
+var page = "01";
 
 const ipPort = ("" + settings.read("send")).split(":");
 const ip = ipPort[0];
@@ -66,12 +68,29 @@ settings.read("midi").forEach((deviceMidi) => {
 midiUtils.sendAttributeLED(routing, currentAttribute);
 midiUtils.sendPermanentFeedback(routing);
 
+
 for (let device of Object.keys(routing)) {
+
   if (routing[device].enableTimecodeSend) {
-    midiUtils.resetSegments(routing, device);
+     midiUtils.resetSegments(routing, device);
     midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
-  }
+
+   
+    //FIXME: Page ID should be set here based on expand timecode but requires deeper implementation
+    /*
+    if (expandTimecode) {
+      midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
+    } else {
+      midiUtils.sendSegment(routing, device, 2, timecode.selectedSlot);
+      midiUtils.sendPageID(routing, device, page);
+      midiUtils.sendSegment(routing, device, 3, "-");
+    } */
+    
+   
+  } 
+  
 }
+
 
 setTimeout(function () {
   oscUtils.triggerForceReload(ip, oscPort, prefix);
@@ -107,18 +126,67 @@ module.exports = {
           });
         }
 
-        // handle attribute Encoders
-        if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].attribute) {
-          const { attribute, posFrom, posTo, negFrom, negTo, amount } = routing[port]["rltvControl"][ctrl];
-
+// handle Encoders
+        if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].encoder) {
+          const { encoder, posFrom, posTo, negFrom, negTo, amount } = routing[port]["rltvControl"][ctrl];
+          console.log("Encoder: " + encoder);
           let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
           change = encoderFine ? change / 10 : change;
-          change = encoderRough ? change * 10 : change;
+          change = encoderRough ? change * 10 : change; 
+          change = encoderRough ? change * 10 : change; 
           const plusMinus = change > 0 ? " + " : " - ";
-          const attributeToSend = attribute == "current" ? currentAttribute : attribute;
+          const encoderToSend = encoder == "current" ? currentEncoder : encoder;
+          console.log("HERE")
+          // Build separate commands for Up and Down
+          let cmdString;
+          if (change > 0) {
+            switch (encoderToSend) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 9`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 14`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 19`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 24`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 29`; break;
+              default:  cmdString = `None`;
+            }
+          } else {
+            const absVal = Math.abs(change);
+            switch (encoderToSend) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 10`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 15`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 20`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 25`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 30`; break;
+              default:  cmdString = `Encoder${encoderToSend}Down ${absVal}`;
+            }
+          }
+          const encoderToSend = encoder == "current" ? currentEncoder : encoder;
+          console.log("HERE")
+          // Build separate commands for Up and Down
+          let cmdString;
+          if (change > 0) {
+            switch (encoderToSend) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 9`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 14`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 19`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 24`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 29`; break;
+              default:  cmdString = `None`;
+            }
+          } else {
+            const absVal = Math.abs(change);
+            switch (encoderToSend) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 10`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 15`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 20`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 25`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 30`; break;
+              default:  cmdString = `Encoder${encoderToSend}Down ${absVal}`;
+            }
+          }
           send(ip, oscPort, prefix + "/cmd", {
             type: "s",
-            value: "Attribute " + attributeToSend + " at " + plusMinus + Math.abs(change),
+            value: cmdString,
+            value: cmdString,
           });
         }
       }
@@ -228,10 +296,12 @@ module.exports = {
             midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off", null, 1);
           }
 
-          if (config.local == "attribute" && config.attribute) {
-            currentAttribute = config.attribute;
-            midiUtils.sendAttributeLED(routing, currentAttribute);
-          }
+          if (config.local == "encoder" && config.encoder) {
+                      currentEncoder = config.encoder;
+                      console.log("Current Encoder: " + currentEncoder);
+                      //send button led and implement functions in the corresponding Midi Utils
+                      midiUtils.sendEncoderLED(routing, currentEncoder);
+            }
         }
       }
       return;
@@ -268,8 +338,20 @@ module.exports = {
           midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midiChannel);
         });
       }
-      if (address?.includes("/updatePage/current")) {
-        page = "" + args[0].value;
+       if (address?.includes("/updatePage/current")) {
+        console.log("Update Page: " + args[0].value);
+        if (address?.includes("/updatePage/current")) {
+          const tempPage = args[0].value < 10 ? "0" + args[0].value : "" + args[0].value;
+        
+          if (tempPage.length > 2) {
+            page = tempPage.slice(-2); 
+          } else {
+            page = tempPage;
+          }
+          //send page ID to segments here
+        
+        }
+
       }
       if (addressSplit[1]?.includes("masterEnabled")) {
         const mappings = routingUtils.getRoutingNoteByCMD(routing, addressSplit[2]);
@@ -325,51 +407,89 @@ module.exports = {
         });
       }
 
-      for (let device of Object.keys(routing)) {
-        if (routing[device].enableTimecodeSend) {
-          if (addressSplit[1]?.includes("Timecode")) {
-            let slot = addressSplit[1].slice(-1);
+ 
+      if (address === "/expandTimecode") {
+              expandTimecode = args[0].value;
 
-            if (!isNaN(slot)) {
-              slot = parseInt(slot);
+              
+      
+            }
+            
 
-              const time = args[0].value;
-
-              const hrsIndex = time.indexOf("h");
-              const minIndex = time.indexOf("m");
-              const secIndex = time.indexOf(":");
-
-              const hrs = hrsIndex == -1 ? "0" : time.substring(0, hrsIndex);
-              const mins = minIndex == -1 ? "0" : time.substring(hrsIndex + 1, minIndex);
-              const secs = time.substring(minIndex + 1, secIndex);
-              const mili = time.substring(secIndex + 1);
-
-              const updateChanges = (key, value) => {
-                if (!timecode.slots[slot]) timecode.slots[slot] = {};
-
-                if (timecode.slots[slot][key] != value) timecode.slots[slot][key] = value;
+       if (address === "/selectedFeatureGroup") {
+              // Only light the selected feature group LED, turn off all others by unique ID
+              const map = {
+                Dimmer: 1,
+                PanTilt: 2,
+                Gobo: 3,
+                RGB: 4,
+                CMY: 4,
+                Color: 4,
+                Beam: 5,
+                Focus: 6,
+                FIXTURE: 7,
+                Control: 7
               };
-
-              updateChanges("hrs", hrs);
-              updateChanges("mins", mins);
-              updateChanges("secs", secs);
-              updateChanges("mili", mili);
-
-              if (timecode.selectedSlot == slot) {
-                midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot]);
-              }
-            }
-          }
-
-          // Check if the message from MA3 contains an address in the timecode slot pool
-          if (addressSplit[1]?.startsWith("14.")) {
-            const slotNum = addressSplit[1].substring(3);
-
-            if (!isNaN(slotNum) && timecode.slots[slotNum]) {
-              timecode.slots[slotNum].running = args[0].value === "Go+";
-            }
-          }
+              const newAttr = args[0].value;
+              currentAttribute = newAttr;
+              const selectedId = map[newAttr];
+              const uniqueIds = [...new Set(Object.values(map))];
+              uniqueIds.forEach(id => {
+                const cmd = `FeatureGroup ${id}`;
+                midiUtils.sendCMDLED(routing, cmd, id === selectedId);
+              });
+              return;
         }
+
+
+      for (let device of Object.keys(routing)) {
+         
+        
+        if (routing[device].enableTimecodeSend) {
+                 if (addressSplit[1]?.includes("Timecode")) {
+                   let slot = addressSplit[1].slice(-1);
+       
+                   if (!isNaN(slot)) {
+                     slot = parseInt(slot);
+       
+                     const time = args[0].value;
+       
+                     const hrsIndex = time.indexOf("h");
+                     const minIndex = time.indexOf("m");
+                     const secIndex = time.indexOf(":");
+       
+                     const hrs = hrsIndex == -1 ? "0" : time.substring(0, hrsIndex);
+                     const mins = minIndex == -1 ? "0" : time.substring(hrsIndex + 1, minIndex);
+                     const secs = time.substring(minIndex + 1, secIndex);
+                     const mili = time.substring(secIndex + 1);
+       
+                     const updateChanges = (key, value) => {
+                       if (!timecode.slots[slot]) timecode.slots[slot] = {};
+       
+                       if (timecode.slots[slot][key] != value) timecode.slots[slot][key] = value;
+                     };
+       
+                     updateChanges("hrs", hrs);
+                     updateChanges("mins", mins);
+                     updateChanges("secs", secs);
+                     updateChanges("mili", mili);
+       
+                     if (timecode.selectedSlot == slot) {
+                       
+                       midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot], !expandTimecode);;
+                     }
+                   }
+                 }
+       
+                 // Check if the message from MA3 contains an address in the timecode slot pool
+                 if (addressSplit[1]?.startsWith("14.")) {
+                   const slotNum = addressSplit[1].substring(3);
+       
+                   if (!isNaN(slotNum) && timecode.slots[slotNum]) {
+                     timecode.slots[slotNum].running = args[0].value === "Go+";
+                   }
+                 }
+               }
       }
     }
 

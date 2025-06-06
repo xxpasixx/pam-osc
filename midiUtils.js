@@ -23,6 +23,9 @@ module.exports = {
   resetSegments: resetSegments,
   updateSegmentsBySlot: updateSegmentsBySlot,
   sendPermanentFeedback: sendPermanentFeedback,
+  sendPageID:sendPageID,
+  sendCMDLED: sendCMDLED,
+  sendEncoderLED: sendEncoderLED
 };
 
 function sendNoteResponse(routing, midiDeviceName, ctrl, value, buttonFeedbackMapper, midiChannel = 1) {
@@ -44,12 +47,23 @@ function sendAttributeLED(routing, currentAttribute) {
     sendNoteResponse(routing, mapping.device, mapping.midiId, value ? "On" : "Off");
   });
 }
+//FIXME: Rollback affected
+function sendPageID(routing, midiDeviceName, value) {
+  if (routing[midiDeviceName].mode !== "mc") return;
+  for (let name of Object.keys(routing)) {
+    //ensure page id doesnt run over into timecode segments
+    for (let i = 0; i < Math.min(value.length, 2); i++) {
+      sendSegment(routing, name, i, value.charAt(i));
+  }
+  }
+}
 
 function sendSegment(routing, midiDeviceName, segment, value) {
   if (routing[midiDeviceName].mode !== "mc") return;
 
   send("midi", midiDeviceName, "/control", 1, 75 - segment, value.toString().charCodeAt(0));
 }
+
 
 function resetSegments(routing, midiDeviceName) {
   if (routing[midiDeviceName].mode !== "mc") return;
@@ -59,7 +73,7 @@ function resetSegments(routing, midiDeviceName) {
   }
 }
 
-function updateSegmentsBySlot(routing, slot) {
+function updateSegmentsBySlot(routing, slot, shorten_hours) {
   const updateSegs = (startingSeg, value) => {
     for (let name of Object.keys(routing)) {
       for (let i = 0; i < value.length; i++) {
@@ -67,11 +81,23 @@ function updateSegmentsBySlot(routing, slot) {
       }
     }
   };
+  const updateHours = (startingSeg, value) => {
+    for (let name of Object.keys(routing)) {
+      for (let i = 0; i < value.length - 2; i++) {
+        sendSegment(routing, name,4, value.charAt(i));
+      }
+    }
+  };
 
   updateSegs(9, slot.mili.padEnd(2, "0"));
   updateSegs(7, slot.secs.padStart(2, "0"));
   updateSegs(5, slot.mins.padStart(2, "0"));
-  updateSegs(2, slot.hrs.padStart(3, "0"));
+  if (shorten_hours) {
+    updateHours(2, slot.hrs.padStart(3, "0"));
+  } else {
+    updateSegs(2, slot.hrs.padStart(3, "0"));
+  }
+  
 }
 
 function sendPermanentFeedback(routing) {
@@ -85,4 +111,20 @@ function sendPermanentFeedback(routing) {
       }
     }
   }
+}
+
+function sendCMDLED(routing, cmd, value) {
+  const mappings = routingUtils.getRoutingNoteByCMD(routing, cmd);
+  mappings.forEach((mapping) => {
+    const val = mapping.permanentFeedback !== undefined ? mapping.permanentFeedback : (value ? "On" : "Off");
+    sendNoteResponse(routing, mapping.device, mapping.midiId, val, mapping.buttonFeedbackMapper, mapping.midiChannel);
+  });
+}
+
+// New: send LEDs for encoder buttons, turning the current encoder on and others off
+function sendEncoderLED(routing, currentEncoder) {
+  routingUtils.getRoutingNoteWithEncoder(routing).forEach((mapping) => {
+    const isActive = mapping.encoder.toString() === currentEncoder.toString();
+    sendNoteResponse(routing, mapping.device, mapping.midiId, isActive ? "On" : "Off");
+  });
 }

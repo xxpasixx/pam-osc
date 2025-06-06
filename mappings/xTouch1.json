@@ -103,7 +103,7 @@
             "returnTo": 43
         },
         "60": {
-            "attribute": "current",
+            "encoder": "current",
             "posFrom": 1,
             "posTo": 1,
             "negFrom": 65,
@@ -381,52 +381,64 @@
             "minValue": 100
         },
         "84": {
-            "local": "attribute",
-            "attribute": "dimmer"
+            "old_local": "attribute",
+            "old_attribute": "dimmer",
+            "cmd": "FeatureGroup 1",
+            "minValue": 100
         },
         "85": {
-            "local": "attribute",
-            "attribute": "pan"
+            "cmd": "FeatureGroup 2",
+            "minValue": 100
         },
         "86": {
-            "local": "attribute",
-            "attribute": "tilt"
+            "old_local": "attribute",
+            "old_attribute": "tilt",
+            "cmd": "FeatureGroup 3",
+            "minValue": 100
         },
         "87": {
-            "local": "attribute",
-            "attribute": "ColorRGB_R"
+            "old_local": "attribute",
+            "old_attribute": "ColorRGB_R",
+            "cmd": "FeatureGroup 4",
+            "minValue": 100
         },
         "88": {
-            "local": "attribute",
-            "attribute": "ColorRGB_G"
+            "old_local": "attribute",
+            "old_attribute": "ColorRGB_G",
+            "cmd": "FeatureGroup 5",
+            "minValue": 100
         },
         "89": {
-            "local": "attribute",
-            "attribute": "ColorRGB_B"
+            "old_local": "attribute",
+            "old_attribute": "ColorRGB_B",
+            "cmd": "FeatureGroup 6",
+            "minValue": 100
         },
         "90": {
-            "local": "attribute",
-            "attribute": "Zoom"
+            "old_local": "attribute",
+            "old_attribute": "Zoom",
+            "cmd": "FeatureGroup 7",
+            "minValue": 100
         },
         "91": {
-            "cmd": "Go-",
-            "minValue": 100
+            "local": "encoder",
+            "encoder": "1"
         },
         "92": {
-            "cmd": "Go+",
-            "minValue": 100
+            "local": "encoder",
+            "encoder": "2"
         },
         "93": {
-            "cmd": "Off",
-            "minValue": 100
+            "local": "encoder",
+            "encoder": "3"
         },
         "94": {
-            "cmd": "Top",
-            "minValue": 100
+            "local": "encoder",
+            "encoder": "4"
         },
         "95": {
-            "cmd": "Clear",
-            "minValue": 100
+            "local": "encoder",
+            "encoder": "5"
         },
         "96": {
             "cmd": "UP",
@@ -446,6 +458,10 @@
         },
         "100": {
             "cmd": "Set",
+            "minValue": 100
+        },
+        "101": {
+            "local": "encoderKlick",
             "minValue": 100
         }
     },
