@@ -133,7 +133,32 @@ module.exports = {
           let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
           change = encoderFine ? change / 10 : change;
           change = encoderRough ? change * 10 : change; 
+          change = encoderRough ? change * 10 : change; 
           const plusMinus = change > 0 ? " + " : " - ";
+          const encoderToSend = encoder == "current" ? currentEncoder : encoder;
+          console.log("HERE")
+          // Build separate commands for Up and Down
+          let cmdString;
+          if (change > 0) {
+            switch (encoderToSend) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 9`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 14`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 19`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 24`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 29`; break;
+              default:  cmdString = `None`;
+            }
+          } else {
+            const absVal = Math.abs(change);
+            switch (encoderToSend) {
+              case "1": cmdString = `Go+ DataPool 128 Macro 10`; break;
+              case "2": cmdString = `Go+ DataPool 128 Macro 15`; break;
+              case "3": cmdString = `Go+ DataPool 128 Macro 20`; break;
+              case "4": cmdString = `Go+ DataPool 128 Macro 25`; break;
+              case "5": cmdString = `Go+ DataPool 128 Macro 30`; break;
+              default:  cmdString = `Encoder${encoderToSend}Down ${absVal}`;
+            }
+          }
           const encoderToSend = encoder == "current" ? currentEncoder : encoder;
           console.log("HERE")
           // Build separate commands for Up and Down
@@ -160,6 +185,7 @@ module.exports = {
           }
           send(ip, oscPort, prefix + "/cmd", {
             type: "s",
+            value: cmdString,
             value: cmdString,
           });
         }
