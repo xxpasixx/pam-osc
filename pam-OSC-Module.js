@@ -28,16 +28,14 @@ var routing = {};
 
 let encoderFine = false;
 let encoderRough = false;
-let currentAttribute = "Dim";
-let currentEncoder = "1"
-let expandTimecode = true;
+let currentAttribute = "dimmer";
 let timecode = {
   selectedSlot: 0,
   slots: {},
 };
 
 var prefix = "";
-var page = "01";
+var page = "1";
 
 const ipPort = ("" + settings.read("send")).split(":");
 const ip = ipPort[0];
@@ -69,20 +67,10 @@ midiUtils.sendAttributeLED(routing, currentAttribute);
 midiUtils.sendPermanentFeedback(routing);
 
 for (let device of Object.keys(routing)) {
-
   if (routing[device].enableTimecodeSend) {
     midiUtils.resetSegments(routing, device);
-    if (expandTimecode) {
-      midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
-    } else {
-      midiUtils.sendSegment(routing, device, 2, timecode.selectedSlot);
-      midiUtils.sendPageID(routing, device, page);
-      midiUtils.sendSegment(routing, device, 3, "-");
-    }
-    
-   
-  } 
-  
+    midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
+  }
 }
 
 setTimeout(function () {
@@ -119,41 +107,18 @@ module.exports = {
           });
         }
 
-        // handle feature Group Encoders
-        if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].encoder) {
-          const { encoder, posFrom, posTo, negFrom, negTo, amount } = routing[port]["rltvControl"][ctrl];
-          console.log("Encoder: " + encoder);
+        // handle attribute Encoders
+        if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].attribute) {
+          const { attribute, posFrom, posTo, negFrom, negTo, amount } = routing[port]["rltvControl"][ctrl];
+
           let change = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo) * amount;
           change = encoderFine ? change / 10 : change;
-          change = encoderRough ? change * 10 : change; 
+          change = encoderRough ? change * 10 : change;
           const plusMinus = change > 0 ? " + " : " - ";
-          const encoderToSend = encoder == "current" ? currentEncoder : encoder;
-          console.log("HERE")
-          // Build separate commands for Up and Down
-          let cmdString;
-          if (change > 0) {
-            switch (encoderToSend) {
-              case "1": cmdString = `Go+ DataPool 128 Macro 9`; break;
-              case "2": cmdString = `Go+ DataPool 128 Macro 14`; break;
-              case "3": cmdString = `Go+ DataPool 128 Macro 19`; break;
-              case "4": cmdString = `Go+ DataPool 128 Macro 24`; break;
-              case "5": cmdString = `Go+ DataPool 128 Macro 29`; break;
-              default:  cmdString = `None`;
-            }
-          } else {
-            const absVal = Math.abs(change);
-            switch (encoderToSend) {
-              case "1": cmdString = `Go+ DataPool 128 Macro 10`; break;
-              case "2": cmdString = `Go+ DataPool 128 Macro 15`; break;
-              case "3": cmdString = `Go+ DataPool 128 Macro 20`; break;
-              case "4": cmdString = `Go+ DataPool 128 Macro 25`; break;
-              case "5": cmdString = `Go+ DataPool 128 Macro 30`; break;
-              default:  cmdString = `Encoder${encoderToSend}Down ${absVal}`;
-            }
-          }
+          const attributeToSend = attribute == "current" ? currentAttribute : attribute;
           send(ip, oscPort, prefix + "/cmd", {
             type: "s",
-            value: cmdString,
+            value: "Attribute " + attributeToSend + " at " + plusMinus + Math.abs(change),
           });
         }
       }
@@ -187,18 +152,9 @@ module.exports = {
             slotNum = (slotNum + 1) % 9;
 
             midiUtils.resetSegments(routing, port);
-            
-            if (expandTimecode) {
-              midiUtils.sendSegment(routing, port, 1, slotNum);
-            } else {
-              midiUtils.sendSegment(routing, port, 2, slotNum);
-              midiUtils.sendPageID(routing, port, page);
-              midiUtils.sendSegment(routing, port, 3, "-");
-            }
-            
-            
+            midiUtils.sendSegment(routing, port, 1, slotNum);
 
-            if (timecode.slots[slotNum]) midiUtils.updateSegmentsBySlot(routing, timecode.slots[slotNum], shorten_hours = !expandTimecode);
+            if (timecode.slots[slotNum]) midiUtils.updateSegmentsBySlot(routing, timecode.slots[slotNum]);
 
             timecode.selectedSlot = slotNum;
           }
@@ -260,8 +216,6 @@ module.exports = {
             type: "s",
             value: config.cmd,
           });
-          // Update LED for command button
-          
         }
 
         if (config.local) {
@@ -274,44 +228,12 @@ module.exports = {
             midiUtils.sendNoteResponse(routing, port, ctrl, encoderFine ? "On" : "Off", null, 1);
           }
 
-
-          //Handles the feature group but keeping legacy attribute name
-          //TODO: Switch to Feature Group in Naming scheme
           if (config.local == "attribute" && config.attribute) {
             currentAttribute = config.attribute;
             midiUtils.sendAttributeLED(routing, currentAttribute);
           }
-
-          if (config.local == "encoder" && config.encoder) {
-            currentEncoder = config.encoder;
-            console.log("Current Encoder: " + currentEncoder);
-            //send button led and implement functions in the corresponding Midi Utils
-            midiUtils.sendEncoderLED(routing, currentEncoder);
-          }
-          
-          if (config.local == "encoderKlick") {
-            console.log("Encoder Klick: " + currentEncoder);
-            switch (currentEncoder) {
-              case "1": cmdString = `Go+ DataPool 128 Macro 1`; break;
-              case "2": cmdString = `Go+ DataPool 128 Macro 2`; break;
-              case "3": cmdString = `Go+ DataPool 128 Macro 3`; break;
-              case "4": cmdString = `Go+ DataPool 128 Macro 4`; break;
-              case "5": cmdString = `Go+ DataPool 128 Macro 5`; break;
-              default:  cmdString = `None`;
-            }
-
-            send(ip, oscPort, prefix + "/cmd", {
-            type: "s",
-            value: cmdString,
-          });
-            
-            //send button led and implement functions in the corresponding Midi Utils
-            //midiUtils.sendEncoderLED(routing, currentEncoder);
-          }
-
         }
       }
-      
       return;
     }
 
@@ -347,28 +269,14 @@ module.exports = {
         });
       }
       if (address?.includes("/updatePage/current")) {
-        console.log("Update Page: " + args[0].value);
-        if (address?.includes("/updatePage/current")) {
-          const tempPage = args[0].value < 10 ? "0" + args[0].value : "" + args[0].value;
-        
-          if (tempPage.length > 2) {
-            page = tempPage.slice(-2); // Strip to the last 2 digits
-            //TODO: Light Button to indicate that the page is over 99
-          } else {
-            page = tempPage;
-          }
-        
-        }
-
+        page = "" + args[0].value;
       }
       if (addressSplit[1]?.includes("masterEnabled")) {
         const mappings = routingUtils.getRoutingNoteByCMD(routing, addressSplit[2]);
 
         mappings.forEach((mapping) => {
           const value = mapping.permanentFeedback || args[0].value ? "On" : "Off";
-          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midi
-            
-          );
+          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midiChannel);
         });
       }
 
@@ -417,48 +325,7 @@ module.exports = {
         });
       }
 
-      if (address === "/expandTimecode") {
-        expandTimecode = args[0].value;
-        for (let device of Object.keys(routing)) {
-          midiUtils.resetSegments(routing, device);
-        }
-        
-
-      }
-
-      if (address === "/selectedFeatureGroup") {
-        // Only light the selected feature group LED, turn off all others by unique ID
-        const map = {
-          Dimmer: 1,
-          PanTilt: 2,
-          Gobo: 3,
-          RGB: 4,
-          CMY: 4,
-          Color: 4,
-          Beam: 5,
-          Focus: 6,
-          FIXTURE: 7,
-          Control: 7
-        };
-        const newAttr = args[0].value;
-        currentAttribute = newAttr;
-        const selectedId = map[newAttr];
-        const uniqueIds = [...new Set(Object.values(map))];
-        uniqueIds.forEach(id => {
-          const cmd = `FeatureGroup ${id}`;
-          midiUtils.sendCMDLED(routing, cmd, id === selectedId);
-        });
-        return;
-      }
-
       for (let device of Object.keys(routing)) {
-        if (expandTimecode) {
-          midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot); 
-        } else {
-          midiUtils.sendSegment(routing, device, 2, timecode.selectedSlot);
-          midiUtils.sendPageID(routing, device, page);
-          midiUtils.sendSegment(routing, device, 3, "-");
-        }
         if (routing[device].enableTimecodeSend) {
           if (addressSplit[1]?.includes("Timecode")) {
             let slot = addressSplit[1].slice(-1);
@@ -489,8 +356,7 @@ module.exports = {
               updateChanges("mili", mili);
 
               if (timecode.selectedSlot == slot) {
-                
-                midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot], !expandTimecode);;
+                midiUtils.updateSegmentsBySlot(routing, timecode.slots[slot]);
               }
             }
           }
