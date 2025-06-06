@@ -15,6 +15,7 @@ local oldValues = {}
 local oldButtonValues = {}
 local oldColorValues = {}
 local oldNameValues = {}
+--FIXME: Rollback affected
 local oldExpandedTimecode = false
 local oldSelectedFeatureGroup = ""
 
@@ -94,6 +95,7 @@ local function main()
     local sendColors = GetVar(GlobalVars(), "sendColors") or false
     local sendNames = GetVar(GlobalVars(), "sendNames") or false
     local sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
+     --FIXME: Rollback affected
     local expandedTimecode = GetVar(GlobalVars(), "expandTimecode") or false
 
     Printf("start pam OSC main()")
@@ -101,6 +103,7 @@ local function main()
     Printf("sendColors: " .. (sendColors and "true" or "false"))
     Printf("sendNames: " .. (sendNames and "true" or "false"))
     Printf("sendTimecode: " .. (sendTimecode and "true" or "false"))
+    --FIXME: Rollback affected
     Printf("expandedTimecode: " .. (expandedTimecode and "true" or "false"))
 
     local destPage = 1
@@ -141,7 +144,10 @@ local function main()
             end
         end
 
+
+        --FIXME: Rollback affected
         -- Check Page
+        --[[
         local myPage = CurrentExecPage()
         if myPage.index ~= destPage then
             destPage = myPage.index
@@ -154,7 +160,8 @@ local function main()
             forceReload = true
             Cmd('SendOSC ' .. oscEntry .. ' "/updatePage/current,i,' .. destPage)
         end
-
+        --]]
+        
         -- Get all Executors
         local executors = DataPool().Pages[destPage]:Children()
 
@@ -220,7 +227,8 @@ local function main()
                         '"')
             end
 
-
+            --FIXME: Rollback affected
+            --[[
             if oldExpandedTimecode ~= expandedTimecode or forceReload then
                 oldExpandedTimecode = expandedTimecode
                 if expandedTimecode then
@@ -229,20 +237,22 @@ local function main()
                     Cmd('SendOSC ' .. oscEntry .. ' "/expandTimecode,F,"')
                 end
             end
-
+            --]]
             
             
         end
         
         
-
+        --FIXME: Rollback affected
         -- Send Selected Attribute
+        --[[
         local selectedFeatureGroup = SelectedFeature().name
         if selectedFeatureGroup ~= oldSelectedFeatureGroup or forceReload then
             oldSelectedFeatureGroup = selectedFeatureGroup
             Printf(selectedFeatureGroup)
             Cmd('SendOSC ' .. oscEntry .. ' "/selectedFeatureGroup,s,' .. selectedFeatureGroup .. '"')
         end
+        --]]
 
         -- Send Timecode
         if sendTimecode then
