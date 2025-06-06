@@ -23,7 +23,7 @@ module.exports = {
   resetSegments: resetSegments,
   updateSegmentsBySlot: updateSegmentsBySlot,
   sendPermanentFeedback: sendPermanentFeedback,
-  //sendPageID:sendPageID,
+  sendPageID:sendPageID,
   sendCMDLED: sendCMDLED,
   sendEncoderLED: sendEncoderLED
 };
@@ -48,15 +48,15 @@ function sendAttributeLED(routing, currentAttribute) {
   });
 }
 //FIXME: Rollback affected
-//function sendPageID(routing, midiDeviceName, value) {
-//  if (routing[midiDeviceName].mode !== "mc") return;
-//  for (let name of Object.keys(routing)) {
+function sendPageID(routing, midiDeviceName, value) {
+  if (routing[midiDeviceName].mode !== "mc") return;
+  for (let name of Object.keys(routing)) {
     //ensure page id doesnt run over into timecode segments
-//    for (let i = 0; i < Math.min(value.length, 2); i++) {
-//      sendSegment(routing, name, i, value.charAt(i));
-//  }
-//  }
-//}
+    for (let i = 0; i < Math.min(value.length, 2); i++) {
+      sendSegment(routing, name, i, value.charAt(i));
+  }
+  }
+}
 
 function sendSegment(routing, midiDeviceName, segment, value) {
   if (routing[midiDeviceName].mode !== "mc") return;
