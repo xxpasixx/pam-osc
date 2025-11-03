@@ -1,0 +1,460 @@
+{
+  "control": {
+    "48": "201",
+    "49": "202",
+    "50": "203",
+    "51": "204",
+    "52": "205",
+    "53": "206",
+    "54": "207",
+    "55": "208",
+    "56": "209"
+  },
+  "note": {
+    "0": {
+      "exec": 101,
+      "permanentFeedback": 21,
+      "midiChannel": 7
+    },
+    "1": {
+      "exec": 102,
+      "permanentFeedback": 21,
+      "midiChannel": 7
+    },
+    "2": {
+      "exec": 103,
+      "permanentFeedback": 21,
+      "midiChannel": 7
+    },
+    "3": {
+      "exec": 104,
+      "permanentFeedback": 21,
+      "midiChannel": 7
+    },
+    "4": {
+      "exec": 105,
+      "permanentFeedback": 21,
+      "midiChannel": 7
+    },
+    "5": {
+      "exec": 106,
+      "permanentFeedback": 21,
+      "midiChannel": 7
+    },
+    "6": {
+      "exec": 107,
+      "permanentFeedback": 21,
+      "midiChannel": 7
+    },
+    "7": {
+      "exec": 108,
+      "permanentFeedback": 21,
+      "midiChannel": 7
+    },
+    "8": {
+      "exec": 301,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "9": {
+      "exec": 302,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "10": {
+      "exec": 303,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "11": {
+      "exec": 304,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "12": {
+      "exec": 305,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "13": {
+      "exec": 306,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "14": {
+      "exec": 307,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "15": {
+      "exec": 308,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "16": {
+      "exec": 401,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "17": {
+      "exec": 402,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "18": {
+      "exec": 403,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "19": {
+      "exec": 404,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "20": {
+      "exec": 405,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "21": {
+      "exec": 406,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "22": {
+      "exec": 407,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "23": {
+      "exec": 408,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "24": {
+      "cmd": "At Preset 6.1",
+      "minValue": 100,
+	"permanentFeedback": 33,
+	"midiChannel": 7
+    },
+    "25": {
+      "cmd": "At Preset 6.2",
+      "minValue": 100,
+	"permanentFeedback": 33,
+	"midiChannel": 7
+    },
+    "26": {
+      "cmd": "At Preset 6.3",
+      "minValue": 100,
+	"permanentFeedback": 33,
+	"midiChannel": 7
+    },
+    "27": {
+      "cmd": "At Preset 6.4",
+      "minValue": 100,
+	"permanentFeedback": 33,
+	"midiChannel": 7
+    },
+    "28": {
+      "cmd": "At Preset 6.5",
+      "minValue": 100,
+	"permanentFeedback": 33,
+	"midiChannel": 7
+    },
+    "29": {
+      "cmd": "At Preset 6.6",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "30": {
+      "cmd": "Go+ Sequence 31",
+      "minValue": 100,
+	"permanentFeedback": 53,
+	"midiChannel": 7
+    },
+    "31": {
+      "cmd": "Go+ Sequence 32",
+      "minValue": 100,
+	"permanentFeedback": 57,
+	"midiChannel": 7
+    },
+    "32": {
+      "cmd": "At Preset 2.1",
+      "minValue": 100,
+	"permanentFeedback": 13,
+	"midiChannel": 7
+    },
+    "33": {
+      "cmd": "At Preset 2.2",
+      "minValue": 100,
+	"permanentFeedback": 13,
+	"midiChannel": 7
+    },
+    "34": {
+      "cmd": "At Preset 2.3",
+      "minValue": 100,
+	"permanentFeedback": 13,
+	"midiChannel": 7
+    },
+    "35": {
+      "cmd": "At Preset 2.4",
+      "minValue": 100,
+	"permanentFeedback": 13,
+	"midiChannel": 7
+    },
+    "36": {
+      "cmd": "At Preset 2.5",
+      "minValue": 100,
+	"permanentFeedback": 13,
+	"midiChannel": 7
+    },
+    "37": {
+      "cmd": "At Preset 2.6",
+      "minValue": 100,
+	"permanentFeedback": 13,
+	"midiChannel": 7
+    },
+    "38": {
+      "cmd": "At Preset 2.7",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "39": {
+      "cmd": "At Preset 2.8",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "40": {
+      "cmd": "At Preset 1.1",
+      "minValue": 100,
+	"permanentFeedback": 3,
+	"midiChannel": 1
+    },
+    "41": {
+      "cmd": "At Preset 1.4",
+      "minValue": 100,
+	"permanentFeedback": 3,
+	"midiChannel": 2
+    },
+    "42": {
+      "cmd": "At Preset 1.5",
+      "minValue": 100,
+	"permanentFeedback": 3,
+	"midiChannel": 4
+    },
+    "43": {
+      "cmd": "At Preset 1.10",
+      "minValue": 100,
+	"permanentFeedback": 3,
+	"midiChannel": 5
+    },
+    "44": {
+      "cmd": "At Preset 1.13",
+      "minValue": 100,
+	"permanentFeedback": 3,
+	"midiChannel": 7
+    },
+    "45": {
+      "cmd": "At Preset 1.20",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "46": {
+      "cmd": "At Preset 1.21",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "47": {
+      "cmd": "At Preset 1.22",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "48": {
+      "cmd": "At Preset 4.9",
+      "minValue": 100,
+	"permanentFeedback": 41,
+	"midiChannel": 7
+    },
+    "49": {
+      "cmd": "At Preset 4.10",
+      "minValue": 100,
+	"permanentFeedback": 45,
+	"midiChannel": 7
+    },
+    "50": {
+      "cmd": "At Preset 4.11",
+      "minValue": 100,
+	"permanentFeedback": 49,
+	"midiChannel": 7
+    },
+    "51": {
+      "cmd": "At Preset 4.12",
+      "minValue": 100,
+	"permanentFeedback": 53,
+	"midiChannel": 7
+    },
+    "52": {
+      "cmd": "At Preset 4.13",
+      "minValue": 100,
+	"permanentFeedback": 57,
+	"midiChannel": 7
+    },
+    "53": {
+      "cmd": "At Preset 4.14",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "54": {
+      "cmd": "At Preset 4.15",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "55": {
+      "cmd": "At Preset 4.16",
+      "minValue": 100,
+	"permanentFeedback": 10,
+	"midiChannel": 7
+    },
+    "56": {
+      "cmd": "At Preset 4.1",
+      "minValue": 100,
+	"permanentFeedback": 3,
+	"midiChannel": 7
+    },
+    "57": {
+      "cmd": "At Preset 4.2",
+      "minValue": 100,
+	"permanentFeedback": 5,
+	"midiChannel": 7
+    },
+    "58": {
+      "cmd": "At Preset 4.3",
+      "minValue": 100,
+	"permanentFeedback": 9,
+	"midiChannel": 7
+    },
+    "59": {
+      "cmd": "At Preset 4.4",
+      "minValue": 100,
+	"permanentFeedback": 13,
+	"midiChannel": 7
+    },
+    "60": {
+      "cmd": "At Preset 4.5",
+      "minValue": 100,
+	"permanentFeedback": 17,
+	"midiChannel": 7
+    },
+    "61": {
+      "cmd": "At Preset 4.6",
+      "minValue": 100,
+	"permanentFeedback": 21,
+	"midiChannel": 7
+    },
+    "62": {
+      "cmd": "At Preset 4.7",
+      "minValue": 100,
+	"permanentFeedback": 29,
+	"midiChannel": 7
+    },
+    "63": {
+      "cmd": "At Preset 4.8",
+      "minValue": 100,
+	"permanentFeedback": 37,
+	"midiChannel": 7
+    },
+    "100": {
+      "cmd": "Group 7",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "101": {
+      "cmd": "Group 5",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "102": {
+      "cmd": "Group 6",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "103": {
+      "cmd": "Group 11",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "104": {
+      "cmd": "Group 12",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "105": {
+      "cmd": "Group 13",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "106": {
+      "cmd": "Previous Page",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "107": {
+      "cmd": "Next Page",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "112": {
+      "cmd": "SaveShow",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "113": {
+      "quicKey": "EditRecipe Programmer",
+      "minValue": 100 ,
+      "permanentFeedback": 127
+    },
+    "114": {
+      "quicKey": "Esc",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "115": {
+      "quicKey": "Please",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "116": {
+      "quicKey": "Oops",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "117": {
+      "quicKey": "Off",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "118": {
+      "quicKey": "Clear",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },    
+    "119": {
+      "quicKey": "Store",
+      "minValue": 100,
+      "permanentFeedback": 127
+    },
+    "122": {
+      "quicKey": "",
+      "minValue": 100,
+      "permanentFeedback": 127
+    }
+  }
+}
