@@ -21,6 +21,8 @@ If you want to use it on a Job, make sure you tested it well in your enviroment 
 
 It is Still in Beta & uses a lot of Recources, what could create Performance issues during the Show.
 
+Tested with Grandma3 Version 2.3.1.1
+
 ## How to Setup
 
 [Setup Instructions](https://github.com/xxpasixx/pam-osc/wiki/Setup)
@@ -49,8 +51,3 @@ Make Sure the IP's are all correct and the PC is the Session Master.
 - u~~pdate to configure IP in OSC GUI~~
 - Dynamic Attribute Encoder https://forum.malighting.com/forum/thread/9089-get-encoder-pool-in-lua-plugin
 
-
-### Videos to Create
-- Setup Video XTouchCompact
-- Vegas Fader xTouch (Short)
-- Encoder on xTouch and xTouch Compact
