@@ -91,12 +91,14 @@ local function main()
     local sendColors = GetVar(GlobalVars(), "sendColors") or false
     local sendNames = GetVar(GlobalVars(), "sendNames") or false
     local sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
+    local fixedPageNr = GetVar(GlobalVars(), "fixedPageNr") or 0
 
     Printf("start pam OSC main()")
     Printf("automaticResendButtons: " .. (automaticResendButtons and "true" or "false"))
     Printf("sendColors: " .. (sendColors and "true" or "false"))
     Printf("sendNames: " .. (sendNames and "true" or "false"))
     Printf("sendTimecode: " .. (sendTimecode and "true" or "false"))
+    Printf("fixedPageNr: " .. fixedPageNr)
 
     local destPage = 1
     local forceReload = true
@@ -115,7 +117,9 @@ local function main()
             sendColors = GetVar(GlobalVars(), "sendColors") or false
             sendNames = GetVar(GlobalVars(), "sendNames") or false
             sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
+            fixedPageNr = GetVar(GlobalVars(), "fixedPageNr") or 0
             SetVar(GlobalVars(), "forceReload", false)
+            Cmd('SendOSC ' .. oscEntry .. ' "/updatePage/current,i,' .. destPage)
         end
 
         if automaticResendButtons then
@@ -137,6 +141,15 @@ local function main()
 
         -- Check Page
         local myPage = CurrentExecPage()
+        if fixedPageNr ~= nil and tostring(fixedPageNr) ~= "" and tonumber(fixedPageNr) and tonumber(fixedPageNr) ~= 0 then
+            local Pages = DataPool().Pages
+            local FixedPageRef = tonumber(fixedPageNr)
+
+            if Pages[FixedPageRef] then
+            myPage = Pages[FixedPageRef]
+            end
+        end
+
         if myPage.index ~= destPage then
             destPage = myPage.index
             for maKey, maValue in pairs(oldValues) do

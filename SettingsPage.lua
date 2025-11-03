@@ -8,14 +8,21 @@ function CreateCheckBoxDialog(displayHandle)
 
     -- Get the index of the display on which to create the dialog.
     local displayIndex = Obj.Index(GetFocusDisplay())
+    if displayIndex > 5 then
+        displayIndex = 1
+    end
 
     -- Get the colors.
     local colorTransparent = Root().ColorTheme.ColorGroups.Global.Transparent
     local colorBackground = Root().ColorTheme.ColorGroups.Button.Background
     local colorBackgroundPlease = Root().ColorTheme.ColorGroups.Button.BackgroundPlease
+    local colorPartlySelected = Root().ColorTheme.ColorGroups.Global.PartlySelected
+    local colorPartlySelectedPreset = Root().ColorTheme.ColorGroups.Global.PartlySelectedPreset
+    local colorBlue = Root().ColorTheme.ColorGroups.Global.Blue
+    local colorWhite = Root().ColorTheme.ColorGroups.Global.White
 
     -- Get the overlay.
-    local display = Root().GraphicsRoot.PultCollect:Ptr(1).DisplayCollect:Ptr(displayIndex)
+    local display = GetDisplayByIndex(displayIndex)
     local screenOverlay = display.ScreenOverlay
 
     -- Delete any UI elements currently displayed on the overlay.
@@ -71,14 +78,14 @@ function CreateCheckBoxDialog(displayHandle)
     dlgFrame[1][1].SizePolicy = "Fixed"
     dlgFrame[1][1].Size = "60"
     dlgFrame[1][2].SizePolicy = "Fixed"
-    dlgFrame[1][2].Size = "120"
+    dlgFrame[1][2].Size = "300"
     dlgFrame[1][3].SizePolicy = "Fixed"
     dlgFrame[1][3].Size = "80"
 
     -- Create the sub title.
     -- This is row 1 of the dlgFrame.
     local subTitle = dlgFrame:Append("UIObject")
-    subTitle.Text = "configure what the plugin should send"
+    subTitle.Text = "Configure what the plugin should send"
     subTitle.ContentDriven = "Yes"
     subTitle.ContentWidth = "No"
     subTitle.TextAutoAdjust = "No"
@@ -98,76 +105,265 @@ function CreateCheckBoxDialog(displayHandle)
     subTitle.HasHover = "No"
     subTitle.BackColor = colorTransparent
 
-    -- Create the checkbox grid.
+    -- Create the settings grid.
     -- This is row 2 of the dlgFrame.
-    local checkBoxGrid = dlgFrame:Append("UILayoutGrid")
-    checkBoxGrid.Columns = 2
-    checkBoxGrid.Rows = 2
-    checkBoxGrid.Anchors = {
+    local settingsGrid = dlgFrame:Append("UILayoutGrid")
+    settingsGrid.Columns = 10
+    settingsGrid.Rows = 5
+    settingsGrid.Anchors = {
         left = 0,
         right = 0,
         top = 1,
         bottom = 1
     }
-    checkBoxGrid.Margin = {
+    settingsGrid.Margin = {
         left = 0,
         right = 0,
         top = 0,
         bottom = 5
     }
 
-    local checkBox1 = checkBoxGrid:Append("CheckBox")
-    checkBox1.Anchors = {
+    -- Create Automatic Resend Buttons checkbox
+    local autoResendIcon = settingsGrid:Append("Button")
+    autoResendIcon.Text = ""
+    autoResendIcon.Anchors = {
         left = 0,
         right = 0,
+        top = 0,
+        bottom = 0
+    }
+    autoResendIcon.Icon = "refresh"
+    autoResendIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 0,
+        bottom = 2
+    }
+    autoResendIcon.HasHover = "No"
+
+    local checkBox1 = settingsGrid:Append("CheckBox")
+    checkBox1.Anchors = {
+        left = 1,
+        right = 9,
         top = 0,
         bottom = 0
     }
     checkBox1.Text = "Automatic Resend Buttons"
-    checkBox1.TextalignmentH = "Left";
-    checkBox1.State = GetVar(GlobalVars(), "automaticResendButtons") and 1 or 0;
+    checkBox1.TextalignmentH = "Left"
+    checkBox1.State = GetVar(GlobalVars(), "automaticResendButtons") and 1 or 0
     checkBox1.PluginComponent = myHandle
     checkBox1.Clicked = "AutoResendClicked"
-
-    local checkBox2 = checkBoxGrid:Append("CheckBox")
-    checkBox2.Anchors = {
-        left = 1,
-        right = 1,
+    checkBox1.Margin = {
+        left = 2,
+        right = 0,
         top = 0,
-        bottom = 0
+        bottom = 2
     }
-    checkBox2.Text = "Send Colors"
-    checkBox2.TextalignmentH = "Left";
-    checkBox2.State = GetVar(GlobalVars(), "sendColors") and 1 or 0;
-    checkBox2.PluginComponent = myHandle
-    checkBox2.Clicked = "SendColorsClicked"
 
-    local checkBox3 = checkBoxGrid:Append("CheckBox")
-    checkBox3.Anchors = {
+    -- Create Send Colors checkbox
+    local sendColorsIcon = settingsGrid:Append("Button")
+    sendColorsIcon.Text = ""
+    sendColorsIcon.Anchors = {
         left = 0,
         right = 0,
         top = 1,
         bottom = 1
     }
-    checkBox3.Text = "Send Names"
-    checkBox3.TextalignmentH = "Left";
-    checkBox3.State = GetVar(GlobalVars(), "sendNames") and 1 or 0;
-    checkBox3.PluginComponent = myHandle
-    checkBox3.Clicked = "SendNamesClicked"
+    sendColorsIcon.Icon = "icon_color_picker"
+    sendColorsIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    sendColorsIcon.HasHover = "No"
 
-    local checkBox4 = checkBoxGrid:Append("CheckBox")
-    checkBox4.Anchors = {
+    local checkBox2 = settingsGrid:Append("CheckBox")
+    checkBox2.Anchors = {
         left = 1,
-        right = 1,
+        right = 9,
         top = 1,
         bottom = 1
     }
+    checkBox2.Text = "Send Colors"
+    checkBox2.TextalignmentH = "Left"
+    checkBox2.State = GetVar(GlobalVars(), "sendColors") and 1 or 0
+    checkBox2.PluginComponent = myHandle
+    checkBox2.Clicked = "SendColorsClicked"
+    checkBox2.Margin = {
+        left = 2,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+
+    -- Create Send Names checkbox
+    local sendNamesIcon = settingsGrid:Append("Button")
+    sendNamesIcon.Text = ""
+    sendNamesIcon.Anchors = {
+        left = 0,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+    sendNamesIcon.Icon = "PhaserAddAbsolute"
+    sendNamesIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    sendNamesIcon.HasHover = "No"
+
+    local checkBox3 = settingsGrid:Append("CheckBox")
+    checkBox3.Anchors = {
+        left = 1,
+        right = 9,
+        top = 2,
+        bottom = 2
+    }
+    checkBox3.Text = "Send Names"
+    checkBox3.TextalignmentH = "Left"
+    checkBox3.State = GetVar(GlobalVars(), "sendNames") and 1 or 0
+    checkBox3.PluginComponent = myHandle
+    checkBox3.Clicked = "SendNamesClicked"
+    checkBox3.Margin = {
+        left = 2,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+
+    -- Create Send Timecode checkbox
+    local sendTimecodeIcon = settingsGrid:Append("Button")
+    sendTimecodeIcon.Text = ""
+    sendTimecodeIcon.Anchors = {
+        left = 0,
+        right = 0,
+        top = 3,
+        bottom = 3
+    }
+    sendTimecodeIcon.Icon = "Time"
+    sendTimecodeIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    sendTimecodeIcon.HasHover = "No"
+
+    local checkBox4 = settingsGrid:Append("CheckBox")
+    checkBox4.Anchors = {
+        left = 1,
+        right = 9,
+        top = 3,
+        bottom = 3
+    }
     checkBox4.Text = "Send Timecode"
-    checkBox4.TextalignmentH = "Left";
-    checkBox4.State = GetVar(GlobalVars(), "sendTimecode") and 1 or 0;
+    checkBox4.TextalignmentH = "Left"
+    checkBox4.State = GetVar(GlobalVars(), "sendTimecode") and 1 or 0
     checkBox4.PluginComponent = myHandle
     checkBox4.Clicked = "SendTimecodeClicked"
+    checkBox4.Margin = {
+        left = 2,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
 
+    -- Create Fixed Page Number input
+    local pageNumberIcon = settingsGrid:Append("Button")
+    pageNumberIcon.Text = ""
+    pageNumberIcon.Anchors = {
+        left = 0,
+        right = 0,
+        top = 4,
+        bottom = 4
+    }
+    pageNumberIcon.Icon = "locked"
+    pageNumberIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    pageNumberIcon.HasHover = "No"
+
+    local pageLabel = settingsGrid:Append("UIObject")
+    pageLabel.Text = "Fixed Page Number (0 = disabled):"
+    pageLabel.TextalignmentH = "Left"
+    pageLabel.Anchors = {
+        left = 1,
+        right = 6,
+        top = 4,
+        bottom = 4
+    }
+    pageLabel.Padding = "5,5"
+    pageLabel.Margin = {
+        left = 2,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    pageLabel.HasHover = "No"
+
+    local pageInput = settingsGrid:Append("LineEdit")
+    pageInput.Margin = {
+        left = 2,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+    pageInput.Prompt = "Page: "
+    pageInput.TextAutoAdjust = "Yes"
+    pageInput.Anchors = {
+        left = 7,
+        right = 9,
+        top = 4,
+        bottom = 4
+    }
+    pageInput.Padding = "5,5"
+    pageInput.Filter = "0123456789"
+    pageInput.VkPluginName = "TextInputNumOnly"
+    pageInput.Content = tostring(GetVar(GlobalVars(), "fixedPageNr") or 0)
+    pageInput.MaxTextLength = 3
+    pageInput.HideFocusFrame = "Yes"
+    pageInput.PluginComponent = myHandle
+    pageInput.TextChanged = "FixedPageNrChanged"
+
+    -- Create the button grid.
+    -- This is row 3 of the dlgFrame.
+    local buttonGrid = dlgFrame:Append("UILayoutGrid")
+    buttonGrid.Columns = 1
+    buttonGrid.Rows = 1
+    buttonGrid.Anchors = {
+        left = 0,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+
+    local closeButton = buttonGrid:Append("Button")
+    closeButton.Anchors = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0
+    }
+    closeButton.Textshadow = 1
+    closeButton.HasHover = "Yes"
+    closeButton.Text = "Close"
+    closeButton.Font = "Medium20"
+    closeButton.TextalignmentH = "Centre"
+    closeButton.PluginComponent = myHandle
+    closeButton.Clicked = "CloseButtonClicked"
+    closeButton.Visible = "Yes"
+
+    -- Define all signal handlers
+    signalTable.CloseButtonClicked = function(caller)
+        Echo("Close button clicked.")
+        Obj.Delete(screenOverlay, Obj.Index(baseInput))
+    end
     signalTable.AutoResendClicked = function(caller)
         if (caller.State == 1) then
             caller.State = 0
@@ -212,6 +408,20 @@ function CreateCheckBoxDialog(displayHandle)
             SetVar(GlobalVars(), "sendTimecode", true)
         end
         SetVar(GlobalVars(), "forceReload", true)
+    end
+
+    signalTable.FixedPageNrChanged = function(caller)
+        local pageNr = tonumber(caller.Content) or 0
+        if pageNr < 0 then
+            pageNr = 0
+            caller.Content = "0"
+        elseif pageNr > 999 then
+            pageNr = 999
+            caller.Content = "999"
+        end
+        SetVar(GlobalVars(), "fixedPageNr", pageNr)
+        SetVar(GlobalVars(), "forceReload", true)
+        Echo("Fixed Page Number changed: " .. pageNr)
     end
 end
 
