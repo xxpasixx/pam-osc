@@ -17,6 +17,7 @@
 // Todo: Refactor: This is only a temp solution
 var displayDevice = null;
 var colors = ["0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0", "0;0;0;0"];
+var deskLocked = false;
 
 const utils = require("./utils.js");
 const colorUtils = require("./colorUtils.js");
@@ -80,6 +81,21 @@ setTimeout(function () {
 module.exports = {
   oscInFilter: function (data) {
     var { address, args, host, port } = data;
+
+    if (address === "/status/deskLocked" && args.length > 0) {
+      const lockStatus = args[0];
+      if (lockStatus.type === 'T') {
+        deskLocked = true;
+      } else if (lockStatus.type === 'F') {
+        deskLocked = false;
+      }
+      return;
+    }
+
+    if (deskLocked && host === "midi") {
+      console.log("Desk is locked - blocking OSC event:", address);
+      return;
+    }
 
     if (host === "midi") {
       if (address === "/control") {
@@ -316,7 +332,7 @@ module.exports = {
             "/sysex",
             "f0 00 00 66 14 12 " + seqMidiNote + " " + utils.stringToAsciiHex(seq) + "f7"
           );
-          send(
+          send( 
             "midi",
             mapping.device,
             "/sysex",

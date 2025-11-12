@@ -22,6 +22,7 @@ local olsMasterEnabledValue = {
     blind = false
 }
 local oldTimecodes = {}
+local oldDeskLockedStatus = 0
 
 local oscEntry = 2
 
@@ -130,6 +131,12 @@ local function main()
     end
 
     while (GetVar(GlobalVars(), "opdateOSC")) do
+        local currentDeskLocked = DeskLocked()
+        if currentDeskLocked ~= oldDeskLockedStatus then
+            oldDeskLockedStatus = currentDeskLocked
+            forceReload = true
+        end
+        
         if GetVar(GlobalVars(), "forceReload") == true then
             forceReload = true
             automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
@@ -138,7 +145,11 @@ local function main()
             sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
             fixedPageNr = GetVar(GlobalVars(), "fixedPageNr") or 0
             SetVar(GlobalVars(), "forceReload", false)
+        end
+
+        if forceReload == true then
             Cmd('SendOSC ' .. oscEntry .. ' "/updatePage/current,i,' .. destPage)
+            Cmd('SendOSC ' .. oscEntry .. ' "/status/deskLocked,' .. (currentDeskLocked and "T," or "F,") .. '"')
         end
 
         if automaticResendButtons then
