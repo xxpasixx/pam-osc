@@ -62,13 +62,41 @@ end
 local tick = 1 / 10 -- 1/10
 local resendTick = 0
 
-local function getApereanceColor(sequence)
+local function getApereanceColorOld(sequence)
     local apper = sequence["APPEARANCE"]
     if apper ~= nil then
         return apper['BACKR'] .. "," .. apper['BACKG'] .. "," .. apper['BACKB'] .. "," .. apper['BACKALPHA']
     else
         return "255,255,255,255"
     end
+end
+
+local function getApereanceColor(sequence)
+	local apper = sequence["APPEARANCE"]
+	local returnText
+
+	local function checkSquenceAppearance(apperH)
+		if apperH ~= nil then
+            if apperH['BACKR'] == 0 and apperH['BACKG'] == 0 and apperH['BACKB'] == 0 and apperH['BACKALPHA'] == 0 then
+                returnText =  "255,255,255,255"
+			else
+				returnText =  apperH['BACKR'] .. "," ..  apperH['BACKG'] .. "," ..  apperH['BACKB'] .. "," .. apperH['BACKALPHA']
+			end
+		else
+			returnText = "255,255,255,255"
+		end
+	end
+
+
+    checkSquenceAppearance(apper)
+
+	if (sequence.preferCueAppearance == true and sequence:CurrentChild()) then
+        if (sequence:CurrentChild()[1].Appearance) then
+            checkSquenceAppearance(sequence:CurrentChild()[1].Appearance)
+        end
+    end
+
+  return returnText
 end
 
 local function getName(sequence)
