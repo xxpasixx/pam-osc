@@ -62,15 +62,6 @@ end
 local tick = 1 / 10 -- 1/10
 local resendTick = 0
 
-local function getApereanceColorOld(sequence)
-    local apper = sequence["APPEARANCE"]
-    if apper ~= nil then
-        return apper['BACKR'] .. "," .. apper['BACKG'] .. "," .. apper['BACKB'] .. "," .. apper['BACKALPHA']
-    else
-        return "255,255,255,255"
-    end
-end
-
 local function getApereanceColor(sequence)
 	local apper = sequence["APPEARANCE"]
 	local returnText
