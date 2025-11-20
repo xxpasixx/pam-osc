@@ -113,6 +113,17 @@ module.exports = {
         // handle relative Rotary encoders to act as Absolute
         if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].exec) {
           const { exec, currValue, posFrom, posTo, negFrom, negTo } = routing[port]["rltvControl"][ctrl];
+        
+          // Handle GrandMA encoders Knobs (Playback Section) with relative values 
+          if(routing[port]["rltvControl"][ctrl].exec > 300) {
+            var relativeValue = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo);
+            send(ip, oscPort, prefix + "/Page" + page + "/Encoder" + exec, {
+              type: "i",
+              value: relativeValue,
+            });
+          }
+
+          // Handly others as Faders
           var newValue = currValue + utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo);
           newValue = Math.min(Math.max(newValue, 0), 127) || 0;
           routing[port]["rltvControl"][ctrl].currValue = newValue;
