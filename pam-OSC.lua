@@ -213,7 +213,7 @@ local function main()
                     faderValue = maValue:GetFader(faderOptions)
                     isFlash = maValue.KEY == "Flash"
 
-                    local myobject = maValue.Object
+                    local myobject = maValue.EXEC.Object
                     if myobject ~= nil then
                         buttonValue = myobject:HasActivePlayback() and true or false
                         if sendColors then
