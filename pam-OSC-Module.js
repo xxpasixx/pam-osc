@@ -234,7 +234,7 @@ module.exports = {
         if (config.quicKey) {
           send(ip, oscPort, prefix + "/cmd", {
             type: "s",
-            value: 'Go+ Quickey "' + config.quicKey + '"',
+            value: 'Quickey "pam-osc_' + config.quicKey + '"',
           });
         }
 

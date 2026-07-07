@@ -106,6 +106,55 @@ local function getMasterEnabled(masterName)
     end
 end
 
+local function createQuickeysIfNotExists()
+    local quickeys = {"ALIGN", "ASSIGN", "ASTERISK", "AT", "BLACK", "BLIND", "CHANNEL", "CLEAR", "COPY", "CUE", "DEF_GO",
+                  "DEF_GOBACK", "DEF_PAUSE", "DELETE", "DOT", "DOUBLE_SPEED", "DOWN", "EDIT", "ESC", "EXECUTOR", "FIX",
+                  "FIXTURE", "FLASH", "FLIP", "FREEZE", "FULL", "GO", "GOBACK", "GOBACKFAST", "GOFAST", "GOTO", "GRID",
+                  "GROUP", "HALF_SPEED", "HELP", "HIGHLIGHT", "IF", "KILL", "LAYOUT", "LEARN", "LIST", "LOAD",
+                  "LOWLIGHT", "MA1", "MA2", "MACRO", "MENU", "MINUS", "MOVE", "NEXT", "NEXT_STEP", "NEXT_X", "NEXT_Y",
+                  "NEXT_Z", "NUM0", "NUM1", "NUM2", "NUM3", "NUM4", "NUM5", "NUM6", "NUM7", "NUM8", "NUM9", "OFF", "ON",
+                  "OOPS", "PAGE", "PAGE_DOWN", "PAGE_UP", "PAUSE", "PHASER", "PLEASE", "PLUS", "PRESET", "PREV",
+                  "PREVIEW", "PREV_STEP", "PREV_X", "PREV_Y", "PREV_Z", "RATE1", "RESET_MATRICKS", "SELECT", "SELFIX",
+                  "SEQUENCE", "SET", "SLASH", "SOLO", "STEP", "STOMP", "STORE", "SWAP", "TEMP", "THRU", "TIME",
+                  "TIMECODE", "TOGGLE", "TOGGLE_MATRICKS", "TOGGLE_STEP", "TOP", "UP", "UPDATE", "USER1", "USER2",
+                  "VIEW", "XKEYS"}
+    local startPool = 1000
+    local currentPool = startPool
+
+    Echo("Start Quickey setup from Pool " .. startPool)
+
+    for _, quickeyCode in ipairs(quickeys) do
+        local quickeyName = "pam-osc_" .. quickeyCode
+        local existingQuickey = DataPool().Quickeys:Find(quickeyName)
+
+        if not existingQuickey then
+            local found = false
+            while not found do
+                local checkQuickey = DataPool().Quickeys[currentPool]
+                if not checkQuickey then
+                    -- Slot is free, create Quickey
+                    Cmd("Store Quickey " .. currentPool .. ' "' .. quickeyName .. '"')
+                    Cmd('Set Quickey ' .. currentPool .. '  Code "' .. quickeyCode .. '"')
+                    Printf("Quickey '" .. quickeyName .. "' created on Pool " .. currentPool)
+                    currentPool = currentPool + 1
+                    found = true
+                else
+                    -- Slot is occupied, try next one
+                    currentPool = currentPool + 1
+
+                    -- Safety check: do not exceed Pool 9999
+                    if currentPool > 9999 then
+                        Printf("ERROR: No free Quickey slot found!")
+                        return
+                    end
+                end
+            end
+        end
+    end
+
+    Echo("Quickey creation completed")
+end
+
 local function main()
     local automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
     local sendColors = GetVar(GlobalVars(), "sendColors") or false
@@ -119,6 +168,8 @@ local function main()
     Printf("sendNames: " .. (sendNames and "true" or "false"))
     Printf("sendTimecode: " .. (sendTimecode and "true" or "false"))
     Printf("fixedPageNr: " .. fixedPageNr)
+
+    createQuickeysIfNotExists()
 
     local destPage = 1
     local forceReload = true
