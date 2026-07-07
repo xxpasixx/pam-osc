@@ -177,20 +177,24 @@ if (Object.keys(routing).length === 0) {
   console.log("pam-osc: loaded MIDI mappings: " + Object.keys(routing).join(", "));
 }
 
-midiUtils.sendAttributeLED(routing, currentAttribute);
-midiUtils.sendPermanentFeedback(routing);
+// MIDI output test: play a short startup animation (LED running light + fader wave)
+// so the user can see on the hardware that the MIDI connection to each device works.
+// Afterwards the normal start state is restored and the connection check begins.
+console.log("pam-osc: MIDI output test - playing a short animation on every mapped device");
+midiUtils.playStartupAnimation(routing, 3500, function () {
+  midiUtils.sendAttributeLED(routing, currentAttribute);
+  midiUtils.sendPermanentFeedback(routing);
 
-for (let device of Object.keys(routing)) {
-  if (routing[device].enableTimecodeSend) {
-    midiUtils.resetSegments(routing, device);
-    midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
+  for (let device of Object.keys(routing)) {
+    if (routing[device].enableTimecodeSend) {
+      midiUtils.resetSegments(routing, device);
+      midiUtils.sendSegment(routing, device, 1, timecode.selectedSlot);
+    }
   }
-}
 
-setTimeout(function () {
   oscUtils.triggerForceReload(ip, oscPort, prefix);
   sendPing();
-}, 500);
+});
 
 module.exports = {
   oscInFilter: function (data) {
