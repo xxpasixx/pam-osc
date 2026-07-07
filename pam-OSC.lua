@@ -24,7 +24,26 @@ local olsMasterEnabledValue = {
 local oldTimecodes = {}
 local oldDeskLockedStatus = 0
 
-local oscEntry = 2
+local oscEntry = 2 -- fallback when no OSC entry named "pam-osc" exists (resolved in main)
+
+-- Find the OSC entry to send feedback to: an entry named "pam-osc" wins
+-- (any line number), otherwise the fallback entry above is used.
+local function resolveOscEntry()
+    local ok, found = pcall(function()
+        for i, entry in ipairs(Root().ShowData.ShowSettings.OSCData:Children()) do
+            if string.lower(entry.name or "") == "pam-osc" then
+                return i
+            end
+        end
+        return nil
+    end)
+    if ok and found then
+        Printf("pam-osc: using OSC entry " .. found .. " (named 'pam-osc')")
+        return found
+    end
+    Printf("pam-osc: no OSC entry named 'pam-osc' found - using entry " .. oscEntry)
+    return oscEntry
+end
 
 -- Configure here, what executors you want to watch:
 for i = 101, 122 do
@@ -169,6 +188,7 @@ local function main()
     Printf("sendTimecode: " .. (sendTimecode and "true" or "false"))
     Printf("fixedPageNr: " .. fixedPageNr)
 
+    oscEntry = resolveOscEntry()
     createQuickeysIfNotExists()
 
     local destPage = 1
