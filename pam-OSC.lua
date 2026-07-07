@@ -306,8 +306,8 @@ local function main()
             -- Send Fader Value
             if (oldValues[listKey] ~= faderValue and not (isFlash and buttonValue and faderValue == 100)) or forceReload then
                 oldValues[listKey] = faderValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Fader' .. listValue .. ',i,' ..
-                        (faderValue * 1.27) .. '"')
+                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Fader' .. listValue .. ',f,' ..
+                        string.format("%.2f", faderValue) .. '"')
             end
 
             -- Send Button Value

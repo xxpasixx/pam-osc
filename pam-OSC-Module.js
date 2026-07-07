@@ -238,8 +238,8 @@ module.exports = {
         var [channel, ctrl, value] = args.map((arg) => arg.value);
         if (routing[port]["control"]?.[ctrl]) {
           send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]["control"][ctrl], {
-            type: "i",
-            value: value,
+            type: "f",
+            value: (value / 127) * 100,
           });
         }
 
@@ -259,13 +259,13 @@ module.exports = {
             });
           }
 
-          // Handly others as Faders
+          // Handle others as Faders (currValue runs in the MA3-native 0-100 range)
           var newValue = currValue + utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo);
-          newValue = Math.min(Math.max(newValue, 0), 127) || 0;
+          newValue = Math.min(Math.max(newValue, 0), 100) || 0;
           routing[port]["rltvControl"][ctrl].currValue = newValue;
 
           send(ip, oscPort, prefix + "/Page" + page + "/Fader" + exec, {
-            type: "i",
+            type: "f",
             value: newValue,
           });
         }
@@ -290,9 +290,10 @@ module.exports = {
         if (!routing[port]["pitch"] || !routing[port]["pitch"][channel]) {
           return;
         }
-        const valueMapped = Math.round((value / 16380) * 127);
+        // full 14-bit resolution: map straight to 0-100 float instead of rounding to 127 steps
+        const valueMapped = (value / 16380) * 100;
         send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]["pitch"][channel], {
-          type: "i",
+          type: "f",
           value: valueMapped,
         });
       }
@@ -363,7 +364,7 @@ module.exports = {
         if (config.exec) {
           send(ip, oscPort, prefix + "/Page" + page + "/Key" + config.exec, {
             type: "i",
-            value: value,
+            value: Math.round((value / 127) * 100),
           });
         }
 
@@ -409,17 +410,19 @@ module.exports = {
         const mappingsPitch = routingUtils.getRoutingByPitchId(routing, fader);
         const mappingsRltvCtrl = routingUtils.getRoutingByRltvControlerId(routing, fader);
 
+        // MA3 sends fader values in its native 0-100 range, MIDI needs 0-127 / 14-bit
         mappingsCtrl.forEach((mapping) => {
-          send("midi", mapping.device, "/control", 1, mapping.midiId, args[0].value);
+          const valueMapped = Math.round((args[0].value / 100) * 127);
+          send("midi", mapping.device, "/control", 1, mapping.midiId, valueMapped);
         });
 
         mappingsPitch.forEach((mapping) => {
-          const valueMapped = Math.round((args[0].value / 127) * 16380);
+          const valueMapped = Math.round((args[0].value / 100) * 16380);
           send("midi", mapping.device, "/pitch", mapping.midiId, valueMapped);
         });
 
         mappingsRltvCtrl.forEach((mapping) => {
-          const value = utils.mapValue(args[0].value, 0, 127, mapping.from, mapping.to);
+          const value = utils.mapValue(args[0].value, 0, 100, mapping.from, mapping.to);
           routing[mapping.device].rltvControl[mapping.id].currValue = args[0].value;
           send("midi", mapping.device, "/control", 1, mapping.midiId, value);
         });
