@@ -29,14 +29,14 @@ jobs:
             [
               {
                 "name": "pam-osc Start Stop",
-                "version": "1.2.0.0",
+                "version": "1.4.0.0",
                 "path": "pam-OSC.lua",
                 "pluginGuid": "C1 19 BD 33 A9 FD 10 03 5E 76 48 94 2C 0E 90 FB",
                 "luaGuid": "C1 19 BD 33 96 FC 10 02 7D 74 11 B4 F6 65 C8 40"
               },
               {
                 "name": "pam-osc Settings",
-                "version": "1.2.0.0",
+                "version": "1.4.0.0",
                 "path": "SettingsPage.lua",
                 "pluginGuid": "C1 19 BD 33 A9 FD 10 03 5E 76 48 94 2C 0E 90 FC",
                 "luaGuid": "C1 19 BD 33 7E A6 10 02 EB 81 42 CE E9 06 2A 41"
