@@ -33,7 +33,7 @@ function sendNoteResponse(routing, midiDeviceName, ctrl, value, buttonFeedbackMa
   }
 
   const mapper = buttonFeedbackMapper || routing[midiDeviceName].buttonFeedbackMapper;
-  const mappedValue = typeof value === "string" ? mapper(value) : value;
+  const mappedValue = typeof value === "string" ? (mapper ? mapper(value) : value === "Off" ? 0 : 127) : value;
 
   send("midi", midiDeviceName, "/note", midiChannel, ctrl, mappedValue);
 }

@@ -26,6 +26,7 @@ const midiUtils = require("./midiUtils.js");
 const oscUtils = require("./oscUtils.js");
 
 var routing = {};
+const warnedMissingDevices = new Set();
 
 let encoderFine = false;
 let encoderRough = false;
@@ -42,7 +43,13 @@ const ipPort = ("" + settings.read("send")).split(":");
 const ip = ipPort[0];
 const oscPort = ipPort[1];
 
-settings.read("midi").forEach((deviceMidi) => {
+if (!settings.read("send")) {
+  console.error(
+    "pam-osc: the 'send' option is not set. Start Open Stage Control with send=<console-ip>:<port> (see setup guide)."
+  );
+}
+
+(settings.read("midi") || []).forEach((deviceMidi) => {
   const name = deviceMidi.split(":")[0];
   const fileName = name + ".json";
 
@@ -54,6 +61,9 @@ settings.read("midi").forEach((deviceMidi) => {
         " could not be found. Please make sure it exists, or rename your MIDI Device name to a existing one"
     )
   );
+  if (!value) {
+    return;
+  }
   value.buttonFeedbackMapper = eval("(" + value.buttonFeedbackMapper + ")");
   for (let note in value.note) {
     if (!value.note[note].buttonFeedbackMapper) {
@@ -63,6 +73,12 @@ settings.read("midi").forEach((deviceMidi) => {
   }
   routing[name] = value;
 });
+
+if (Object.keys(routing).length === 0) {
+  console.error("pam-osc: no MIDI mappings loaded. Check the 'midi' option of Open Stage Control (see setup guide).");
+} else {
+  console.log("pam-osc: loaded MIDI mappings: " + Object.keys(routing).join(", "));
+}
 
 midiUtils.sendAttributeLED(routing, currentAttribute);
 midiUtils.sendPermanentFeedback(routing);
@@ -98,9 +114,17 @@ module.exports = {
     }
 
     if (host === "midi") {
+      if (!routing[port]) {
+        if (!warnedMissingDevices.has(port)) {
+          warnedMissingDevices.add(port);
+          console.error("No mapping loaded for MIDI device '" + port + "' - ignoring its events");
+        }
+        return;
+      }
+
       if (address === "/control") {
         var [channel, ctrl, value] = args.map((arg) => arg.value);
-        if (routing[port]["control"][ctrl]) {
+        if (routing[port]["control"]?.[ctrl]) {
           send(ip, oscPort, prefix + "/Page" + page + "/Fader" + routing[port]["control"][ctrl], {
             type: "i",
             value: value,
@@ -162,7 +186,7 @@ module.exports = {
       }
       if (address === "/note") {
         var [channel, ctrl, value] = args.map((arg) => arg.value);
-        var config = routing[port]["note"][ctrl];
+        var config = routing[port]["note"]?.[ctrl];
 
         if (!config) {
           return;
