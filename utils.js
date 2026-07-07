@@ -25,9 +25,6 @@ function getRelativeValue(value, posFrom, posTo, negFrom, negTo) {
     return value - posFrom + 1;
   }
   if (value >= negFrom && value <= negTo) {
-    console.log("NEGATIVE", value, negFrom);
-    console.log("RESULT ohne", (value - negFrom + 1));
-    console.log("RESULT mit", (value - negFrom + 1) * -1);
     return (value - negFrom + 1) * -1;
   }
 }

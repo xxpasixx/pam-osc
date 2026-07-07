@@ -206,7 +206,6 @@ local function main()
             for maKey, maValue in pairs(executors) do
                 if maValue.No == listValue then
                     local faderOptions = {}
-                    faderOptions.value = faderEnd
                     faderOptions.token = "FaderMaster"
                     faderOptions.faderDisabled = false
 
@@ -229,7 +228,6 @@ local function main()
 
             -- Send Fader Value
             if (oldValues[listKey] ~= faderValue and not (isFlash and buttonValue and faderValue == 100)) or forceReload then
-                hasFaderUpdated = true
                 oldValues[listKey] = faderValue
                 Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Fader' .. listValue .. ',i,' ..
                         (faderValue * 1.27) .. '"')

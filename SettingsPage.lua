@@ -379,11 +379,9 @@ function CreateCheckBoxDialog(displayHandle)
         if (caller.State == 1) then
             caller.State = 0
             SetVar(GlobalVars(), "sendColors", false)
-            Echo("test 1")
         else
             caller.State = 1
             SetVar(GlobalVars(), "sendColors", true)
-            Echo("test 0")
         end
         SetVar(GlobalVars(), "forceReload", true)
     end
