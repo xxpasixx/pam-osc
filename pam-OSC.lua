@@ -218,6 +218,12 @@ local function main()
             SetVar(GlobalVars(), "forceReload", false)
         end
 
+        -- Answer ping requests from the OSC module (setup/connection check)
+        if GetVar(GlobalVars(), "pamPing") == true then
+            SetVar(GlobalVars(), "pamPing", false)
+            Cmd('SendOSC ' .. oscEntry .. ' "/status/pluginPong,i,1"')
+        end
+
         if forceReload == true then
             Cmd('SendOSC ' .. oscEntry .. ' "/updatePage/current,i,' .. destPage)
             Cmd('SendOSC ' .. oscEntry .. ' "/status/deskLocked,' .. (currentDeskLocked and "T," or "F,") .. '"')

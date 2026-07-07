@@ -24,6 +24,7 @@ const colorUtils = require("./colorUtils.js");
 const routingUtils = require("./routingUtils.js");
 const midiUtils = require("./midiUtils.js");
 const oscUtils = require("./oscUtils.js");
+const portUtils = require("./portUtils.js");
 
 var routing = {};
 const warnedMissingDevices = new Set();
@@ -47,6 +48,102 @@ if (!settings.read("send")) {
   console.error(
     "pam-osc: the 'send' option is not set. Start Open Stage Control with send=<console-ip>:<port> (see setup guide)."
   );
+}
+
+// Connection check ("ping"): the console echoes connectionPong itself (works without
+// the plugin), pluginPong is answered by the pam-osc Lua plugin. Result is logged
+// after a timeout, so setup problems are visible in the Open Stage Control terminal.
+const oscEntry = 2; // fallback when no OSC entry named "pam-osc" exists in the MA3 OSC setup
+// Executed on the console via the Lua keyword: picks the OSC entry named "pam-osc"
+// (any line number), falls back to entry 2, then echoes the connectionPong back.
+const connectionPongLua =
+  "local n = " + oscEntry + " " +
+  "local ok, found = pcall(function() " +
+  "for i, e in ipairs(Root().ShowData.ShowSettings.OSCData:Children()) do " +
+  "if string.lower(e.name or [[]]) == [[pam-osc]] then return i end " +
+  "end end) " +
+  "if ok and found then n = found end " +
+  'Cmd([[SendOSC ]] .. n .. [[ "/status/connectionPong,i,1"]])';
+const pingTimeoutMs = 3000;
+const pingRetryMs = 30000;
+const pingMaxRetries = 20;
+// the local UDP port MA3 must send its feedback to (Open Stage Control's OSC input)
+const oscInPort = settings.read("osc-port") || settings.read("port") || 8080;
+let pingRetries = 0;
+let connectionPongReceived = false;
+let pluginPongReceived = false;
+
+function sendPing() {
+  connectionPongReceived = false;
+  pluginPongReceived = false;
+
+  console.log("pam-osc: checking connection to GrandMA3 at " + ip + ":" + oscPort + " ...");
+
+  send(ip, oscPort, prefix + "/cmd", {
+    type: "s",
+    value: "Lua '" + connectionPongLua + "'",
+  });
+  send(ip, oscPort, prefix + "/cmd", {
+    type: "s",
+    value: `Lua 'SetVar(GlobalVars(), "pamPing", true)'`,
+  });
+
+  setTimeout(checkPingResult, pingTimeoutMs);
+}
+
+function checkPingResult() {
+  if (connectionPongReceived && pluginPongReceived) {
+    console.log("pam-osc: OK - GrandMA3 is reachable and the pam-osc plugin is running");
+    return;
+  }
+
+  if (connectionPongReceived) {
+    console.error(
+      "pam-osc: GrandMA3 is reachable, but the pam-osc plugin did not answer.\n" +
+        "  -> Start the 'pam-osc Start Stop' plugin on the console."
+    );
+    scheduleNextPing();
+  } else {
+    console.error(
+      "pam-osc: no response from GrandMA3 (" + ip + ":" + oscPort + "). Check that:\n" +
+        "  - the send=<ip>:<port> option of Open Stage Control points to the console\n" +
+        "  - OSC is enabled in MA3 (Menu > In & Out > OSC) and the entry is named 'pam-osc' (or is entry " + oscEntry + ")\n" +
+        "  - the MA3 OSC destination IP/port points back to this computer\n" +
+        "  - no firewall is blocking UDP between the console and this computer"
+    );
+
+    // name the port problem instead of guessing: who holds our OSC input port?
+    portUtils.findUdpPortUser(oscInPort, function (result) {
+      if (result && result.status === "other") {
+        console.error(
+          'pam-osc: port check: UDP port ' + oscInPort + ' is already used by "' + result.name + '" (PID ' + result.pid + ").\n" +
+            "  -> Open Stage Control can not receive feedback on it. Close that program, or use a different\n" +
+            "     osc-port option and set the same port as destination port in the MA3 OSC settings."
+        );
+      } else if (result && result.status === "self") {
+        console.log(
+          "pam-osc: port check: UDP port " + oscInPort + " is open and held by Open Stage Control - the port itself is fine.\n" +
+            "  -> Check that MA3 sends its feedback to this computer on port " + oscInPort + " and that no firewall blocks UDP."
+        );
+      } else if (result && result.status === "free") {
+        console.error(
+          "pam-osc: port check: nothing is listening on UDP port " + oscInPort + " - Open Stage Control did not open its OSC input.\n" +
+            "  -> Check the osc-port option."
+        );
+      }
+      scheduleNextPing();
+    });
+  }
+}
+
+function scheduleNextPing() {
+  pingRetries = pingRetries + 1;
+  if (pingRetries < pingMaxRetries) {
+    console.log("pam-osc: retrying connection check in " + pingRetryMs / 1000 + "s ...");
+    setTimeout(sendPing, pingRetryMs);
+  } else {
+    console.error("pam-osc: giving up the automatic connection check. Restart Open Stage Control to check again.");
+  }
 }
 
 (settings.read("midi") || []).forEach((deviceMidi) => {
@@ -92,11 +189,22 @@ for (let device of Object.keys(routing)) {
 
 setTimeout(function () {
   oscUtils.triggerForceReload(ip, oscPort, prefix);
+  sendPing();
 }, 500);
 
 module.exports = {
   oscInFilter: function (data) {
     var { address, args, host, port } = data;
+
+    if (address === "/status/connectionPong") {
+      connectionPongReceived = true;
+      return;
+    }
+
+    if (address === "/status/pluginPong") {
+      pluginPongReceived = true;
+      return;
+    }
 
     if (address === "/status/deskLocked" && args.length > 0) {
       const lockStatus = args[0];
