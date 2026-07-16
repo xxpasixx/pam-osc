@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "easymidi": "3.2.0",
+    "osc-min": "2.1.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
