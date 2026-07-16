@@ -5,7 +5,7 @@
      READ-ONLY during /build. Technical design lives in design.md, verification in review.md. -->
 
 ## Status: Spec'd
-**Created:** 2026-07-16 · **Last Updated:** 2026-07-16
+**Created:** 2026-07-16 · **Last Updated:** 2026-07-17
 
 ## Why
 
@@ -48,11 +48,14 @@ The engine is the product core: it replaces the Open Stage Control runtime of v1
 - **EC-2** — OSC feedback no active mapping references is ignored.
 - **EC-3** — Malformed OSC packets or unexpected addresses never crash the engine — log and continue.
 - **EC-4** — A config referencing a missing/invalid mapping or device file: the engine reports it and keeps running with the valid rest (consistent with PAM-1 AC-4).
+- **EC-5** — A reconnected device whose OS port name differs from the configured one is *not* auto-bound: the engine keeps reporting the device as missing (rebinding to a new port name is a settings concern — PAM-3).
+- **EC-6** — Optional mapping features (timecode, displays, permanentFeedback, minValue, …) may simply be absent from a mapping: the engine treats a missing field as "feature off", never as a validation error.
 
 ## Technical Requirements
 - Events are forwarded immediately (no polling/batching); no perceptible added latency on a local network — the engine is used in live operation.
 - The engine core stays Electron-free (pure Node in `app/src/core`) and is covered by the integration suite: virtual MIDI ports + fake-MA3 OSC emulator (per AGENTS.md).
 - A minimal dev entry point (CLI: start the engine with a config file) ships with the feature, so the engine can be run against onPC and real hardware before any UI exists.
+- Parity is tested against v1 as the reference: the integration suite asserts that mapped controls produce the same observable MIDI output (channel numbering, note/CC values, SysEx bytes) and OSC messages as the v1 runtime — translation differences between v1's MIDI abstraction and the new MIDI layer must not leak into observable behavior.
 
 ## Open Questions
 - None
