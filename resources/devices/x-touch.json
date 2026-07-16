@@ -1,0 +1,2434 @@
+{
+  "formatVersion": 1,
+  "id": "x-touch",
+  "name": "Behringer X-Touch",
+  "notes": "Behringer X-Touch in Mackie Control (MC) mode. Faders are motorized and addressed by pitchbend on channels 1-9 (9 = main). Encoder LED rings listen on CC 48-55 (encoder CC + 32) on channel 1; ledRing.channel stores that CC number (v1 'returnChannel'), values 32 (off) to 43 (full) sweep the ring. Encoder push buttons are the knobs themselves and have no LED (the ring belongs to the encoder), so their led capability is 'none'. The jog wheel (CC 60) has no controllable LED ring. Scribble strips are addressed by slot index via sysex; each shows 2 lines of 7 characters (segments = 7 per line). The 7-segment timecode area is driven by the mapping's enableTimecodeSend, not by an assignable control.",
+  "manufacturer": "Behringer",
+  "mode": "mc",
+  "defaultMidiChannel": 1,
+  "layout": {
+    "width": 40,
+    "height": 19
+  },
+  "controls": [
+    {
+      "id": "encoder-1",
+      "label": "Encoder 1",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 16
+      },
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 2,
+        "height": 2,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "from": 32,
+          "to": 43,
+          "controller": 48
+        }
+      }
+    },
+    {
+      "id": "btn-encoder-push-1",
+      "label": "Encoder 1 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 32
+      },
+      "position": {
+        "x": 0.5,
+        "y": 0.5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "display-1",
+      "label": "Scribble Strip 1",
+      "type": "display",
+      "index": 0,
+      "position": {
+        "x": 0,
+        "y": 2.25,
+        "width": 2,
+        "height": 1
+      },
+      "capabilities": {
+        "segments": 7
+      }
+    },
+    {
+      "id": "btn-rec-1",
+      "label": "Rec 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 0
+      },
+      "position": {
+        "x": 0.25,
+        "y": 3.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-1",
+      "label": "Solo 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 8
+      },
+      "position": {
+        "x": 0.25,
+        "y": 4.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-mute-1",
+      "label": "Mute 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 16
+      },
+      "position": {
+        "x": 0.25,
+        "y": 5.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-select-1",
+      "label": "Select 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 24
+      },
+      "position": {
+        "x": 0.25,
+        "y": 6.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-1",
+      "label": "Fader 1",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 1
+      },
+      "position": {
+        "x": 0.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "encoder-2",
+      "label": "Encoder 2",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 17
+      },
+      "position": {
+        "x": 2,
+        "y": 0,
+        "width": 2,
+        "height": 2,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "from": 32,
+          "to": 43,
+          "controller": 49
+        }
+      }
+    },
+    {
+      "id": "btn-encoder-push-2",
+      "label": "Encoder 2 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 33
+      },
+      "position": {
+        "x": 2.5,
+        "y": 0.5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "display-2",
+      "label": "Scribble Strip 2",
+      "type": "display",
+      "index": 1,
+      "position": {
+        "x": 2,
+        "y": 2.25,
+        "width": 2,
+        "height": 1
+      },
+      "capabilities": {
+        "segments": 7
+      }
+    },
+    {
+      "id": "btn-rec-2",
+      "label": "Rec 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 1
+      },
+      "position": {
+        "x": 2.25,
+        "y": 3.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-2",
+      "label": "Solo 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 9
+      },
+      "position": {
+        "x": 2.25,
+        "y": 4.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-mute-2",
+      "label": "Mute 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 17
+      },
+      "position": {
+        "x": 2.25,
+        "y": 5.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-select-2",
+      "label": "Select 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 25
+      },
+      "position": {
+        "x": 2.25,
+        "y": 6.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-2",
+      "label": "Fader 2",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 2
+      },
+      "position": {
+        "x": 2.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "encoder-3",
+      "label": "Encoder 3",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 18
+      },
+      "position": {
+        "x": 4,
+        "y": 0,
+        "width": 2,
+        "height": 2,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "from": 32,
+          "to": 43,
+          "controller": 50
+        }
+      }
+    },
+    {
+      "id": "btn-encoder-push-3",
+      "label": "Encoder 3 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 34
+      },
+      "position": {
+        "x": 4.5,
+        "y": 0.5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "display-3",
+      "label": "Scribble Strip 3",
+      "type": "display",
+      "index": 2,
+      "position": {
+        "x": 4,
+        "y": 2.25,
+        "width": 2,
+        "height": 1
+      },
+      "capabilities": {
+        "segments": 7
+      }
+    },
+    {
+      "id": "btn-rec-3",
+      "label": "Rec 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 2
+      },
+      "position": {
+        "x": 4.25,
+        "y": 3.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-3",
+      "label": "Solo 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 10
+      },
+      "position": {
+        "x": 4.25,
+        "y": 4.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-mute-3",
+      "label": "Mute 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 18
+      },
+      "position": {
+        "x": 4.25,
+        "y": 5.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-select-3",
+      "label": "Select 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 26
+      },
+      "position": {
+        "x": 4.25,
+        "y": 6.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-3",
+      "label": "Fader 3",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 3
+      },
+      "position": {
+        "x": 4.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "encoder-4",
+      "label": "Encoder 4",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 19
+      },
+      "position": {
+        "x": 6,
+        "y": 0,
+        "width": 2,
+        "height": 2,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "from": 32,
+          "to": 43,
+          "controller": 51
+        }
+      }
+    },
+    {
+      "id": "btn-encoder-push-4",
+      "label": "Encoder 4 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 35
+      },
+      "position": {
+        "x": 6.5,
+        "y": 0.5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "display-4",
+      "label": "Scribble Strip 4",
+      "type": "display",
+      "index": 3,
+      "position": {
+        "x": 6,
+        "y": 2.25,
+        "width": 2,
+        "height": 1
+      },
+      "capabilities": {
+        "segments": 7
+      }
+    },
+    {
+      "id": "btn-rec-4",
+      "label": "Rec 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 3
+      },
+      "position": {
+        "x": 6.25,
+        "y": 3.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-4",
+      "label": "Solo 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 11
+      },
+      "position": {
+        "x": 6.25,
+        "y": 4.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-mute-4",
+      "label": "Mute 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 19
+      },
+      "position": {
+        "x": 6.25,
+        "y": 5.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-select-4",
+      "label": "Select 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 27
+      },
+      "position": {
+        "x": 6.25,
+        "y": 6.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-4",
+      "label": "Fader 4",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 4
+      },
+      "position": {
+        "x": 6.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "encoder-5",
+      "label": "Encoder 5",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 20
+      },
+      "position": {
+        "x": 8,
+        "y": 0,
+        "width": 2,
+        "height": 2,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "from": 32,
+          "to": 43,
+          "controller": 52
+        }
+      }
+    },
+    {
+      "id": "btn-encoder-push-5",
+      "label": "Encoder 5 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 36
+      },
+      "position": {
+        "x": 8.5,
+        "y": 0.5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "display-5",
+      "label": "Scribble Strip 5",
+      "type": "display",
+      "index": 4,
+      "position": {
+        "x": 8,
+        "y": 2.25,
+        "width": 2,
+        "height": 1
+      },
+      "capabilities": {
+        "segments": 7
+      }
+    },
+    {
+      "id": "btn-rec-5",
+      "label": "Rec 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 4
+      },
+      "position": {
+        "x": 8.25,
+        "y": 3.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-5",
+      "label": "Solo 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 12
+      },
+      "position": {
+        "x": 8.25,
+        "y": 4.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-mute-5",
+      "label": "Mute 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 20
+      },
+      "position": {
+        "x": 8.25,
+        "y": 5.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-select-5",
+      "label": "Select 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 28
+      },
+      "position": {
+        "x": 8.25,
+        "y": 6.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-5",
+      "label": "Fader 5",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 5
+      },
+      "position": {
+        "x": 8.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "encoder-6",
+      "label": "Encoder 6",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 21
+      },
+      "position": {
+        "x": 10,
+        "y": 0,
+        "width": 2,
+        "height": 2,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "from": 32,
+          "to": 43,
+          "controller": 53
+        }
+      }
+    },
+    {
+      "id": "btn-encoder-push-6",
+      "label": "Encoder 6 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 37
+      },
+      "position": {
+        "x": 10.5,
+        "y": 0.5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "display-6",
+      "label": "Scribble Strip 6",
+      "type": "display",
+      "index": 5,
+      "position": {
+        "x": 10,
+        "y": 2.25,
+        "width": 2,
+        "height": 1
+      },
+      "capabilities": {
+        "segments": 7
+      }
+    },
+    {
+      "id": "btn-rec-6",
+      "label": "Rec 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 5
+      },
+      "position": {
+        "x": 10.25,
+        "y": 3.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-6",
+      "label": "Solo 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 13
+      },
+      "position": {
+        "x": 10.25,
+        "y": 4.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-mute-6",
+      "label": "Mute 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 21
+      },
+      "position": {
+        "x": 10.25,
+        "y": 5.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-select-6",
+      "label": "Select 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 29
+      },
+      "position": {
+        "x": 10.25,
+        "y": 6.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-6",
+      "label": "Fader 6",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 6
+      },
+      "position": {
+        "x": 10.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "encoder-7",
+      "label": "Encoder 7",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 22
+      },
+      "position": {
+        "x": 12,
+        "y": 0,
+        "width": 2,
+        "height": 2,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "from": 32,
+          "to": 43,
+          "controller": 54
+        }
+      }
+    },
+    {
+      "id": "btn-encoder-push-7",
+      "label": "Encoder 7 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 38
+      },
+      "position": {
+        "x": 12.5,
+        "y": 0.5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "display-7",
+      "label": "Scribble Strip 7",
+      "type": "display",
+      "index": 6,
+      "position": {
+        "x": 12,
+        "y": 2.25,
+        "width": 2,
+        "height": 1
+      },
+      "capabilities": {
+        "segments": 7
+      }
+    },
+    {
+      "id": "btn-rec-7",
+      "label": "Rec 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 6
+      },
+      "position": {
+        "x": 12.25,
+        "y": 3.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-7",
+      "label": "Solo 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 14
+      },
+      "position": {
+        "x": 12.25,
+        "y": 4.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-mute-7",
+      "label": "Mute 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 22
+      },
+      "position": {
+        "x": 12.25,
+        "y": 5.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-select-7",
+      "label": "Select 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 30
+      },
+      "position": {
+        "x": 12.25,
+        "y": 6.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-7",
+      "label": "Fader 7",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 7
+      },
+      "position": {
+        "x": 12.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "encoder-8",
+      "label": "Encoder 8",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 23
+      },
+      "position": {
+        "x": 14,
+        "y": 0,
+        "width": 2,
+        "height": 2,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "from": 32,
+          "to": 43,
+          "controller": 55
+        }
+      }
+    },
+    {
+      "id": "btn-encoder-push-8",
+      "label": "Encoder 8 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 39
+      },
+      "position": {
+        "x": 14.5,
+        "y": 0.5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "display-8",
+      "label": "Scribble Strip 8",
+      "type": "display",
+      "index": 7,
+      "position": {
+        "x": 14,
+        "y": 2.25,
+        "width": 2,
+        "height": 1
+      },
+      "capabilities": {
+        "segments": 7
+      }
+    },
+    {
+      "id": "btn-rec-8",
+      "label": "Rec 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 7
+      },
+      "position": {
+        "x": 14.25,
+        "y": 3.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-8",
+      "label": "Solo 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 15
+      },
+      "position": {
+        "x": 14.25,
+        "y": 4.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-mute-8",
+      "label": "Mute 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 23
+      },
+      "position": {
+        "x": 14.25,
+        "y": 5.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-select-8",
+      "label": "Select 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 31
+      },
+      "position": {
+        "x": 14.25,
+        "y": 6.5,
+        "width": 1.5,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-8",
+      "label": "Fader 8",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 8
+      },
+      "position": {
+        "x": 14.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-main",
+      "label": "Main",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 9
+      },
+      "position": {
+        "x": 16.5,
+        "y": 8,
+        "width": 1,
+        "height": 10
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-track",
+      "label": "Track",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 40
+      },
+      "position": {
+        "x": 20,
+        "y": 0,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-send",
+      "label": "Send",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 41
+      },
+      "position": {
+        "x": 26,
+        "y": 0,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-pan-surround",
+      "label": "Pan/Surround",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 42
+      },
+      "position": {
+        "x": 22,
+        "y": 0,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-plugin",
+      "label": "Plug-In",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 43
+      },
+      "position": {
+        "x": 28,
+        "y": 0,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-eq",
+      "label": "EQ",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 44
+      },
+      "position": {
+        "x": 24,
+        "y": 0,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-inst",
+      "label": "Inst",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 45
+      },
+      "position": {
+        "x": 30,
+        "y": 0,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-bank-left",
+      "label": "Fader Bank Left",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 46
+      },
+      "position": {
+        "x": 20.5,
+        "y": 12,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-bank-right",
+      "label": "Fader Bank Right",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 47
+      },
+      "position": {
+        "x": 22.5,
+        "y": 12,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-channel-left",
+      "label": "Channel Left",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 48
+      },
+      "position": {
+        "x": 20.5,
+        "y": 13.25,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-channel-right",
+      "label": "Channel Right",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 49
+      },
+      "position": {
+        "x": 22.5,
+        "y": 13.25,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-flip",
+      "label": "Flip",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 50
+      },
+      "position": {
+        "x": 16.25,
+        "y": 6.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-global-view",
+      "label": "Global View",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 51
+      },
+      "position": {
+        "x": 20,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-name-value",
+      "label": "Name/Value",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 52
+      },
+      "position": {
+        "x": 20,
+        "y": 1.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-smpte-beats",
+      "label": "SMPTE/Beats",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 53
+      },
+      "position": {
+        "x": 22,
+        "y": 1.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-f1",
+      "label": "F1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 54
+      },
+      "position": {
+        "x": 22,
+        "y": 4.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-f2",
+      "label": "F2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 55
+      },
+      "position": {
+        "x": 24,
+        "y": 4.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-f3",
+      "label": "F3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 56
+      },
+      "position": {
+        "x": 26,
+        "y": 4.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-f4",
+      "label": "F4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 57
+      },
+      "position": {
+        "x": 28,
+        "y": 4.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-f5",
+      "label": "F5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 58
+      },
+      "position": {
+        "x": 30,
+        "y": 4.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-f6",
+      "label": "F6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 59
+      },
+      "position": {
+        "x": 32,
+        "y": 4.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-f7",
+      "label": "F7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 60
+      },
+      "position": {
+        "x": 34,
+        "y": 4.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-f8",
+      "label": "F8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 61
+      },
+      "position": {
+        "x": 36,
+        "y": 4.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-midi-tracks",
+      "label": "MIDI Tracks",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 62
+      },
+      "position": {
+        "x": 22,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-inputs",
+      "label": "Inputs",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 63
+      },
+      "position": {
+        "x": 24,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-audio-tracks",
+      "label": "Audio Tracks",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 64
+      },
+      "position": {
+        "x": 26,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-audio-inst",
+      "label": "Audio Inst",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 65
+      },
+      "position": {
+        "x": 28,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-aux",
+      "label": "Aux",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 66
+      },
+      "position": {
+        "x": 30,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-buses",
+      "label": "Buses",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 67
+      },
+      "position": {
+        "x": 32,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-outputs",
+      "label": "Outputs",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 68
+      },
+      "position": {
+        "x": 34,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-user",
+      "label": "User",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 69
+      },
+      "position": {
+        "x": 36,
+        "y": 3,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-shift",
+      "label": "Shift",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 70
+      },
+      "position": {
+        "x": 20,
+        "y": 6,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-option",
+      "label": "Option",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 71
+      },
+      "position": {
+        "x": 22,
+        "y": 6,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-control",
+      "label": "Control",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 72
+      },
+      "position": {
+        "x": 20,
+        "y": 7,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-alt",
+      "label": "Alt",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 73
+      },
+      "position": {
+        "x": 22,
+        "y": 7,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-read-off",
+      "label": "Read/Off",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 74
+      },
+      "position": {
+        "x": 25,
+        "y": 6,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-write",
+      "label": "Write",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 75
+      },
+      "position": {
+        "x": 27,
+        "y": 6,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-trim",
+      "label": "Trim",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 76
+      },
+      "position": {
+        "x": 29,
+        "y": 6,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-touch",
+      "label": "Touch",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 77
+      },
+      "position": {
+        "x": 25,
+        "y": 7,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-latch",
+      "label": "Latch",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 78
+      },
+      "position": {
+        "x": 27,
+        "y": 7,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-group",
+      "label": "Group",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 79
+      },
+      "position": {
+        "x": 29,
+        "y": 7,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-save",
+      "label": "Save",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 80
+      },
+      "position": {
+        "x": 32,
+        "y": 6,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-undo",
+      "label": "Undo",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 81
+      },
+      "position": {
+        "x": 34,
+        "y": 6,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-cancel",
+      "label": "Cancel",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 82
+      },
+      "position": {
+        "x": 32,
+        "y": 7,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-enter",
+      "label": "Enter",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 83
+      },
+      "position": {
+        "x": 34,
+        "y": 7,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-marker",
+      "label": "Marker",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 84
+      },
+      "position": {
+        "x": 20,
+        "y": 8.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-nudge",
+      "label": "Nudge",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 85
+      },
+      "position": {
+        "x": 22,
+        "y": 8.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-cycle",
+      "label": "Cycle",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 86
+      },
+      "position": {
+        "x": 24,
+        "y": 8.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-drop",
+      "label": "Drop",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 87
+      },
+      "position": {
+        "x": 26,
+        "y": 8.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-replace",
+      "label": "Replace",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 88
+      },
+      "position": {
+        "x": 28,
+        "y": 8.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-click",
+      "label": "Click",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 89
+      },
+      "position": {
+        "x": 30,
+        "y": 8.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-solo-global",
+      "label": "Solo (Global)",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 90
+      },
+      "position": {
+        "x": 32,
+        "y": 8.5,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-rewind",
+      "label": "Rewind",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 91
+      },
+      "position": {
+        "x": 20,
+        "y": 10,
+        "width": 2.75,
+        "height": 1.25
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fast-fwd",
+      "label": "Fast Fwd",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 92
+      },
+      "position": {
+        "x": 23,
+        "y": 10,
+        "width": 2.75,
+        "height": 1.25
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-stop",
+      "label": "Stop",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 93
+      },
+      "position": {
+        "x": 26,
+        "y": 10,
+        "width": 2.75,
+        "height": 1.25
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-play",
+      "label": "Play",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 94
+      },
+      "position": {
+        "x": 29,
+        "y": 10,
+        "width": 2.75,
+        "height": 1.25
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-record",
+      "label": "Record",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 95
+      },
+      "position": {
+        "x": 32,
+        "y": 10,
+        "width": 2.75,
+        "height": 1.25
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-up",
+      "label": "Up",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 96
+      },
+      "position": {
+        "x": 26.5,
+        "y": 12,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-down",
+      "label": "Down",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 97
+      },
+      "position": {
+        "x": 26.5,
+        "y": 14,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-left",
+      "label": "Left",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 98
+      },
+      "position": {
+        "x": 25,
+        "y": 13,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-right",
+      "label": "Right",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 99
+      },
+      "position": {
+        "x": 28,
+        "y": 13,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-zoom",
+      "label": "Zoom",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 100
+      },
+      "position": {
+        "x": 26.5,
+        "y": 13,
+        "width": 1.75,
+        "height": 0.75
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-scrub",
+      "label": "Scrub",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 101
+      },
+      "position": {
+        "x": 37.5,
+        "y": 12,
+        "width": 1.5,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "encoder-jog",
+      "label": "Jog Wheel",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 60
+      },
+      "position": {
+        "x": 31,
+        "y": 13,
+        "width": 6,
+        "height": 6,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 1
+          },
+          "decrement": {
+            "from": 65,
+            "to": 65
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "formatVersion": 1,
+  "id": "mpx16-default-1",
+  "name": "MPX16 Default 1",
+  "notes": "Re-expressed from v1 mappings/mpx16-1.json: 16 pads on executors 191-198 and 291-298. The v1 file-level buttonFeedbackMapper (On=127, Off=0) becomes on-off feedback with onValue 127 / offValue 0 on every assignment.",
+  "deviceDefinitionId": "mpx16",
+  "midiPort": { "input": "MPX16", "output": "MPX16" },
+  "assignments": [
+    {
+      "controlId": "pad-1",
+      "action": { "type": "executor", "number": 191 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-2",
+      "action": { "type": "executor", "number": 192 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-3",
+      "action": { "type": "executor", "number": 193 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-4",
+      "action": { "type": "executor", "number": 194 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-5",
+      "action": { "type": "executor", "number": 291 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-6",
+      "action": { "type": "executor", "number": 292 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-7",
+      "action": { "type": "executor", "number": 293 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-8",
+      "action": { "type": "executor", "number": 294 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-9",
+      "action": { "type": "executor", "number": 195 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-10",
+      "action": { "type": "executor", "number": 196 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-11",
+      "action": { "type": "executor", "number": 197 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-12",
+      "action": { "type": "executor", "number": 198 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-13",
+      "action": { "type": "executor", "number": 295 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-14",
+      "action": { "type": "executor", "number": 296 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-15",
+      "action": { "type": "executor", "number": 297 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    },
+    {
+      "controlId": "pad-16",
+      "action": { "type": "executor", "number": 298 },
+      "feedback": { "type": "on-off", "onValue": 127, "offValue": 0 }
+    }
+  ]
+}

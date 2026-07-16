@@ -68,9 +68,11 @@ export const controlSchema = z.discriminatedUnion("type", [
         increment: encoderRangeSchema,
         decrement: encoderRangeSchema,
       }),
+      // The ring is driven via its own CC number (e.g. X-Touch: encoder on
+      // CC 16-23, ring feedback out on CC 48-55), not via a MIDI channel.
       ledRing: z
         .strictObject({
-          channel: midiChannelSchema,
+          controller: midiValueSchema,
           from: midiValueSchema,
           to: midiValueSchema,
         })

@@ -1,0 +1,140 @@
+{
+  "formatVersion": 1,
+  "id": "mpx16",
+  "name": "Akai MPX16",
+  "manufacturer": "Akai Professional",
+  "notes": "16-pad sample player used as a button board. Physically the pads sit in two rows of eight (two 2x4 blocks side by side), matching the hardware photo and the v1 layout image - not a 4x4 grid. Pad N sends note 111+N (112-127), as in the v1 mapping. led is 'on-off': the pads are LED-backlit and the v1 file ships a buttonFeedbackMapper (On=127/Off=0), i.e. v1 actively sent note feedback to this board.",
+  "mode": "standard",
+  "defaultMidiChannel": 1,
+  "layout": { "width": 8, "height": 2 },
+  "controls": [
+    {
+      "id": "pad-1",
+      "label": "Pad 1",
+      "type": "button",
+      "midi": { "kind": "note", "number": 112 },
+      "position": { "x": 0, "y": 1, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-2",
+      "label": "Pad 2",
+      "type": "button",
+      "midi": { "kind": "note", "number": 113 },
+      "position": { "x": 1, "y": 1, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-3",
+      "label": "Pad 3",
+      "type": "button",
+      "midi": { "kind": "note", "number": 114 },
+      "position": { "x": 2, "y": 1, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-4",
+      "label": "Pad 4",
+      "type": "button",
+      "midi": { "kind": "note", "number": 115 },
+      "position": { "x": 3, "y": 1, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-5",
+      "label": "Pad 5",
+      "type": "button",
+      "midi": { "kind": "note", "number": 116 },
+      "position": { "x": 0, "y": 0, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-6",
+      "label": "Pad 6",
+      "type": "button",
+      "midi": { "kind": "note", "number": 117 },
+      "position": { "x": 1, "y": 0, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-7",
+      "label": "Pad 7",
+      "type": "button",
+      "midi": { "kind": "note", "number": 118 },
+      "position": { "x": 2, "y": 0, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-8",
+      "label": "Pad 8",
+      "type": "button",
+      "midi": { "kind": "note", "number": 119 },
+      "position": { "x": 3, "y": 0, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-9",
+      "label": "Pad 9",
+      "type": "button",
+      "midi": { "kind": "note", "number": 120 },
+      "position": { "x": 4, "y": 1, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-10",
+      "label": "Pad 10",
+      "type": "button",
+      "midi": { "kind": "note", "number": 121 },
+      "position": { "x": 5, "y": 1, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-11",
+      "label": "Pad 11",
+      "type": "button",
+      "midi": { "kind": "note", "number": 122 },
+      "position": { "x": 6, "y": 1, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-12",
+      "label": "Pad 12",
+      "type": "button",
+      "midi": { "kind": "note", "number": 123 },
+      "position": { "x": 7, "y": 1, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-13",
+      "label": "Pad 13",
+      "type": "button",
+      "midi": { "kind": "note", "number": 124 },
+      "position": { "x": 4, "y": 0, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-14",
+      "label": "Pad 14",
+      "type": "button",
+      "midi": { "kind": "note", "number": 125 },
+      "position": { "x": 5, "y": 0, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-15",
+      "label": "Pad 15",
+      "type": "button",
+      "midi": { "kind": "note", "number": 126 },
+      "position": { "x": 6, "y": 0, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    },
+    {
+      "id": "pad-16",
+      "label": "Pad 16",
+      "type": "button",
+      "midi": { "kind": "note", "number": 127 },
+      "position": { "x": 7, "y": 0, "width": 1, "height": 1 },
+      "capabilities": { "led": "on-off" }
+    }
+  ]
+}

@@ -1,0 +1,1045 @@
+{
+  "formatVersion": 1,
+  "id": "launchpad-triflats",
+  "name": "Launchpad TriFlats",
+  "notes": "Converted from v1 LaunchPad-TriFlats.json. Like the Playback mapping, but the top pad row selects single fixtures (Fixture 302-309) instead of groups. v1 numeric permanentFeedback values are Launchpad palette colors sent permanently (in v1 they also override executor on/off feedback), so they become always-on feedback here - including on the executor pads, whose LEDs are fixed row colors. The top-row CC buttons act as flash-style executor triggers (press = 100%, release = 0%); their v1 feedback mirrored the executor fader level as a CC value, which is approximated here as on-off (127/0). minValue 100 keeps light touches from triggering command/quick-key pads, as in v1.",
+  "deviceDefinitionId": "launchpad",
+  "midiPort": {
+    "input": "Launchpad",
+    "output": "Launchpad"
+  },
+  "assignments": [
+    {
+      "controlId": "top-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "top-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "top-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "top-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "top-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "top-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "top-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "top-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "pad-11",
+      "action": {
+        "type": "executor",
+        "number": 101
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-12",
+      "action": {
+        "type": "executor",
+        "number": 102
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-13",
+      "action": {
+        "type": "executor",
+        "number": 103
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-14",
+      "action": {
+        "type": "executor",
+        "number": 104
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-15",
+      "action": {
+        "type": "executor",
+        "number": 105
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-16",
+      "action": {
+        "type": "executor",
+        "number": 106
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-17",
+      "action": {
+        "type": "executor",
+        "number": 107
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-18",
+      "action": {
+        "type": "executor",
+        "number": 108
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "scene-1",
+      "action": {
+        "type": "quickKey",
+        "key": "Store"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-21",
+      "action": {
+        "type": "executor",
+        "number": 301
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-22",
+      "action": {
+        "type": "executor",
+        "number": 302
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-23",
+      "action": {
+        "type": "executor",
+        "number": 303
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-24",
+      "action": {
+        "type": "executor",
+        "number": 304
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-25",
+      "action": {
+        "type": "executor",
+        "number": 305
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-26",
+      "action": {
+        "type": "executor",
+        "number": 306
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-27",
+      "action": {
+        "type": "executor",
+        "number": 307
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-28",
+      "action": {
+        "type": "executor",
+        "number": 308
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "scene-2",
+      "action": {
+        "type": "quickKey",
+        "key": "Clear"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 9
+      }
+    },
+    {
+      "controlId": "pad-31",
+      "action": {
+        "type": "executor",
+        "number": 401
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-32",
+      "action": {
+        "type": "executor",
+        "number": 402
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-33",
+      "action": {
+        "type": "executor",
+        "number": 403
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-34",
+      "action": {
+        "type": "executor",
+        "number": 404
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-35",
+      "action": {
+        "type": "executor",
+        "number": 405
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-36",
+      "action": {
+        "type": "executor",
+        "number": 406
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-37",
+      "action": {
+        "type": "executor",
+        "number": 407
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-38",
+      "action": {
+        "type": "executor",
+        "number": 408
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "scene-3",
+      "action": {
+        "type": "quickKey",
+        "key": "Off"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-41",
+      "action": {
+        "type": "command",
+        "command": "At Preset 2.1"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 13
+      }
+    },
+    {
+      "controlId": "pad-42",
+      "action": {
+        "type": "command",
+        "command": "At Preset 2.2"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 13
+      }
+    },
+    {
+      "controlId": "pad-43",
+      "action": {
+        "type": "command",
+        "command": "At Preset 2.3"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 13
+      }
+    },
+    {
+      "controlId": "pad-44",
+      "action": {
+        "type": "command",
+        "command": "At Preset 2.4"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 13
+      }
+    },
+    {
+      "controlId": "pad-45",
+      "action": {
+        "type": "command",
+        "command": "At Preset 2.5"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 13
+      }
+    },
+    {
+      "controlId": "pad-46",
+      "action": {
+        "type": "command",
+        "command": "At Preset 6.1"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 33
+      }
+    },
+    {
+      "controlId": "pad-47",
+      "action": {
+        "type": "command",
+        "command": "At Preset 6.3"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 33
+      }
+    },
+    {
+      "controlId": "pad-48",
+      "action": {
+        "type": "command",
+        "command": "At Preset 6.5"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 33
+      }
+    },
+    {
+      "controlId": "scene-4",
+      "action": {
+        "type": "quickKey",
+        "key": "Oops"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 9
+      }
+    },
+    {
+      "controlId": "pad-51",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.9"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 41
+      }
+    },
+    {
+      "controlId": "pad-52",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.10"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-53",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.11"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 49
+      }
+    },
+    {
+      "controlId": "pad-54",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.12"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 53
+      }
+    },
+    {
+      "controlId": "pad-55",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.13"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 57
+      }
+    },
+    {
+      "controlId": "pad-56",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.14"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 11
+      }
+    },
+    {
+      "controlId": "pad-57",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.15"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 11
+      }
+    },
+    {
+      "controlId": "pad-58",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.16"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 11
+      }
+    },
+    {
+      "controlId": "scene-5",
+      "action": {
+        "type": "quickKey",
+        "key": "Please"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-61",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.1"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 3
+      }
+    },
+    {
+      "controlId": "pad-62",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.2"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "pad-63",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.3"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 9
+      }
+    },
+    {
+      "controlId": "pad-64",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.4"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 13
+      }
+    },
+    {
+      "controlId": "pad-65",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.5"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 17
+      }
+    },
+    {
+      "controlId": "pad-66",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.6"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "pad-67",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.7"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 29
+      }
+    },
+    {
+      "controlId": "pad-68",
+      "action": {
+        "type": "command",
+        "command": "At Preset 4.8"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 37
+      }
+    },
+    {
+      "controlId": "scene-6",
+      "action": {
+        "type": "quickKey",
+        "key": "Esc"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 49
+      }
+    },
+    {
+      "controlId": "pad-71",
+      "action": {
+        "type": "command",
+        "command": "At Preset 1.1"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 0
+      }
+    },
+    {
+      "controlId": "pad-72",
+      "action": {
+        "type": "command",
+        "command": "At Preset 1.4"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "pad-73",
+      "action": {
+        "type": "command",
+        "command": "At Preset 1.7"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 2
+      }
+    },
+    {
+      "controlId": "pad-74",
+      "action": {
+        "type": "command",
+        "command": "At Preset 1.10"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 2
+      }
+    },
+    {
+      "controlId": "pad-75",
+      "action": {
+        "type": "command",
+        "command": "At Preset 1.13"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 3
+      }
+    },
+    {
+      "controlId": "pad-76",
+      "action": {
+        "type": "command",
+        "command": "At Preset 1.20"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 11
+      }
+    },
+    {
+      "controlId": "pad-77",
+      "action": {
+        "type": "command",
+        "command": "At Preset 1.21"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 11
+      }
+    },
+    {
+      "controlId": "pad-78",
+      "action": {
+        "type": "command",
+        "command": "At Preset 1.22"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 11
+      }
+    },
+    {
+      "controlId": "scene-7",
+      "action": {
+        "type": "command",
+        "command": "EditRecipe Programmer"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "pad-81",
+      "action": {
+        "type": "command",
+        "command": "Fixture 302"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "pad-82",
+      "action": {
+        "type": "command",
+        "command": "Fixture 303"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "pad-83",
+      "action": {
+        "type": "command",
+        "command": "Fixture 304"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "pad-84",
+      "action": {
+        "type": "command",
+        "command": "Fixture 305"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "pad-85",
+      "action": {
+        "type": "command",
+        "command": "Fixture 306"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "pad-86",
+      "action": {
+        "type": "command",
+        "command": "Fixture 307"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "pad-87",
+      "action": {
+        "type": "command",
+        "command": "Fixture 308"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "pad-88",
+      "action": {
+        "type": "command",
+        "command": "Fixture 309"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "scene-8",
+      "action": {
+        "type": "command",
+        "command": "SaveShow"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    }
+  ]
+}

@@ -39,12 +39,15 @@ v2 is developed on the long-lived **`v2` branch**; `main` stays the stable v1.4 
 
 ## Build & Test Commands
 
-TBD until the app scaffold exists (first `/build`). Planned:
+All app commands run inside `app/`:
 
-- `npm run dev` — Vite dev server + Electron
-- `npm run build` — production build via electron-builder
-- `npm test` — Vitest
-- `npm run format` — Prettier (already works today, repo root)
+- `cd app && npm test` — Vitest (unit + bundled-content validation)
+- `cd app && npm run test:watch` — Vitest watch mode
+- `cd app && npm run typecheck` — `tsc --noEmit`
+- `npm run format` — Prettier (repo root, whole repo)
+- `npm run dev` / `npm run build` (Vite + Electron / electron-builder) — TBD, arrive with PAM-2/PAM-3
+
+Live docs: Context7 connected — verify dependency versions via `npm view <pkg> version` before pinning.
 
 ## Environments & Release
 

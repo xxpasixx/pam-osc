@@ -65,7 +65,8 @@ Envelope (every file):
         encoder: encoding — increment range (from–to) and decrement range
                  (from–to), the raw CC values the hardware sends per detent
                  (hardware fact, so it lives here, NOT in the mapping);
-                 ledRing — optional: channel + value range for the feedback ring
+                 ledRing — optional: CC number (controller) + value range for
+                 the feedback ring
         display: segments — integer > 0 (character count of the strip)
 ```
 
@@ -171,3 +172,14 @@ Note: T3/T4 need the app scaffold (`app/` with Vite/Electron/Vitest) to exist �
 ## Open Questions
 
 - None — executor numbering semantics (page-relative behavior) are runtime concerns owned by PAM-2; the format stores the plain number.
+
+## Implementation Notes (added during /build)
+
+- **Display controls carry an `index` instead of a `midi` address.** v1 addresses scribble strips per sysex by slot index (0–7); a CC/note number would have been fiction. Deviation from the original data model table, same product behavior.
+- **Absolute-CC rotary knobs are modeled as `fader` with `shape: "circle"`.** The v2 `encoder` type means *relative* encoding; X-Touch Compact knobs in standard mode send absolute CC and behave protocol-wise like faders.
+- **App scaffold kept minimal (TypeScript + Vitest + zod only).** Electron/Vite/React arrive with the first feature that needs them (PAM-2/PAM-3) — nothing in PAM-1 runs in a window. The loader takes folder paths as parameters, so wiring bundled/userData paths is trivial later.
+- Versions pinned from the npm registry on 2026-07-16: zod 4.4.3, TypeScript 7.0.2, Vitest 4.1.10.
+- **`ledRing` addresses a CC number (`controller`), not a MIDI channel.** v1's `returnChannel` is in truth the ring's CC number (X-Touch: encoders in on CC 16–23, rings out on CC 48–55); the original design's channel field would have rejected the only board with rings. Found during content conversion.
+- **Six bundled device definitions, not five.** The v1 APC mini files cover two hardware generations — `apc-mini` (mk1) and `apc-mini-mk2` (Controller layout, notes 100–122, RGB palette). All five spec'd board types are covered; the mk2 is a bonus, and each of the ten v1 mappings targets its correct hardware.
+- **X-Touch Compact: `motorized: true` expresses "value feedback via the control's own CC".** v1 sends MA3 fader levels back to every absolute-CC control (motor faders and encoder LED rings alike); `fader-position` feedback + the motorized flag is the schema-honest way to carry that, documented in the device's `notes`.
+- **Known, documented approximations** (each recorded in the affected file's `notes`): v1's cycling timecode-slot select became `timecodeSelect slot 1`; Launchpad top-row CC buttons mirrored the executor fader level in v1, now `on-off`; APC mini mk2 per-LED brightness channels and Launchpad flash/pulse channels are not machine-readable yet (parked in `docs/ideas.md` for PAM-10).

@@ -1,0 +1,1479 @@
+{
+  "formatVersion": 1,
+  "id": "x-touch-default-1",
+  "name": "X-Touch Default 1",
+  "notes": "Default X-Touch layout 1 (v1 mappings/xTouch1.json): faders on executors 201-208 + main 209, encoders on 401-408, button rows on 401-408 / 301-308 / 201-208 / 101-108, F-keys on 191-198, view row on 291-298, QuickKeys and MA commands on the master section. Converted from v1. v1's timecodeSelect button cycled through timecode slots 1-8 on every press; the v2 format stores one fixed slot, so this mapping selects slot 1. Encoder push buttons carried executor feedback in v1 that the hardware ignored (no LED there) — represented here as feedback 'none'. Modifier buttons (encoder fine/rough, attribute select) keep 'on-off' feedback because v1 drove those LEDs locally (toggle state / selected attribute). v1 lit command buttons (Highlight/Solo/Blind/Freeze/...) from the MA3 master state; the v2 feedback types cannot express master-state feedback yet, so command buttons here have feedback 'none'.",
+  "deviceDefinitionId": "x-touch",
+  "midiPort": {
+    "input": "X-Touch",
+    "output": "X-Touch"
+  },
+  "enableTimecodeSend": true,
+  "assignments": [
+    {
+      "controlId": "fader-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "fader-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "fader-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "fader-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "fader-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "fader-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "fader-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "fader-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "fader-main",
+      "action": {
+        "type": "executor",
+        "number": 209
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "encoder-1",
+      "action": {
+        "type": "executor",
+        "number": 401
+      },
+      "feedback": {
+        "type": "encoder-ring"
+      }
+    },
+    {
+      "controlId": "encoder-2",
+      "action": {
+        "type": "executor",
+        "number": 402
+      },
+      "feedback": {
+        "type": "encoder-ring"
+      }
+    },
+    {
+      "controlId": "encoder-3",
+      "action": {
+        "type": "executor",
+        "number": 403
+      },
+      "feedback": {
+        "type": "encoder-ring"
+      }
+    },
+    {
+      "controlId": "encoder-4",
+      "action": {
+        "type": "executor",
+        "number": 404
+      },
+      "feedback": {
+        "type": "encoder-ring"
+      }
+    },
+    {
+      "controlId": "encoder-5",
+      "action": {
+        "type": "executor",
+        "number": 405
+      },
+      "feedback": {
+        "type": "encoder-ring"
+      }
+    },
+    {
+      "controlId": "encoder-6",
+      "action": {
+        "type": "executor",
+        "number": 406
+      },
+      "feedback": {
+        "type": "encoder-ring"
+      }
+    },
+    {
+      "controlId": "encoder-7",
+      "action": {
+        "type": "executor",
+        "number": 407
+      },
+      "feedback": {
+        "type": "encoder-ring"
+      }
+    },
+    {
+      "controlId": "encoder-8",
+      "action": {
+        "type": "executor",
+        "number": 408
+      },
+      "feedback": {
+        "type": "encoder-ring"
+      }
+    },
+    {
+      "controlId": "encoder-jog",
+      "action": {
+        "type": "attribute",
+        "attribute": "current"
+      },
+      "options": {
+        "amount": 1
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-rec-1",
+      "action": {
+        "type": "executor",
+        "number": 401
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-rec-2",
+      "action": {
+        "type": "executor",
+        "number": 402
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-rec-3",
+      "action": {
+        "type": "executor",
+        "number": 403
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-rec-4",
+      "action": {
+        "type": "executor",
+        "number": 404
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-rec-5",
+      "action": {
+        "type": "executor",
+        "number": 405
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-rec-6",
+      "action": {
+        "type": "executor",
+        "number": 406
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-rec-7",
+      "action": {
+        "type": "executor",
+        "number": 407
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-rec-8",
+      "action": {
+        "type": "executor",
+        "number": 408
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-1",
+      "action": {
+        "type": "executor",
+        "number": 301
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-2",
+      "action": {
+        "type": "executor",
+        "number": 302
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-3",
+      "action": {
+        "type": "executor",
+        "number": 303
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-4",
+      "action": {
+        "type": "executor",
+        "number": 304
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-5",
+      "action": {
+        "type": "executor",
+        "number": 305
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-6",
+      "action": {
+        "type": "executor",
+        "number": 306
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-7",
+      "action": {
+        "type": "executor",
+        "number": 307
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-8",
+      "action": {
+        "type": "executor",
+        "number": 308
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-mute-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-mute-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-mute-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-mute-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-mute-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-mute-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-mute-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-mute-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-select-1",
+      "action": {
+        "type": "executor",
+        "number": 101
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-select-2",
+      "action": {
+        "type": "executor",
+        "number": 102
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-select-3",
+      "action": {
+        "type": "executor",
+        "number": 103
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-select-4",
+      "action": {
+        "type": "executor",
+        "number": 104
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-select-5",
+      "action": {
+        "type": "executor",
+        "number": 105
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-select-6",
+      "action": {
+        "type": "executor",
+        "number": 106
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-select-7",
+      "action": {
+        "type": "executor",
+        "number": 107
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-select-8",
+      "action": {
+        "type": "executor",
+        "number": 108
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-encoder-push-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-encoder-push-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-encoder-push-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-encoder-push-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-encoder-push-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-encoder-push-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-encoder-push-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-encoder-push-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-track",
+      "action": {
+        "type": "command",
+        "command": "HIGHLIGHT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-send",
+      "action": {
+        "type": "command",
+        "command": "Preview"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-pan-surround",
+      "action": {
+        "type": "command",
+        "command": "SOLO"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-plugin",
+      "action": {
+        "type": "command",
+        "command": "BLIND"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-eq",
+      "action": {
+        "type": "command",
+        "command": "Freeze"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-fader-bank-left",
+      "action": {
+        "type": "command",
+        "command": "Previous Page"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-fader-bank-right",
+      "action": {
+        "type": "command",
+        "command": "Next Page"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-channel-left",
+      "action": {
+        "type": "modifier",
+        "modifier": "encoderFine"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-channel-right",
+      "action": {
+        "type": "modifier",
+        "modifier": "encoderRough"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-name-value",
+      "action": {
+        "type": "timecodeSelect",
+        "slot": 1
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-smpte-beats",
+      "action": {
+        "type": "timecodePlayPause"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-f1",
+      "action": {
+        "type": "executor",
+        "number": 191
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-f2",
+      "action": {
+        "type": "executor",
+        "number": 192
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-f3",
+      "action": {
+        "type": "executor",
+        "number": 193
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-f4",
+      "action": {
+        "type": "executor",
+        "number": 194
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-f5",
+      "action": {
+        "type": "executor",
+        "number": 195
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-f6",
+      "action": {
+        "type": "executor",
+        "number": 196
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-f7",
+      "action": {
+        "type": "executor",
+        "number": 197
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-f8",
+      "action": {
+        "type": "executor",
+        "number": 198
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-midi-tracks",
+      "action": {
+        "type": "executor",
+        "number": 291
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-inputs",
+      "action": {
+        "type": "executor",
+        "number": 292
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-audio-tracks",
+      "action": {
+        "type": "executor",
+        "number": 293
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-audio-inst",
+      "action": {
+        "type": "executor",
+        "number": 294
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-aux",
+      "action": {
+        "type": "executor",
+        "number": 295
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-buses",
+      "action": {
+        "type": "executor",
+        "number": 296
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-outputs",
+      "action": {
+        "type": "executor",
+        "number": 297
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-user",
+      "action": {
+        "type": "executor",
+        "number": 298
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-shift",
+      "action": {
+        "type": "quickKey",
+        "key": "Fixture"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-option",
+      "action": {
+        "type": "quickKey",
+        "key": "Channel"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-control",
+      "action": {
+        "type": "quickKey",
+        "key": "Assign"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-alt",
+      "action": {
+        "type": "quickKey",
+        "key": "Time"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-read-off",
+      "action": {
+        "type": "quickKey",
+        "key": "Group"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-write",
+      "action": {
+        "type": "quickKey",
+        "key": "Preset"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-trim",
+      "action": {
+        "type": "quickKey",
+        "key": "Sequence"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-touch",
+      "action": {
+        "type": "quickKey",
+        "key": "Update"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-latch",
+      "action": {
+        "type": "quickKey",
+        "key": "Store"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-group",
+      "action": {
+        "type": "quickKey",
+        "key": "Move"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-save",
+      "action": {
+        "type": "quickKey",
+        "key": "Cue"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-undo",
+      "action": {
+        "type": "quickKey",
+        "key": "Edit"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-cancel",
+      "action": {
+        "type": "quickKey",
+        "key": "Delete"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-enter",
+      "action": {
+        "type": "quickKey",
+        "key": "Please"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-marker",
+      "action": {
+        "type": "modifier",
+        "modifier": "attributeSelect",
+        "attribute": "dimmer"
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-nudge",
+      "action": {
+        "type": "modifier",
+        "modifier": "attributeSelect",
+        "attribute": "pan"
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-cycle",
+      "action": {
+        "type": "modifier",
+        "modifier": "attributeSelect",
+        "attribute": "tilt"
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-drop",
+      "action": {
+        "type": "modifier",
+        "modifier": "attributeSelect",
+        "attribute": "ColorRGB_R"
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-replace",
+      "action": {
+        "type": "modifier",
+        "modifier": "attributeSelect",
+        "attribute": "ColorRGB_G"
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-click",
+      "action": {
+        "type": "modifier",
+        "modifier": "attributeSelect",
+        "attribute": "ColorRGB_B"
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-solo-global",
+      "action": {
+        "type": "modifier",
+        "modifier": "attributeSelect",
+        "attribute": "Zoom"
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-rewind",
+      "action": {
+        "type": "command",
+        "command": "Go-"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-fast-fwd",
+      "action": {
+        "type": "command",
+        "command": "Go+"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-stop",
+      "action": {
+        "type": "command",
+        "command": "Off"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-play",
+      "action": {
+        "type": "command",
+        "command": "Top"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-record",
+      "action": {
+        "type": "command",
+        "command": "Clear"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-up",
+      "action": {
+        "type": "command",
+        "command": "UP"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-down",
+      "action": {
+        "type": "command",
+        "command": "DOWN"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-left",
+      "action": {
+        "type": "command",
+        "command": "PREVIOUS"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-right",
+      "action": {
+        "type": "command",
+        "command": "NEXT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-zoom",
+      "action": {
+        "type": "command",
+        "command": "Set"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "display-1",
+      "action": {
+        "type": "display",
+        "number": 201
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "display-2",
+      "action": {
+        "type": "display",
+        "number": 202
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "display-3",
+      "action": {
+        "type": "display",
+        "number": 203
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "display-4",
+      "action": {
+        "type": "display",
+        "number": 204
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "display-5",
+      "action": {
+        "type": "display",
+        "number": 205
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "display-6",
+      "action": {
+        "type": "display",
+        "number": 206
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "display-7",
+      "action": {
+        "type": "display",
+        "number": 207
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "display-8",
+      "action": {
+        "type": "display",
+        "number": 208
+      },
+      "feedback": {
+        "type": "none"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1083 @@
+{
+  "formatVersion": 1,
+  "id": "apc-mini-default-2",
+  "name": "APC mini Default 2 (Command Section)",
+  "notes": "Converted from v1 mappings/akiApcMini2.json - a QuickKey/command layout that turns the pad grid into a GrandMA3 command section (see img/mappings/akiApcMini2.png). QuickKeys have no feedback path, so those assignments use feedback none; command assignments keep the v1 master-enabled on/off feedback (onValue 127). Executor 209 sits on the shift button (note 98), which has no LED - feedback none (same behaviour as v1, where the feedback note lit nothing).",
+  "deviceDefinitionId": "apc-mini",
+  "midiPort": {
+    "input": "APC MINI",
+    "output": "APC MINI"
+  },
+  "assignments": [
+    {
+      "controlId": "fader-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-master",
+      "action": {
+        "type": "executor",
+        "number": 209
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-1-8",
+      "action": {
+        "type": "quickKey",
+        "key": "GO"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-2-8",
+      "action": {
+        "type": "quickKey",
+        "key": "UPDATE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-4-8",
+      "action": {
+        "type": "quickKey",
+        "key": "STORE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-5-8",
+      "action": {
+        "type": "quickKey",
+        "key": "MA1"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-6-8",
+      "action": {
+        "type": "quickKey",
+        "key": "SLASH"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-8-8",
+      "action": {
+        "type": "quickKey",
+        "key": "PLEASE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-1-7",
+      "action": {
+        "type": "quickKey",
+        "key": "GOBACK"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-2-7",
+      "action": {
+        "type": "quickKey",
+        "key": "EDIT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-3-7",
+      "action": {
+        "type": "quickKey",
+        "key": "ASSIGN"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-4-7",
+      "action": {
+        "type": "quickKey",
+        "key": "TIME"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-5-7",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM0"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-6-7",
+      "action": {
+        "type": "quickKey",
+        "key": "DOT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-7-7",
+      "action": {
+        "type": "quickKey",
+        "key": "IF"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-8-7",
+      "action": {
+        "type": "quickKey",
+        "key": "AT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-1-6",
+      "action": {
+        "type": "quickKey",
+        "key": "PAUSE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-2-6",
+      "action": {
+        "type": "quickKey",
+        "key": "PRESET"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-3-6",
+      "action": {
+        "type": "quickKey",
+        "key": "SEQUENCE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-4-6",
+      "action": {
+        "type": "quickKey",
+        "key": "CUE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-5-6",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM1"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-6-6",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM2"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-7-6",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM3"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-8-6",
+      "action": {
+        "type": "quickKey",
+        "key": "MINUS"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-1-5",
+      "action": {
+        "type": "quickKey",
+        "key": "PAGE_DOWN"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-2-5",
+      "action": {
+        "type": "command",
+        "command": "FIXTURE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "pad-3-5",
+      "action": {
+        "type": "quickKey",
+        "key": "CHANNEL"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-4-5",
+      "action": {
+        "type": "quickKey",
+        "key": "GROUP"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-5-5",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM4"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-6-5",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM5"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-7-5",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM6"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-8-5",
+      "action": {
+        "type": "quickKey",
+        "key": "THRU"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-1-4",
+      "action": {
+        "type": "quickKey",
+        "key": "PAGE_UP"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-2-4",
+      "action": {
+        "type": "quickKey",
+        "key": "LEARN"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-3-4",
+      "action": {
+        "type": "quickKey",
+        "key": "<<<<"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-4-4",
+      "action": {
+        "type": "quickKey",
+        "key": ">>>>"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-5-4",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM7"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-6-4",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM8"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-7-4",
+      "action": {
+        "type": "quickKey",
+        "key": "NUM9"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-8-4",
+      "action": {
+        "type": "quickKey",
+        "key": "PLUS"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-1-3",
+      "action": {
+        "type": "quickKey",
+        "key": "SELFIX"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-2-3",
+      "action": {
+        "type": "quickKey",
+        "key": "DOWN"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-3-3",
+      "action": {
+        "type": "quickKey",
+        "key": "FREEZE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-5-3",
+      "action": {
+        "type": "quickKey",
+        "key": "SELECT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-6-3",
+      "action": {
+        "type": "quickKey",
+        "key": "GOTO"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-1-2",
+      "action": {
+        "type": "quickKey",
+        "key": "Set"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-2-2",
+      "action": {
+        "type": "quickKey",
+        "key": "UP"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-3-2",
+      "action": {
+        "type": "quickKey",
+        "key": "SOLO"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-4-2",
+      "action": {
+        "type": "quickKey",
+        "key": "BLIND"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-5-2",
+      "action": {
+        "type": "quickKey",
+        "key": "DELETE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-6-2",
+      "action": {
+        "type": "quickKey",
+        "key": "ALIGN"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-7-2",
+      "action": {
+        "type": "quickKey",
+        "key": "STOMP"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-8-2",
+      "action": {
+        "type": "quickKey",
+        "key": "HELP"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-1-1",
+      "action": {
+        "type": "command",
+        "command": "PREV"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "pad-2-1",
+      "action": {
+        "type": "command",
+        "command": "NEXT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "pad-3-1",
+      "action": {
+        "type": "command",
+        "command": "HIGHLIGHT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "pad-4-1",
+      "action": {
+        "type": "quickKey",
+        "key": "PREVIEW"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-5-1",
+      "action": {
+        "type": "quickKey",
+        "key": "ON"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-6-1",
+      "action": {
+        "type": "quickKey",
+        "key": "OFF"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "pad-7-1",
+      "action": {
+        "type": "command",
+        "command": "MOVE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "pad-8-1",
+      "action": {
+        "type": "quickKey",
+        "key": "COPY"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-track-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-track-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-track-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-track-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-track-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-track-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-track-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-track-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-scene-1",
+      "action": {
+        "type": "quickKey",
+        "key": "ESC"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-scene-2",
+      "action": {
+        "type": "command",
+        "command": "CLEAR"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-scene-3",
+      "action": {
+        "type": "quickKey",
+        "key": "XKEYS"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-scene-4",
+      "action": {
+        "type": "quickKey",
+        "key": "LIST"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-scene-5",
+      "action": {
+        "type": "quickKey",
+        "key": "MENU"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-scene-7",
+      "action": {
+        "type": "command",
+        "command": "OOPS"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-scene-8",
+      "action": {
+        "type": "command",
+        "command": "FULL"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-shift",
+      "action": {
+        "type": "executor",
+        "number": 209
+      },
+      "feedback": {
+        "type": "none"
+      }
+    }
+  ]
+}

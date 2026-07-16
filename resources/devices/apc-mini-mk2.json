@@ -1,0 +1,1652 @@
+{
+  "formatVersion": 1,
+  "id": "apc-mini-mk2",
+  "name": "AKAI APC mini mk2",
+  "notes": "APC mini mk2 (second generation). Pad grid note layout is identical to the mk1: note 0 = bottom-left, note 63 = top-right. Pads are RGB: the feedback velocity picks one of the 128 factory palette colours, and the MIDI channel of the feedback note selects brightness/behaviour (channel 1-7 = solid at 10%/25%/50%/65%/75%/90%/100% brightness, 8-11 = pulsing, 12-16 = blinking). Track buttons (notes 100-107) and scene buttons (notes 112-119) have single-colour LEDs (velocity 0 off, 1 on, 2 blinking). The shift button (note 122) has no LED. Faders (CC 48-56) are not motorized and have no LED, so fader feedback is not possible on this board.",
+  "manufacturer": "AKAI Professional",
+  "mode": "standard",
+  "defaultMidiChannel": 1,
+  "layout": {
+    "width": 9,
+    "height": 12
+  },
+  "controls": [
+    {
+      "id": "pad-1-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 56
+      },
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-2-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 57
+      },
+      "position": {
+        "x": 1,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-3-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 58
+      },
+      "position": {
+        "x": 2,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-4-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 59
+      },
+      "position": {
+        "x": 3,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-5-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 60
+      },
+      "position": {
+        "x": 4,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-6-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 61
+      },
+      "position": {
+        "x": 5,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-7-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 62
+      },
+      "position": {
+        "x": 6,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-8-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 63
+      },
+      "position": {
+        "x": 7,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-1-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 48
+      },
+      "position": {
+        "x": 0,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-2-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 49
+      },
+      "position": {
+        "x": 1,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-3-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 50
+      },
+      "position": {
+        "x": 2,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-4-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 51
+      },
+      "position": {
+        "x": 3,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-5-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 52
+      },
+      "position": {
+        "x": 4,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-6-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 53
+      },
+      "position": {
+        "x": 5,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-7-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 54
+      },
+      "position": {
+        "x": 6,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-8-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 55
+      },
+      "position": {
+        "x": 7,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-1-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 40
+      },
+      "position": {
+        "x": 0,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-2-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 41
+      },
+      "position": {
+        "x": 1,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-3-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 42
+      },
+      "position": {
+        "x": 2,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-4-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 43
+      },
+      "position": {
+        "x": 3,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-5-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 44
+      },
+      "position": {
+        "x": 4,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-6-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 45
+      },
+      "position": {
+        "x": 5,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-7-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 46
+      },
+      "position": {
+        "x": 6,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-8-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 47
+      },
+      "position": {
+        "x": 7,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-1-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 32
+      },
+      "position": {
+        "x": 0,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-2-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 33
+      },
+      "position": {
+        "x": 1,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-3-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 34
+      },
+      "position": {
+        "x": 2,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-4-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 35
+      },
+      "position": {
+        "x": 3,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-5-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 36
+      },
+      "position": {
+        "x": 4,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-6-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 37
+      },
+      "position": {
+        "x": 5,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-7-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 38
+      },
+      "position": {
+        "x": 6,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-8-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 39
+      },
+      "position": {
+        "x": 7,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-1-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 24
+      },
+      "position": {
+        "x": 0,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-2-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 25
+      },
+      "position": {
+        "x": 1,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-3-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 26
+      },
+      "position": {
+        "x": 2,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-4-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 27
+      },
+      "position": {
+        "x": 3,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-5-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 28
+      },
+      "position": {
+        "x": 4,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-6-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 29
+      },
+      "position": {
+        "x": 5,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-7-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 30
+      },
+      "position": {
+        "x": 6,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-8-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 31
+      },
+      "position": {
+        "x": 7,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-1-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 16
+      },
+      "position": {
+        "x": 0,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-2-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 17
+      },
+      "position": {
+        "x": 1,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-3-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 18
+      },
+      "position": {
+        "x": 2,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-4-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 19
+      },
+      "position": {
+        "x": 3,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-5-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 20
+      },
+      "position": {
+        "x": 4,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-6-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 21
+      },
+      "position": {
+        "x": 5,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-7-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 22
+      },
+      "position": {
+        "x": 6,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-8-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 23
+      },
+      "position": {
+        "x": 7,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-1-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 8
+      },
+      "position": {
+        "x": 0,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-2-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 9
+      },
+      "position": {
+        "x": 1,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-3-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 10
+      },
+      "position": {
+        "x": 2,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-4-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 11
+      },
+      "position": {
+        "x": 3,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-5-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 12
+      },
+      "position": {
+        "x": 4,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-6-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 13
+      },
+      "position": {
+        "x": 5,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-7-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 14
+      },
+      "position": {
+        "x": 6,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-8-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 15
+      },
+      "position": {
+        "x": 7,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-1-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 0
+      },
+      "position": {
+        "x": 0,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-2-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 1
+      },
+      "position": {
+        "x": 1,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-3-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 2
+      },
+      "position": {
+        "x": 2,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-4-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 3
+      },
+      "position": {
+        "x": 3,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-5-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 4
+      },
+      "position": {
+        "x": 4,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-6-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 5
+      },
+      "position": {
+        "x": 5,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-7-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 6
+      },
+      "position": {
+        "x": 6,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "pad-8-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 7
+      },
+      "position": {
+        "x": 7,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-scene-1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 112
+      },
+      "position": {
+        "x": 8,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      },
+      "label": "Clip Stop"
+    },
+    {
+      "id": "btn-scene-2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 113
+      },
+      "position": {
+        "x": 8,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      },
+      "label": "Solo"
+    },
+    {
+      "id": "btn-scene-3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 114
+      },
+      "position": {
+        "x": 8,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      },
+      "label": "Mute"
+    },
+    {
+      "id": "btn-scene-4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 115
+      },
+      "position": {
+        "x": 8,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      },
+      "label": "Rec Arm"
+    },
+    {
+      "id": "btn-scene-5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 116
+      },
+      "position": {
+        "x": 8,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      },
+      "label": "Select"
+    },
+    {
+      "id": "btn-scene-6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 117
+      },
+      "position": {
+        "x": 8,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      },
+      "label": "Drum"
+    },
+    {
+      "id": "btn-scene-7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 118
+      },
+      "position": {
+        "x": 8,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      },
+      "label": "Note"
+    },
+    {
+      "id": "btn-scene-8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 119
+      },
+      "position": {
+        "x": 8,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      },
+      "label": "Stop All Clips"
+    },
+    {
+      "id": "btn-track-1",
+      "label": "Volume",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 100
+      },
+      "position": {
+        "x": 0,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-track-2",
+      "label": "Pan",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 101
+      },
+      "position": {
+        "x": 1,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-track-3",
+      "label": "Send",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 102
+      },
+      "position": {
+        "x": 2,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-track-4",
+      "label": "Device",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 103
+      },
+      "position": {
+        "x": 3,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-track-5",
+      "label": "Up",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 104
+      },
+      "position": {
+        "x": 4,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-track-6",
+      "label": "Down",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 105
+      },
+      "position": {
+        "x": 5,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-track-7",
+      "label": "Left",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 106
+      },
+      "position": {
+        "x": 6,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-track-8",
+      "label": "Right",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 107
+      },
+      "position": {
+        "x": 7,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-shift",
+      "label": "Shift",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 122
+      },
+      "position": {
+        "x": 8,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "fader-1",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 48
+      },
+      "position": {
+        "x": 0,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-2",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 49
+      },
+      "position": {
+        "x": 1,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-3",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 50
+      },
+      "position": {
+        "x": 2,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-4",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 51
+      },
+      "position": {
+        "x": 3,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-5",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 52
+      },
+      "position": {
+        "x": 4,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-6",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 53
+      },
+      "position": {
+        "x": 5,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-7",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 54
+      },
+      "position": {
+        "x": 6,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-8",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 55
+      },
+      "position": {
+        "x": 7,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-master",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 56
+      },
+      "position": {
+        "x": 8,
+        "y": 9,
+        "width": 1,
+        "height": 3,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    }
+  ]
+}

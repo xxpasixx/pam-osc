@@ -30,7 +30,7 @@ export function minimalDevice(overrides: Record<string, unknown> = {}) {
         position: { x: 2, y: 0, width: 1, height: 1, shape: "circle" },
         capabilities: {
           encoding: { increment: { from: 1, to: 63 }, decrement: { from: 65, to: 127 } },
-          ledRing: { channel: 1, from: 48, to: 58 },
+          ledRing: { controller: 48, from: 0, to: 11 },
         },
       },
       {
