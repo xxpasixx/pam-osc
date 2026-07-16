@@ -105,6 +105,56 @@ describe("loadFormat", () => {
     expect(result.issues[0]?.message).toContain("motorized fader");
   });
 
+  it("rejects encoder-ring feedback on an encoder without an LED ring", async () => {
+    const device = minimalDevice();
+    delete ((device.controls as { capabilities: { ledRing?: unknown } }[])[2]!.capabilities as { ledRing?: unknown })
+      .ledRing;
+    await write(bundled.devicesDir, "test-board.json", device);
+    const mapping = minimalMapping({
+      assignments: [{ controlId: "enc-1", action: { type: "attribute", attribute: "dimmer" }, feedback: { type: "encoder-ring" } }],
+    });
+    await write(bundled.mappingsDir, "test-mapping.json", mapping);
+    const result = await loadFormat(sources());
+    expect(result.mappings).toHaveLength(0);
+    expect(result.issues[0]?.message).toContain("LED ring");
+  });
+
+  it("rejects on-off and always-on feedback on a button without an LED", async () => {
+    const device = minimalDevice();
+    (device.controls as { capabilities: { led: string } }[])[1]!.capabilities = { led: "none" };
+    await write(bundled.devicesDir, "test-board.json", device);
+    const mapping = minimalMapping({
+      assignments: [{ controlId: "btn-1", action: { type: "executor", number: 201 }, feedback: { type: "always-on", value: 127 } }],
+    });
+    await write(bundled.mappingsDir, "test-mapping.json", mapping);
+    const result = await loadFormat(sources());
+    expect(result.mappings).toHaveLength(0);
+    expect(result.issues[0]?.message).toContain("LED");
+  });
+
+  it("rejects the display action on a non-display control and vice versa", async () => {
+    await write(bundled.devicesDir, "test-board.json", minimalDevice());
+    await write(
+      bundled.mappingsDir,
+      "wrong-target.json",
+      minimalMapping({
+        id: "wrong-target",
+        assignments: [{ controlId: "btn-1", action: { type: "display", number: 201 } }],
+      }),
+    );
+    await write(
+      bundled.mappingsDir,
+      "wrong-action.json",
+      minimalMapping({
+        id: "wrong-action",
+        assignments: [{ controlId: "display-1", action: { type: "executor", number: 201 } }],
+      }),
+    );
+    const result = await loadFormat(sources());
+    expect(result.mappings).toHaveLength(0);
+    expect(result.issues).toHaveLength(2);
+  });
+
   it("lets two mappings share one device definition with different ports (AC-5)", async () => {
     await write(bundled.devicesDir, "test-board.json", minimalDevice());
     await write(bundled.mappingsDir, "unit-a.json", minimalMapping({ id: "unit-a", midiPort: { input: "Board A" } }));

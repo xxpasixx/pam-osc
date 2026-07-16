@@ -56,13 +56,22 @@ describe("bundled resources", () => {
     const actionTypes = new Set(
       result.mappings.flatMap((mapping) => mapping.assignments.map((assignment) => assignment.action.type)),
     );
-    for (const required of ["executor", "command", "quickKey", "modifier", "timecodeSelect", "timecodePlayPause", "display"]) {
+    for (const required of [
+      "executor",
+      "command",
+      "quickKey",
+      "attribute",
+      "modifier",
+      "timecodeSelect",
+      "timecodePlayPause",
+      "display",
+    ]) {
       expect(actionTypes, `no bundled mapping uses action "${required}"`).toContain(required);
     }
     const feedbackTypes = new Set(
       result.mappings.flatMap((mapping) => mapping.assignments.map((assignment) => assignment.feedback.type)),
     );
-    for (const required of ["on-off", "always-on", "fader-position"]) {
+    for (const required of ["on-off", "always-on", "fader-position", "encoder-ring"]) {
       expect(feedbackTypes, `no bundled mapping uses feedback "${required}"`).toContain(required);
     }
   });
