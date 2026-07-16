@@ -99,6 +99,14 @@ describe("deviceDefinitionSchema", () => {
   it("rejects a non-kebab-case id", () => {
     expect(deviceDefinitionSchema.safeParse(minimalDevice({ id: "Test Board" })).success).toBe(false);
   });
+
+  it("bounds display indices to the 8-strip protocol (0-7)", () => {
+    const device = minimalDevice();
+    (device.controls[3] as { index: number }).index = 8;
+    expect(deviceDefinitionSchema.safeParse(device).success).toBe(false);
+    (device.controls[3] as { index: number }).index = 7;
+    expect(deviceDefinitionSchema.safeParse(device).success).toBe(true);
+  });
 });
 
 describe("mappingSchema", () => {
@@ -153,5 +161,20 @@ describe("mappingSchema", () => {
       const mapping = minimalMapping({ assignments: [{ controlId: "btn-1", action: { type: "timecodeSelect", slot } }] });
       expect(mappingSchema.safeParse(mapping).success).toBe(false);
     }
+  });
+
+  it("bounds hostile numeric fields: executor/display numbers ≤ 9999, amount ≤ 1000", () => {
+    const bad = [
+      { controlId: "btn-1", action: { type: "executor", number: 10000 } },
+      { controlId: "btn-1", action: { type: "display", number: 1e21 } },
+      { controlId: "btn-1", action: { type: "executor", number: 201 }, options: { amount: 1e308 } },
+    ];
+    for (const assignment of bad) {
+      expect(mappingSchema.safeParse(minimalMapping({ assignments: [assignment] })).success).toBe(false);
+    }
+    const ok = minimalMapping({
+      assignments: [{ controlId: "btn-1", action: { type: "executor", number: 9999 }, options: { amount: 1000 } }],
+    });
+    expect(mappingSchema.safeParse(ok).success).toBe(true);
   });
 });

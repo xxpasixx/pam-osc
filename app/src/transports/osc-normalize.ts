@@ -6,11 +6,15 @@ import type { OscArgument, OscMessage } from "./osc.js";
  * uses. Unknown argument types are dropped, unknown shapes yield no message
  * — feedback the engine doesn't know is ignored, never fatal (EC-2/EC-3).
  */
-export function normalizeOscPacket(packet: unknown): OscMessage[] {
+/** Bundles nested deeper than this are hostile, not musical. */
+const MAX_BUNDLE_DEPTH = 32;
+
+export function normalizeOscPacket(packet: unknown, depth = 0): OscMessage[] {
+  if (packet === null || typeof packet !== "object" || depth > MAX_BUNDLE_DEPTH) return [];
   const record = packet as { oscType?: string; address?: unknown; args?: unknown; elements?: unknown };
 
   if (record.oscType === "bundle" && Array.isArray(record.elements)) {
-    return record.elements.flatMap((element) => normalizeOscPacket(element));
+    return record.elements.flatMap((element) => normalizeOscPacket(element, depth + 1));
   }
 
   if (record.oscType === "message" && typeof record.address === "string") {

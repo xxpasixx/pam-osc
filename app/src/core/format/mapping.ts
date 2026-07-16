@@ -7,8 +7,9 @@ import { envelopeShape, idSchema, midiValueSchema } from "./envelope.js";
  */
 
 export const actionSchema = z.discriminatedUnion("type", [
-  // MA3 executor number on the current page, e.g. 201.
-  z.strictObject({ type: z.literal("executor"), number: z.number().int().positive() }),
+  // MA3 executor number on the current page, e.g. 201 (MA3 uses 101-490;
+  // the ceiling keeps hostile values out of OSC addresses).
+  z.strictObject({ type: z.literal("executor"), number: z.number().int().positive().max(9999) }),
   z.strictObject({ type: z.literal("command"), command: z.string().min(1) }),
   // Triggers the QuickKey named "pam-osc_<KEY>" (created by the Lua plugin).
   z.strictObject({ type: z.literal("quickKey"), key: z.string().min(1) }),
@@ -34,7 +35,7 @@ export const actionSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("timecodeSelect"), slot: z.number().int().min(1).max(8).optional() }),
   z.strictObject({ type: z.literal("timecodePlayPause") }),
   // Executor whose sequence/cue/appearance a display control shows.
-  z.strictObject({ type: z.literal("display"), number: z.number().int().positive() }),
+  z.strictObject({ type: z.literal("display"), number: z.number().int().positive().max(9999) }),
 ]);
 
 export const feedbackSchema = z.discriminatedUnion("type", [
@@ -61,8 +62,9 @@ export const assignmentSchema = z.strictObject({
     .strictObject({
       // Velocity threshold below which button input is ignored.
       minValue: midiValueSchema.optional(),
-      // Sensitivity per encoder detent for attribute/executor actions.
-      amount: z.number().positive().optional(),
+      // Sensitivity per encoder detent for attribute/executor actions
+      // (bounded — unbounded values overflow to Infinity in commands).
+      amount: z.number().positive().max(1000).optional(),
     })
     .optional(),
   feedback: feedbackSchema.default({ type: "none" }),

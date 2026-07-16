@@ -81,12 +81,15 @@ export const controlSchema = z.discriminatedUnion("type", [
   }),
   // Displays (scribble strips) are addressed by their slot index via sysex,
   // not by a MIDI note/CC — so they carry an index instead of a midi address.
+  // The supported scribble protocol (X-Touch) carries exactly 8 strips, and
+  // text offsets must stay 7-bit — the index is bounded accordingly (an
+  // unbounded index lets a shared device file freeze the engine).
   z.strictObject({
     id: controlBaseShape.id,
     label: controlBaseShape.label,
     position: controlBaseShape.position,
     type: z.literal("display"),
-    index: z.number().int().min(0),
+    index: z.number().int().min(0).max(7),
     capabilities: z.strictObject({
       segments: z.number().int().positive(),
     }),

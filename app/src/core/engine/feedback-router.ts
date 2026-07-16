@@ -86,7 +86,7 @@ export function handleOscMessage(context: FeedbackContext, message: OscMessage):
     if (first?.startsWith("Timecode")) {
       const slot = Number.parseInt(first.substring("Timecode".length), 10);
       const time = args[0]?.value;
-      if (!Number.isNaN(slot) && typeof time === "string") {
+      if (validSlot(slot) && typeof time === "string") {
         handleTimecodeFeedback(context.state, context.allUnits(), slot, time);
       }
       return;
@@ -95,11 +95,17 @@ export function handleOscMessage(context: FeedbackContext, message: OscMessage):
     if (first?.startsWith("14.")) {
       const slot = Number.parseInt(first.substring(3), 10);
       const value = args[0]?.value;
-      if (!Number.isNaN(slot) && typeof value === "string") {
+      if (validSlot(slot) && typeof value === "string") {
         handleTimecodeRunning(context.state, slot, value);
       }
     }
   }
+}
+
+/** Only MA3's real slots 0-8 are tracked — anything else from the LAN would
+ * grow the slot map without bound. */
+function validSlot(slot: number): boolean {
+  return Number.isInteger(slot) && slot >= 0 && slot <= 8;
 }
 
 function numericArg(value: unknown): number | undefined {
@@ -158,6 +164,9 @@ function handleColor(context: FeedbackContext, executor: number, value: unknown)
     let changed = false;
     for (const entry of entries) {
       if (entry.control.type !== "display") continue;
+      // Defense in depth: the schema bounds index to 0-7, and the frame is
+      // fixed at 8 strips — never grow the array past it.
+      if (entry.control.index >= unitRuntime.colors.length) continue;
       unitRuntime.colors[entry.control.index] = nearestDisplayColor(parseColorString(value));
       changed = true;
     }

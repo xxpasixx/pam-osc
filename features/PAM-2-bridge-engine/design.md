@@ -229,3 +229,11 @@ Level 3 — Harness/E2E:  T9 [P]  CLI dev harness (config file, event logging, c
 **BUG-7 rule (from the PAM-1 review):** all assignments sharing a MIDI address fire on every event — v1's behavior — and the engine emits a startup warning naming both controls.
 
 **Engine start policy:** `start()` rejects only when *nothing* can run (no valid active mapping, or the UDP receive port cannot be bound). Everything partial — unknown mapping ids, broken files, missing devices — is an issue event, and the engine runs with the valid rest (EC-4).
+
+**Post-review fixes (2026-07-17, from review.md):**
+- **Hostile-file hardening (BUG-1/3/4):** display `index` is bounded 0–7 in the schema (the supported scribble protocol carries exactly 8 strips; larger indices let a shared device file freeze the engine); the feedback path guards the bound again defensively.
+- **LAN hardening (BUG-2):** only timecode slots 0–8 are tracked — arbitrary `/Timecode<n>` addresses no longer grow memory.
+- **Schema ceilings (BUG-6):** executor/display `number` ≤ 9999, `amount` ≤ 1000 — hostile values can no longer reach OSC addresses or command strings.
+- **Normalizer guards (BUG-5):** null-safe, bundle recursion capped at depth 32.
+- **CLI (BUG-7):** signal handlers installed before `start()` — Ctrl-C during the startup animation stops cleanly.
+- Two further parity notes surfaced by review: `options.amount` also scales encoder→executor accumulation (the format documents amount for executor actions; v1 applied it only to attributes — not observable with bundled content), and masterEnabled + `always-on` sends the fixed feedback value (v1 coerced to 127; consistent with the Button path, likewise not observable with bundled content).

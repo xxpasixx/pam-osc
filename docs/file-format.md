@@ -64,7 +64,7 @@ Both are pure data: **no code, no scripts**. Files are validated on load; proble
 | `fader`   | `motorized` (default false)                                                                                                                                                                              | Anything sending _absolute_ values — sliders, and knobs that send absolute CC. Motorized faders can follow the show. |
 | `encoder` | `encoding` (required): `increment`/`decrement`, each `{from, to}` — the raw CC values per detent. `ledRing` (optional): `{controller, from, to}` — the CC number the ring listens on and its value range | _Relative_ rotary encoders.                                                                                          |
 | `button`  | `led`: `"none"`, `"on-off"`, or `"velocity-colors"` (LED color picked by velocity — APC mini, Launchpad)                                                                                                 | Anything sending notes (or CC buttons).                                                                              |
-| `display` | `segments` (character count); `index` instead of `midi`                                                                                                                                                  | Scribble strips / LED displays, addressed by slot index.                                                             |
+| `display` | `segments` (character count); `index` (0–7) instead of `midi`                                                                                                                                            | Scribble strips / LED displays, addressed by slot index (the protocol carries 8 strips).                             |
 
 ## Mapping
 
@@ -124,3 +124,5 @@ Both are pure data: **no code, no scripts**. Files are validated on load; proble
 ## Sharing
 
 Mappings are single JSON files — send them to anyone. On another machine only the `midiPort` names usually need re-picking (that's what the import flow adjusts).
+
+One thing to know: `command` actions contain real GrandMA3 console commands, sent verbatim when the button is pressed. The files carry no code that pam-osc executes — but a command like `Delete Sequence 1` is still a command. Skim the `command` values of a mapping you didn't write before using it in a show.

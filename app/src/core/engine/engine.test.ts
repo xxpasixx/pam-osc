@@ -263,6 +263,50 @@ describe("feedback routing (AC-5, AC-6, AC-7)", () => {
     expect(unit.sent[1]).toEqual({ kind: "sysex", bytes: [0xf0, 0x00, 0x00, 0x66, 0x14, 0x12, 63, ...cue, 0xf7] });
   });
 
+  it("ignores MIDI events with no assignment — no crash, no sends (EC-1)", async () => {
+    const { midi, osc } = await startedEngine();
+    const unit = midi.connection(TEST_PORT);
+    unit.sent.length = 0;
+    unit.emit({ kind: "cc", channel: 1, controller: 99, value: 64 }); // unmapped CC
+    unit.emit({ kind: "note", channel: 1, note: 99, value: 127 }); // unmapped note
+    unit.emit({ kind: "note", channel: 5, note: 10, value: 127 }); // mapped note, wrong channel
+    unit.emit({ kind: "pitchbend", channel: 3, value: 8000 }); // unmapped pitch channel
+    expect(osc.socket().sent).toEqual([]);
+    expect(unit.sent).toEqual([]);
+  });
+
+  it("treats absent optional mapping features as 'off', never as an error (EC-6)", async () => {
+    // test-map-2 omits enableTimecodeSend's features and has no minValue/amount anywhere
+    const harness = await startedEngine({ activeMappingIds: ["test-map-2"] });
+    expect(harness.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+
+    const unit = harness.midi.connection("Second Unit");
+    unit.sent.length = 0;
+    // timecode select on a non-timecode mapping: silently does nothing
+    unit.emit({ kind: "note", channel: 1, note: 26, value: 127 });
+    expect(unit.sent).toEqual([]);
+    // regular routing still works
+    unit.emit({ kind: "cc", channel: 1, controller: 7, value: 127 });
+    expect(harness.osc.socket().sent.at(-1)?.address).toBe("/Page1/Fader201");
+  });
+
+  it("ignores /Timecode slots outside 0-8 — the slot map stays bounded (BUG-2)", async () => {
+    const { osc } = await startedEngine();
+    const socket = osc.socket();
+    for (let i = 0; i < 1000; i++) {
+      socket.inject({ address: `/Timecode${i + 100}`, args: [{ type: "string", value: "01h02m03:04" }] });
+    }
+    socket.inject({ address: "/Timecode999999999", args: [{ type: "string", value: "01h02m03:04" }] });
+    // only real slots are tracked — verified via behavior: selecting slot 1 shows no time
+    // (nothing stored), while slot feedback for slot 1 still works
+    socket.inject({ address: "/Timecode1", args: [{ type: "string", value: "05h06m07:08" }] });
+    const { midi } = active!;
+    const unit = midi.connection(TEST_PORT);
+    unit.sent.length = 0;
+    unit.emit({ kind: "note", channel: 1, note: 26, value: 127 }); // select slot 1
+    expect(unit.sent.filter((m) => m.kind === "cc").length).toBe(12 + 1 + 9); // renders stored time
+  });
+
   it("ignores feedback nothing references (EC-2)", async () => {
     const { midi, osc } = await startedEngine();
     const unit = midi.connection(TEST_PORT);

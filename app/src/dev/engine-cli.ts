@@ -122,6 +122,16 @@ engine.on("devices", (statuses) => {
 
 console.log(`pam-osc engine — console ${parsed.data.consoleAddress}:${parsed.data.sendPort}, feedback on :${parsed.data.receivePort}`);
 
+// Installed before start() so Ctrl-C during the startup animation still
+// closes the MIDI ports and the UDP socket cleanly.
+const shutdown = async () => {
+  console.log("\nstopping ...");
+  await engine.stop();
+  process.exit(0);
+};
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
+
 try {
   await engine.start({
     consoleAddress: parsed.data.consoleAddress,
@@ -133,11 +143,3 @@ try {
 } catch (error) {
   fail(error instanceof Error ? error.message : String(error));
 }
-
-const shutdown = async () => {
-  console.log("\nstopping ...");
-  await engine.stop();
-  process.exit(0);
-};
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);

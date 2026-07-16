@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createSocket } from "node:dgram";
+import { normalizeOscPacket } from "./osc-normalize.js";
 import { udpOscTransport } from "./osc-udp.js";
 import { oscFloat, oscString, type OscMessage, type OscSocket } from "./osc.js";
 import { FakeMA3 } from "../testing/fake-ma3.js";
@@ -16,6 +17,25 @@ function freePort(): Promise<number> {
     });
   });
 }
+
+describe("normalizeOscPacket guards (BUG-5)", () => {
+  it("returns [] for null/undefined/primitive input instead of throwing", () => {
+    expect(normalizeOscPacket(null)).toEqual([]);
+    expect(normalizeOscPacket(undefined)).toEqual([]);
+    expect(normalizeOscPacket(42)).toEqual([]);
+    expect(normalizeOscPacket({ oscType: "bundle", elements: [null, { oscType: "message", address: "/a", args: [] }] })).toEqual([
+      { address: "/a", args: [] },
+    ]);
+  });
+
+  it("caps bundle recursion depth instead of blowing the stack", () => {
+    let packet: unknown = { oscType: "message", address: "/deep", args: [] };
+    for (let i = 0; i < 50000; i++) {
+      packet = { oscType: "bundle", elements: [packet] };
+    }
+    expect(normalizeOscPacket(packet)).toEqual([]); // beyond the cap → dropped, no throw
+  });
+});
 
 describe("udpOscTransport ↔ FakeMA3", () => {
   let localPort: number;

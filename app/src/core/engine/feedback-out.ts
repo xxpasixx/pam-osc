@@ -116,6 +116,9 @@ export function sendStripColors(unitRuntime: UnitRuntime): void {
 
 /** Line 1 (sequence) offset = strip × 7, line 2 (cue) offset = 56 + strip × 7 (v1). */
 export function sendStripText(unitRuntime: UnitRuntime, stripIndex: number, sequence: string, cue: string): void {
+  // Offsets beyond strip 7 would exceed 0x7F — illegal as sysex data bytes.
+  // The schema bounds display indices to 0-7; this is the last line of defense.
+  if (stripIndex < 0 || stripIndex > 7) return;
   sendToUnit(
     unitRuntime,
     { kind: "sysex", bytes: [...SYSEX_HEADER, 0x12, stripIndex * 7, ...scribbleLine(sequence), 0xf7] },
