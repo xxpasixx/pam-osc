@@ -3,12 +3,13 @@
   "version": "2.0.0-dev",
   "private": true,
   "type": "module",
-  "description": "pam-osc v2 desktop app — MIDI to GrandMA3 OSC bridge",
+  "description": "pam-osc v2 desktop app \u2014 MIDI to GrandMA3 OSC bridge",
   "license": "GPL-3.0",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "engine": "tsx src/dev/engine-cli.ts"
   },
   "dependencies": {
     "easymidi": "3.2.0",
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "@types/node": "^22",
+    "tsx": "4.23.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   }

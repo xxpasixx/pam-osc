@@ -207,3 +207,25 @@ Level 3 — Harness/E2E:  T9 [P]  CLI dev harness (config file, event logging, c
 ## Open Questions
 
 - None
+
+## Implementation Notes (added during /build, 2026-07-17)
+
+**Dependency deviation:** `osc-min@2.1.2` + `node:dgram` instead of the planned `osc` package — `osc` drags a vulnerable `ws` (high-severity advisories) and the native `serialport` module for transports we never use; we own the UDP socket per this design anyway. `easymidi@3.2.0` as planned (ships its own TypeScript types). `tsx@4.23.1` (dev) runs the CLI harness. Versions pinned from the npm registry on 2026-07-17.
+
+**Level 0 grew a second content fix.** The PAM-1 bundled x-touch mappings had feedback `none` on command buttons, with a note claiming the format "cannot express master-state feedback". That was a misreading of the format's semantics: the *action* determines the feedback source (command → `/masterEnabled/<name>`), `on-off` only describes the rendering. Restored `on-off` on all 17 x-touch-default-1 command buttons and HIGHLIGHT/BLIND in default-2 — v1 master-LED parity.
+
+**Documented behavior deviations from v1** (all safe-direction, none observable with the bundled mappings):
+- "Off" goes out as **note-on velocity 0 for every board**, not just MC-mode. All five supported boards treat it as note-off per MIDI spec, and X-Touch MC requires it — one code path instead of v1's sysex trick.
+- `command`/`quickKey`/`modifier`/`timecodeSelect` fire on **press only** when no `minValue` is set. v1 fired them on release too, but every v1 mapping guards them with `minValue` — releases still reach `executor` actions (flash needs Key 0), exactly as in v1.
+- Relative CC values outside both encoder ranges are **ignored**; v1's NaN handling reset the accumulator to 0.
+- Fader/ring feedback uses the control's **resolved channel**; v1 hardcoded channel 1 (identical for all bundled boards).
+- Scribble text is forced to **7-bit ASCII** (space for anything else); v1 sent raw char codes and glitched on umlauts.
+- Executor numbers are parsed from **trailing digits** of the feedback address; v1 took the last 3 characters (identical for MA3's 3-digit executors).
+- Scribble colors are **per unit**; v1 kept one global 8-slot array and wrote to a single "display device".
+- Timecode slot select updates the display on **all** timecode units (v1 reset only the pressing device); the play/pause hold timer is guarded against missing slot data (v1 crashed inside the timeout).
+- The startup animation additionally waves **encoder LED rings** (this design says so; v1 animated only faders/buttons).
+- The `Attribute … at  + n` command keeps v1's **double space** — field-tested against MA3.
+
+**BUG-7 rule (from the PAM-1 review):** all assignments sharing a MIDI address fire on every event — v1's behavior — and the engine emits a startup warning naming both controls.
+
+**Engine start policy:** `start()` rejects only when *nothing* can run (no valid active mapping, or the UDP receive port cannot be bound). Everything partial — unknown mapping ids, broken files, missing devices — is an issue event, and the engine runs with the valid rest (EC-4).

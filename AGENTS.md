@@ -23,7 +23,8 @@ Ship-fast path: `/build` (it writes a lite spec inline) → `/review` → `/ship
 **pam-osc v2** — cross-platform desktop app (macOS, Windows, Linux) bridging MIDI controllers and GrandMA3 over OSC. Replaces the Open Stage Control dependency of v1.
 
 - **Shell:** Electron; packaging with `electron-builder` (dmg / exe / AppImage), unsigned for the MVP
-- **Main process (Node.js):** `easymidi` (MIDI I/O), `osc` (UDP/OSC); ported v1 core (`midiUtils`, `oscUtils`, `routingUtils`, `colorUtils`, `portUtils`, module logic)
+- **Main process (Node.js):** `easymidi` (MIDI I/O), `osc-min` + `node:dgram` (UDP/OSC — replaced the planned `osc` package: it drags a vulnerable `ws` and native `serialport` for transports we don't use); ported v1 core (`midiUtils`, `oscUtils`, `routingUtils`, `colorUtils`, `portUtils`, module logic)
+- **Live docs:** Context7 connected — verify dependency versions via the npm registry before pinning
 - **Renderer (UI):** React + TypeScript + Vite
 - **Console side:** GrandMA3 Lua plugin (`pam-OSC.lua`) — unchanged from v1, lives in this repo
 - **Tests:** Vitest; integration tests via virtual MIDI ports (easymidi; Windows needs loopMIDI → CI on macOS/Linux) and a fake-MA3 OSC emulator (UDP socket that records messages and replays feedback)
@@ -41,11 +42,12 @@ v2 is developed on the long-lived **`v2` branch**; `main` stays the stable v1.4 
 
 All app commands run inside `app/`:
 
-- `cd app && npm test` — Vitest (unit + bundled-content validation)
+- `cd app && npm test` — Vitest (unit + bundled-content validation + engine integration/E2E via virtual MIDI ports and the fake-MA3 UDP emulator)
 - `cd app && npm run test:watch` — Vitest watch mode
 - `cd app && npm run typecheck` — `tsc --noEmit`
+- `cd app && npm run engine -- --config <file.json>` — headless engine dev harness (PAM-2) for onPC/real-hardware runs; `--list-ports` lists MIDI ports
 - `npm run format` — Prettier (repo root, whole repo)
-- `npm run dev` / `npm run build` (Vite + Electron / electron-builder) — TBD, arrive with PAM-2/PAM-3
+- `npm run dev` / `npm run build` (Vite + Electron / electron-builder) — TBD, arrive with PAM-3
 
 Live docs: Context7 connected — verify dependency versions via `npm view <pkg> version` before pinning.
 
