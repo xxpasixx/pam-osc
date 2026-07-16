@@ -29,7 +29,9 @@ export const actionSchema = z.discriminatedUnion("type", [
         });
       }
     }),
-  z.strictObject({ type: z.literal("timecodeSelect"), slot: z.number().int().min(1) }),
+  // Without a slot the button cycles through slots 0-8 on every press (v1
+  // behavior); with a slot it selects exactly that slot.
+  z.strictObject({ type: z.literal("timecodeSelect"), slot: z.number().int().min(1).max(8).optional() }),
   z.strictObject({ type: z.literal("timecodePlayPause") }),
   // Executor whose sequence/cue/appearance a display control shows.
   z.strictObject({ type: z.literal("display"), number: z.number().int().positive() }),

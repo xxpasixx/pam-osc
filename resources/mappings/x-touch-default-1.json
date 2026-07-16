@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "x-touch-default-1",
   "name": "X-Touch Default 1",
-  "notes": "Default X-Touch layout 1 (v1 mappings/xTouch1.json): faders on executors 201-208 + main 209, encoders on 401-408, button rows on 401-408 / 301-308 / 201-208 / 101-108, F-keys on 191-198, view row on 291-298, QuickKeys and MA commands on the master section. Converted from v1. v1's timecodeSelect button cycled through timecode slots 1-8 on every press; the v2 format stores one fixed slot, so this mapping selects slot 1. Encoder push buttons carried executor feedback in v1 that the hardware ignored (no LED there) — represented here as feedback 'none'. Modifier buttons (encoder fine/rough, attribute select) keep 'on-off' feedback because v1 drove those LEDs locally (toggle state / selected attribute). v1 lit command buttons (Highlight/Solo/Blind/Freeze/...) from the MA3 master state; the v2 feedback types cannot express master-state feedback yet, so command buttons here have feedback 'none'.",
+  "notes": "Default X-Touch layout 1 (v1 mappings/xTouch1.json): faders on executors 201-208 + main 209, encoders on 401-408, button rows on 401-408 / 301-308 / 201-208 / 101-108, F-keys on 191-198, view row on 291-298, QuickKeys and MA commands on the master section. Converted from v1. The timecodeSelect button cycles through timecode slots 0-8 on every press (0 = none), exactly as in v1. Encoder push buttons carried executor feedback in v1 that the hardware ignored (no LED there) — represented here as feedback 'none'. Modifier buttons (encoder fine/rough, attribute select) keep 'on-off' feedback because v1 drove those LEDs locally (toggle state / selected attribute). Command buttons (Highlight/Solo/Blind/Freeze/...) use 'on-off' feedback: the engine lights them from the MA3 master state (/masterEnabled), exactly as in v1.",
   "deviceDefinitionId": "x-touch",
   "midiPort": {
     "input": "X-Touch",
@@ -667,7 +667,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -680,7 +682,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -693,7 +697,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -706,7 +712,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -719,7 +727,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -732,7 +742,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -745,7 +757,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -781,8 +795,7 @@
     {
       "controlId": "btn-name-value",
       "action": {
-        "type": "timecodeSelect",
-        "slot": 1
+        "type": "timecodeSelect"
       },
       "options": {
         "minValue": 100
@@ -1275,7 +1288,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1288,7 +1303,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1301,7 +1318,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1314,7 +1333,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1327,7 +1348,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1340,7 +1363,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1353,7 +1378,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1366,7 +1393,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1379,7 +1408,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
@@ -1392,7 +1423,9 @@
         "minValue": 100
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {

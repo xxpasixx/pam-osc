@@ -93,6 +93,7 @@ Both are pure data: **no code, no scripts**. Files are validated on load; proble
 ```
 
 - `midiPort` — OS port names (the app lists what's connected). `output` is optional for boards without feedback. Two units of the same board type? Two mappings, same `deviceDefinitionId`, different ports.
+- `enableTimecodeSend` — `true` mirrors MA3 timecode on the board's 7-segment area. Only does something on `"mode": "mc"` boards (X-Touch); the timecode actions below need it too.
 - Each control may appear **once** in `assignments`.
 
 **Actions**
@@ -104,8 +105,8 @@ Both are pure data: **no code, no scripts**. Files are validated on load; proble
 | `quickKey`          | `key`                                                                          | Triggers the QuickKey `pam-osc_<KEY>` (auto-created by the Lua plugin).         |
 | `attribute`         | `attribute`                                                                    | Controls the attribute (e.g. `dimmer`, `pan`, `tilt`).                          |
 | `modifier`          | `modifier`: `encoderFine` / `encoderRough` / `attributeSelect` (+ `attribute`) | App-internal modifier keys — nothing is sent to MA3.                            |
-| `timecodeSelect`    | `slot`                                                                         | Selects a timecode slot.                                                        |
-| `timecodePlayPause` | —                                                                              | Play/pause the selected timecode.                                               |
+| `timecodeSelect`    | `slot` (optional, 1–8)                                                         | With `slot`: selects that timecode slot. Without: cycles 0→1→…→8→0 per press (0 = none). |
+| `timecodePlayPause` | —                                                                              | Tap: play/pause the selected timecode slot. Hold ≥ 0.5 s: switches it off.     |
 | `display`           | `number`                                                                       | The display shows that executor's sequence, cue, and color.                     |
 
 **Feedback types** (what the board's LEDs/motors do)
