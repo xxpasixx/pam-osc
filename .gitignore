@@ -3,6 +3,14 @@ Archive.zip
 test.lua
 test2.lua
 
+# Electron / Vite build output
+dist/
+dist-electron/
+release/
+out/
+*.tsbuildinfo
+.vite/
+
 # env files — real keys never get committed; .example variants do
 .env
 .env.*

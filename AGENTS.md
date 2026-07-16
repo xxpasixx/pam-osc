@@ -20,29 +20,50 @@ Ship-fast path: `/build` (it writes a lite spec inline) → `/review` → `/ship
 
 ## Tech Stack
 
-_Set by `/init`. Languages, frameworks, platform, key services._
+**pam-osc v2** — cross-platform desktop app (macOS, Windows, Linux) bridging MIDI controllers and GrandMA3 over OSC. Replaces the Open Stage Control dependency of v1.
+
+- **Shell:** Electron; packaging with `electron-builder` (dmg / exe / AppImage), unsigned for the MVP
+- **Main process (Node.js):** `easymidi` (MIDI I/O), `osc` (UDP/OSC); ported v1 core (`midiUtils`, `oscUtils`, `routingUtils`, `colorUtils`, `portUtils`, module logic)
+- **Renderer (UI):** React + TypeScript + Vite
+- **Console side:** GrandMA3 Lua plugin (`pam-OSC.lua`) — unchanged from v1, lives in this repo
+- **Tests:** Vitest; integration tests via virtual MIDI ports (easymidi; Windows needs loopMIDI → CI on macOS/Linux) and a fake-MA3 OSC emulator (UDP socket that records messages and replays feedback)
 
 ## Project Structure
 
-_Set by `/init`. Where code, tests, and config live._
+v2 is developed on the long-lived **`v2` branch**; `main` stays the stable v1.4 for existing users until v2.0 ships.
+
+- `app/` — the Electron app: `app/src/main` (Electron main process, MIDI/OSC), `app/src/renderer` (React UI), `app/src/core` (ported v1 core, pure JS/TS, unit-testable)
+- `features/` — feature specs; `docs/` — PRD, data model, ideas
+- v1 files (root-level `*.js`, `mappings/`, `OpenStageControlConfig.config`) remain untouched on `main`; on the `v2` branch they may be moved to `legacy/` during cleanup
+- `gma3_library/` — the MA3 Lua plugin release files
 
 ## Build & Test Commands
 
-_Set by `/init`. How to build, lint, run tests, and run the app. Skills run these commands — if a command is missing here, they ask and offer to record the answer._
+TBD until the app scaffold exists (first `/build`). Planned:
+
+- `npm run dev` — Vite dev server + Electron
+- `npm run build` — production build via electron-builder
+- `npm test` — Vitest
+- `npm run format` — Prettier (already works today, repo root)
 
 ## Environments & Release
 
-_Set by `/init`. Where you test before something is live, how a change gets promoted, what go-live means, and the rollback path._
+No staging environment. Development and testing happen locally against **GrandMA3 onPC** plus real MIDI hardware; a change is release-ready when it has been verified locally with onPC and at least one real device — the MIDI/OSC emulator test suite is the safety net in CI.
+
+- **Branching:** `main` = stable v1 (bugfixes still possible) · `v2` = integration branch for v2.0 · feature branches `feat/PAM-X-name` fork from and PR back into `v2` · go-live of v2.0 = merge `v2` → `main`
+- **Release:** GitHub Releases with versioned installers (dmg / exe / AppImage); beta pre-releases for Discord testers
+- **Rollback:** users install the previous release; v1.4 stays available and functional in parallel
+- **Code signing:** none in the MVP (documented Gatekeeper/SmartScreen workarounds in README); planned as its own P2 item (Apple Developer + Azure Trusted Signing)
 
 ## Spec Language
 
-_Set by `/init`. The language specs and acceptance criteria are written in._
+English for all artifacts (PRD, specs, ACs, designs, reviews) — the repo is public with an international community. Chat with the maintainer happens in German.
 
 ## Key Conventions
 
-- **Feature IDs:** `PROJ` is a placeholder — `/init` picks this project's own prefix: 3–5 uppercase letters, memorable, ideally with a wink (Prayer App → `PRAY`, event site → `FEST`), unique among ICF repos. IDs are sequential: `PRAY-1`, `PRAY-2`, … Record the prefix here at `/init`.
-- **Commits:** `feat(PROJ-X): description`, `fix(PROJ-X): description` (with the project's prefix)
-- **Protected `main`:** nothing lands on `main` directly — every change merges via a PR/MR, including `/ship` (go-live) and `/hotfix` (expedited). You create `feat/PROJ-X-name` before `/build`; `main` stays releasable.
+- **Feature IDs:** this project's prefix is **`PAM`** — IDs are sequential: `PAM-1`, `PAM-2`, … (next free ID in `features/INDEX.md`)
+- **Commits:** `feat(PAM-X): description`, `fix(PAM-X): description`
+- **Protected branches:** nothing lands on `main` or `v2` directly — every change merges via a PR/MR, including `/ship` (go-live) and `/hotfix` (expedited). You create `feat/PAM-X-name` from `v2` before `/build`; `main` stays releasable (stable v1).
 - **Parallel build:** `/build` fans out file-disjoint tasks as isolated subagents
 - **Human-in-the-loop:** approval before artifacts are finalized and always before go-live
 - **Secrets / env files:** Never read, edit, or create real env files (they hold private keys). To document a variable, add a placeholder to the project's `.env.example` variant — the one kind of env file an agent may edit. When a real value is needed, ask the user in chat what to paste — never write it yourself.

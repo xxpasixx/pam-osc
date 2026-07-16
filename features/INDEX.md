@@ -16,14 +16,24 @@
 
 > The **Spec** column links to the feature **folder** (`features/PROJ-X-name/`): `spec.md` (always), `design.md` (when it helps), `review.md` (after review).
 
-| ID | Feature | Status | Spec | Created |
-|----|---------|--------|------|---------|
+| ID | Feature | Priority | Depends on | Status | Spec | Created |
+|----|---------|----------|------------|--------|------|---------|
+| PAM-1 | Device & mapping file format — devices (controls, MIDI notes, 2D positions) separated from mappings (control → MA3 action); bundled definitions for v1-supported boards | P0 | — | Roadmap | — | 2026-07-16 |
+| PAM-2 | Bridge engine — ported v1 core with feature parity (faders, encoders, buttons, LED/display feedback, DeskLock), reads the new file format | P0 | PAM-1 | Roadmap | — | 2026-07-16 |
+| PAM-3 | Setup & settings UI — console IP/ports, device selection, persisted locally | P0 | PAM-2 | Roadmap | — | 2026-07-16 |
+| PAM-4 | Status & diagnostics UI — connection check, plugin check, port diagnosis, MIDI test mode | P0 | PAM-2, PAM-3 | Roadmap | — | 2026-07-16 |
+| PAM-5 | v1 mapping import | P0 | PAM-1 | Roadmap | — | 2026-07-16 |
+| PAM-6 | Visual mapping editor — 2D board layout, remap controls, add buttons/faders/encoders | P1 | PAM-1, PAM-3 | Roadmap | — | 2026-07-16 |
+| PAM-7 | Mapping export/import as file (community sharing) | P1 | PAM-1 | Roadmap | — | 2026-07-16 |
+| PAM-8 | Code signing & notarization | P2 | — | Roadmap | — | 2026-07-16 |
+| PAM-9 | One-click Lua plugin install on the console (feasibility open) | P2 | PAM-4 | Roadmap | — | 2026-07-16 |
+| PAM-10 | Colored button feedback | P2 | PAM-2 | Roadmap | — | 2026-07-16 |
 
 <!-- Add features above this line -->
 
-## Next Available ID: PROJ-1
+**Recommended build order:** PAM-1 → PAM-2 → PAM-3 → PAM-4 → PAM-5 = MVP release, then PAM-6/PAM-7 (P1), then P2.
 
-> `PROJ` is a placeholder — `/init` picks this project's own prefix (short, memorable, fun allowed: `PRAY`, `WAVE`, `TACO`) and replaces it everywhere.
+## Next Available ID: PAM-11
 
 ## Operations
 
