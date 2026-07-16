@@ -76,6 +76,26 @@
 - **F3:** connection check = 20 total attempts per design (v1: 21). Sanctioned by design.md.
 - **L2 (informational):** `command` strings are arbitrary MA3 console commands by design (v1 parity) — the format's "no executable code" means no code *executed by pam-osc*; a doc note that shared mappings should be reviewed is recommended.
 
-### Verdict
+### Verdict (initial pass)
 - **ACs:** 11/11 passed (+ 6/6 ECs) · **Bugs:** 8 (0 Critical / 1 High / 3 Medium / 4 Low) · **Security:** LAN + lifecycle clean; untrusted device-definition files are the one gap (BUG-1 cluster)
 - **Ship: NOT READY** — BUG-1 (High) blocks. The BUG-1/3/4 cluster shares one root cause (missing bound on display `index`) and BUG-2 is a two-line guard; all are cheap, contained fixes. Everything else is hardening/coverage. Run `/build` to fix, then `/review` again.
+
+---
+
+## Fix verification (same day, 2026-07-17)
+
+All eight bugs fixed in the follow-up build pass (commit `fix(PAM-2): review fixes — …`) and re-verified:
+
+- **BUG-1/3/4 — fixed:** display `index` bounded 0–7 in the schema (`device-definition.ts`, rejection test added) plus defensive guards in the color path (index vs. array bound) and text path (offset ≤ 0x7F). Bundled content unaffected (indices 0–7, 44 format tests green).
+- **BUG-2 — fixed:** `/Timecode<slot>` and `/14.<slot>` only accepted for slots 0–8 (`feedback-router.ts` `validSlot`); flood test with 1001 hostile slots added — real slot feedback still renders.
+- **BUG-5 — fixed:** `normalizeOscPacket` null-safe, bundle recursion capped at depth 32; tests for null/primitive/50k-deep bundles added.
+- **BUG-6 — fixed:** schema ceilings — executor/display `number` ≤ 9999, `amount` ≤ 1000; rejection tests added.
+- **BUG-7 — fixed:** CLI signal handlers registered before `engine.start()` (code-order fix, verified by reading; dev tool only).
+- **BUG-8 — fixed:** dedicated EC-1 (four unmapped-event shapes → zero sends) and EC-6 (optional features absent → no error, routing works) tests added.
+- **F1/F2/L2 — documented:** design.md Implementation Notes (amount-on-executor, always-on vs masterEnabled) and docs/file-format.md (command-string trust note for shared mappings).
+
+**Suites after fixes: 94/94 tests green (+9), typecheck clean.**
+
+### Final Verdict
+- **ACs:** 11/11 passed (+ 6/6 ECs) · **Open bugs:** 0 Critical / 0 High / 0 Medium / 0 Low · **Security:** pass
+- **Ship: READY** — Approved. Reminder from the spec's decision log: real onPC/hardware verification is deferred until PAM-3 exists; the CLI harness (`npm run engine`) is the vehicle for it and had a successful smoke run.
