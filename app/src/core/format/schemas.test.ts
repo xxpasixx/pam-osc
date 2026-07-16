@@ -36,7 +36,7 @@ export function minimalDevice(overrides: Record<string, unknown> = {}) {
       {
         id: "display-1",
         type: "display",
-        midi: { kind: "cc", number: 100 },
+        index: 0,
         position: { x: 3, y: 0, width: 2, height: 1 },
         capabilities: { segments: 7 },
       },

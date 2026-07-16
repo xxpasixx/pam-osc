@@ -77,9 +77,14 @@ export const controlSchema = z.discriminatedUnion("type", [
         .optional(),
     }),
   }),
+  // Displays (scribble strips) are addressed by their slot index via sysex,
+  // not by a MIDI note/CC — so they carry an index instead of a midi address.
   z.strictObject({
-    ...controlBaseShape,
+    id: controlBaseShape.id,
+    label: controlBaseShape.label,
+    position: controlBaseShape.position,
     type: z.literal("display"),
+    index: z.number().int().min(0),
     capabilities: z.strictObject({
       segments: z.number().int().positive(),
     }),
