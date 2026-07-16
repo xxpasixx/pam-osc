@@ -6,6 +6,9 @@
   "description": "pam-osc v2 desktop app \u2014 MIDI to GrandMA3 OSC bridge",
   "license": "GPL-3.0",
   "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "package": "electron-vite build && electron-builder",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -18,8 +21,18 @@
   },
   "devDependencies": {
     "@types/node": "^22",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.2.0",
+    "electron": "43.1.1",
+    "electron-builder": "26.15.3",
+    "electron-vite": "5.0.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "tsx": "4.23.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
-  }
+  },
+  "main": "./out/main/index.js",
+  "productName": "pam-osc"
 }

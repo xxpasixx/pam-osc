@@ -1,0 +1,21 @@
+# Packaging (AGENTS.md → Environments & Release): unsigned installers for
+# the MVP; Gatekeeper/SmartScreen workarounds are documented in the README.
+appId: io.github.xxpasixx.pam-osc
+productName: pam-osc
+directories:
+  output: release
+files:
+  - out/**
+# Bundled device definitions & default mappings ship next to the app code;
+# the main process resolves them via process.resourcesPath when packaged.
+extraResources:
+  - from: ../resources
+    to: resources
+mac:
+  target: dmg
+  category: public.app-category.music
+win:
+  target: nsis
+linux:
+  target: AppImage
+  category: Audio

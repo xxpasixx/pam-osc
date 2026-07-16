@@ -21,6 +21,14 @@ export interface LoadResult {
   devices: DeviceDefinition[];
   mappings: Mapping[];
   issues: FormatIssue[];
+  /** Where each surviving mapping came from (origin + actual file path). */
+  mappingSources: MappingSource[];
+}
+
+export interface MappingSource {
+  id: string;
+  origin: FormatSource["origin"];
+  file: string;
 }
 
 interface Entry<T> {
@@ -46,6 +54,11 @@ export async function loadFormat(sources: FormatSource[]): Promise<LoadResult> {
     devices: [...devices.values()].map((entry) => entry.value),
     mappings: [...validMappings.values()].map((entry) => entry.value),
     issues,
+    mappingSources: [...validMappings.values()].map((entry) => ({
+      id: entry.value.id,
+      origin: entry.origin,
+      file: entry.file,
+    })),
   };
 }
 

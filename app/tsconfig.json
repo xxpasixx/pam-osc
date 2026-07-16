@@ -3,12 +3,14 @@
     "target": "es2022",
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node", "vite/client"]
   },
-  "include": ["src"]
+  "include": ["src", "electron.vite.config.ts"]
 }

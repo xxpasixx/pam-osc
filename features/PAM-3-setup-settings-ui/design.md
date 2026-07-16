@@ -196,3 +196,15 @@ Level 5 — Tests:     T7      unit: settings store, validation rules, catalog
 ## Open Questions
 
 - None
+
+## Implementation Notes (added during /build, 2026-07-17)
+
+- **Versions pinned from the npm registry:** electron 43.1.1, electron-vite 5.0.0, electron-builder 26.15.3, react/react-dom 19.2.7, @vitejs/plugin-react 5.2.0 (6.x needs Vite 8; electron-vite 5 bundles Vite 7).
+- **Preload is built as CommonJS** (`.cjs`): Electron's ESM preloads require `sandbox: false`; the design mandates sandbox **on**, so the preload is the one non-ESM artifact. Main process stays ESM.
+- **Loader extension (additive, PAM-1 module):** `LoadResult` now also reports `mappingSources` (id → origin + actual file path). The catalog needs real file paths because user mapping files are not guaranteed to be named `<id>.json`; filename guessing would have corrupted rewrites. No existing behavior changed (44 format tests untouched).
+- **Validation is one pure module** (`src/core/settings/validate.ts`) used twice: live in the renderer for instant inline errors and enforced in the main process inside the Save transaction — the renderer remains untrusted.
+- **Window-all-closed quits the app** (engine stops with it). A background/tray mode is parked in `docs/ideas.md` — spec is silent, quitting is the predictable MVP behavior.
+- **Duplicate flow:** duplicating a row immediately adds the copy to the draft with the source's ports; validation flags the port collision so the user re-picks — one step fewer than duplicate-then-activate.
+- **Engine host does stop→start explicitly instead of `engine.reconfigure()`** — the rollback path (EC-3) needs control between the stop and the start.
+- **Agent/CI caveat:** launching the app from a shell that carries `ELECTRON_RUN_AS_NODE` (e.g. VS Code task shells) makes Electron boot as plain Node — documented in AGENTS.md commands.
+- **Verified:** 116/116 Vitest (validation, settings store, catalog incl. copy-on-activate/duplicate/EC-4, apply transaction incl. rollback paths, plus all PAM-1/PAM-2 suites), typecheck clean, `electron-vite build` green, dev-mode boot smoke on macOS (window process up, userData folders created, first-run = no engine start).

@@ -45,9 +45,11 @@ All app commands run inside `app/`:
 - `cd app && npm test` — Vitest (unit + bundled-content validation + engine integration/E2E via virtual MIDI ports and the fake-MA3 UDP emulator)
 - `cd app && npm run test:watch` — Vitest watch mode
 - `cd app && npm run typecheck` — `tsc --noEmit`
+- `cd app && npm run dev` — Electron app in dev mode (electron-vite, HMR). Note for agent/CI shells: unset `ELECTRON_RUN_AS_NODE` first (`env -u ELECTRON_RUN_AS_NODE npm run dev`), otherwise Electron starts as plain Node
+- `cd app && npm run build` — production bundles (electron-vite → `out/`)
+- `cd app && npm run package` — build + installers via electron-builder (`release/`, unsigned in the MVP)
 - `cd app && npm run engine -- --config <file.json>` — headless engine dev harness (PAM-2) for onPC/real-hardware runs; `--list-ports` lists MIDI ports
 - `npm run format` — Prettier (repo root, whole repo)
-- `npm run dev` / `npm run build` (Vite + Electron / electron-builder) — TBD, arrive with PAM-3
 
 Live docs: Context7 connected — verify dependency versions via `npm view <pkg> version` before pinning.
 
