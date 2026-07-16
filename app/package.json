@@ -1,0 +1,21 @@
+{
+  "name": "@pam-osc/app",
+  "version": "2.0.0-dev",
+  "private": true,
+  "type": "module",
+  "description": "pam-osc v2 desktop app — MIDI to GrandMA3 OSC bridge",
+  "license": "GPL-3.0",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

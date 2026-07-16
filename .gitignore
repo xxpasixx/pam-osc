@@ -16,3 +16,4 @@ out/
 .env.*
 !.env.example
 !.env.*.example
+app/node_modules/
