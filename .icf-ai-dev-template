@@ -1,0 +1,5 @@
+{
+  "version": "1.0.0",
+  "template": "icf-ai-dev-template",
+  "basedOn": "ai-eng-kit 0.1.13"
+}

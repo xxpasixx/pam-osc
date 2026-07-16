@@ -1,0 +1,68 @@
+#!/bin/sh
+# Pre-commit safety net: secrets, key material, conflict markers, oversized files.
+# Zero dependencies (uses gitleaks for the secret scan when installed).
+# Activate once per clone:  git config core.hooksPath .githooks   (/init does this)
+# False positive? Bypass with:  git commit --no-verify   — /review and CI still check.
+
+fail=0
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# 1) Forbidden filenames — real env files and private key material never get committed
+bad_names=$(printf '%s\n' "$staged" | grep -vE '\.example$' | grep -E '(^|/)\.env(\..+)?$|\.(pem|key|p12|pfx)$|(^|/)id_(rsa|ed25519|ecdsa)') || true
+if [ -n "$bad_names" ]; then
+  echo "✗ BLOCKED — these files look like real secrets and never belong in git:"
+  printf '%s\n' "$bad_names" | sed 's/^/  /'
+  echo "  Document variables in the .env.example variant instead."
+  fail=1
+fi
+
+# 2) Merge-conflict markers in staged added lines
+conflicts=$(git diff --cached --unified=0 --no-color | grep -nE '^\+(<{7} |>{7} )') || true
+if [ -n "$conflicts" ]; then
+  echo "✗ BLOCKED — unresolved merge-conflict markers staged:"
+  printf '%s\n' "$conflicts" | head -5 | sed 's/^/  /'
+  fail=1
+fi
+
+# 3) Oversized files (>1 MB) — a big blob stays in history forever
+# (split on newlines only — filenames with spaces must not break the loop)
+oldIFS=$IFS
+IFS='
+'
+for f in $staged; do
+  size=$(git cat-file -s ":$f" 2>/dev/null || echo 0)
+  if [ "$size" -gt 1048576 ]; then
+    echo "✗ BLOCKED — $f is $((size / 1024)) KB (limit 1 MB). Large binaries belong in LFS or object storage."
+    fail=1
+  fi
+done
+IFS=$oldIFS
+
+# 4) Secret scan — gitleaks when installed, high-confidence grep fallback otherwise
+if command -v gitleaks >/dev/null 2>&1; then
+  if ! gitleaks git --pre-commit --staged --redact --no-banner >/dev/null 2>&1; then
+    echo "✗ BLOCKED — gitleaks found a secret in the staged changes:"
+    gitleaks git --pre-commit --staged --redact --no-banner 2>&1 | grep -E '^(Finding|Secret|RuleID|File|Line)' | head -12 | sed 's/^/  /'
+    fail=1
+  fi
+else
+  added=$(git diff --cached --unified=0 --no-color -- . ':(exclude).githooks/*' | grep '^+' | grep -v '^+++') || true
+  pattern='-----BEGIN [A-Z ]*PRIVATE KEY( BLOCK)?-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,}|glpat-[A-Za-z0-9_-]{20}|xox[baprs]-[A-Za-z0-9-]{10,}|[sr]k_live_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{35}|npm_[A-Za-z0-9]{36}|sk-proj-[A-Za-z0-9_-]{20,}'
+  hits=$(printf '%s\n' "$added" | grep -E -e "$pattern") || true
+  if [ -n "$hits" ]; then
+    echo "✗ BLOCKED — staged lines match known secret patterns:"
+    printf '%s\n' "$hits" | head -5 | cut -c1-100 | sed 's/^/  /'
+    echo "  (Tip: install gitleaks for a much better scan — brew install gitleaks)"
+    fail=1
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "Commit blocked. If this is a FALSE POSITIVE: git commit --no-verify"
+  echo "(The hook is a safety net, not the gate — /review and CI still check.)"
+  exit 1
+fi
+exit 0
