@@ -30,7 +30,7 @@ The skills work in any order; nobody is forced through a pipeline. Whatever path
 - Present options as clear choices, not open-ended questions
 
 ## Interview Discipline (canonical — used by /init, /spec, /build)
-When a skill interviews the user: **one question at a time** (never a list); **always offer a recommended answer** the user confirms or corrects; **follow the conversation**, not a fixed script; **read files first** when they already answer a question; **no fixed question limit** — stop at real understanding. Every interview turn ends on **exactly one question as the very last line**, then stop and wait — never end on a summary or status note.
+When a skill interviews the user: **ask one or several related questions per turn** — group questions that belong together (e.g. all the console-connection settings, or users + core job) into one batch rather than dragging them out; keep the batch focused (roughly 1–4 questions) and don't dump an unrelated laundry list; **always offer a recommended answer per question** the user confirms or corrects; **follow the conversation**, not a fixed script — split a batch back into single questions whenever one answer clearly shapes the next; **read files first** when they already answer a question; **no fixed question limit** — stop at real understanding. Every interview turn ends on **its question(s) as the very last thing** (number them when there's more than one), then stop and wait — never end on a summary or status note.
 
 ## Status Updates (Write-Then-Verify)
 Statuses in `features/INDEX.md`: **Roadmap → Spec'd → Building → In Review → Approved → Live**

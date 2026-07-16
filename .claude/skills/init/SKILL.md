@@ -8,7 +8,7 @@ user-invocable: true
 # Project Initializer
 
 ## Goal
-Turn a raw idea into a clear product vision, a recorded stack profile, and a prioritized feature map — through a relentless, one-question-at-a-time interview, because a vague PRD now turns into the wrong features later.
+Turn a raw idea into a clear product vision, a recorded stack profile, and a prioritized feature map — through a relentless discovery interview (one or several related questions per turn, per the Interview Discipline), because a vague PRD now turns into the wrong features later.
 
 ## Quick setup check (first, silent unless something's wrong)
 Framework files present (`AGENTS.md`, `features/INDEX.md`, `docs/PRD.md`, `.claude/`), git initialized, env-file patterns in `.gitignore`, `docs/ideas.md` exists (create it from one heading + one example line if not), a README answering the Tier-0 questions exists (`docs/readme-template.md`; missing → offer to draft it from the interview answers at the end), and the pre-commit hook is active — if `git config core.hooksPath` isn't `.githooks`, run `git config core.hooksPath .githooks` (safe auto-fix; the hook blocks staged secrets, key files, conflict markers, and oversized blobs). A `.claude/settings.template.json` next to an existing `settings.json` (installer couldn't auto-merge) → merge additively: union of the `permissions.deny/ask/allow` lists — keep every entry from both, never drop a deny; the user's other keys win — then delete the template. Fix what's safe silently; anything needing a human gets exactly one clear instruction. Never read env-file contents — existence only.
@@ -22,9 +22,9 @@ Framework files present (`AGENTS.md`, `features/INDEX.md`, `docs/PRD.md`, `.clau
 Offer to back-fill a lite spec per already-built feature (3–7 ACs from observed behavior) so `/review` has something to verify against — recommended, not forced.
 
 ## The Discovery Interview
-Follow the **Interview Discipline** in `.claude/rules/general.md` strictly. The single most important rule: **every turn ends on exactly one question as the very last line, then you stop and wait.** The user only knows it's their turn when you end on a clear question — never a summary. Unsure what to do next? That's itself the signal to ask.
+Follow the **Interview Discipline** in `.claude/rules/general.md` strictly. The single most important rule: **every turn ends on its question(s) as the very last thing, then you stop and wait.** You may batch related questions (roughly 1–4, numbered); split back to single questions whenever one answer shapes the next. The user only knows it's their turn when you end on clear question(s) — never a summary. Unsure what to do next? That's itself the signal to ask.
 
-**If the user pasted a full briefing:** don't interview point by point as if you knew nothing. Note what it answers, work through only the genuine gaps one question at a time, then go straight to the PRD draft.
+**If the user pasted a full briefing:** don't interview point by point as if you knew nothing. Note what it answers, work through only the genuine gaps (batching related ones), then go straight to the PRD draft.
 
 Cover through natural conversation: the core problem; target users and their pain; MVP must-haves vs later; alternatives and what's different; constraints (time, budget, team); success metrics; non-goals. Also skim `docs/ideas.md` — parked ideas may belong on this roadmap; triage them in (and prune what's dead).
 
@@ -36,7 +36,7 @@ One product question is mandatory (the data-model sketch depends on it):
 If accounts are needed, **accounts/auth is a real feature** — the first one, with its data foundation. Environment plumbing is never a feature.
 
 ## The Stack Interview (mandatory, before the feature map)
-Same discipline, one question at a time, skip what the briefing answered:
+Same discipline (batch related items, skip what the briefing answered):
 1. **Project type** — web app, mobile app, service, platform work (e.g. Salesforce), CLI?
 2. **Tech stack** — languages, frameworks, platform, key services
 3. **Repo layout** — where code, tests, config live
@@ -58,7 +58,7 @@ Same discipline, one question at a time, skip what the briefing answered:
 ## What NOT to do
 - No feature folders or specs — that's `/spec`'s job; no code
 - No setup/infrastructure features — plumbing has no user story
-- Never save an artifact before its checkpoint approval; never end a turn without a question during the interview
+- Never save an artifact before its checkpoint approval; never end a turn without a question (single or batched) during the interview
 
 ## Checklist
 - [ ] Setup check green (or the one open item handed off); `docs/ideas.md` exists and was triaged
