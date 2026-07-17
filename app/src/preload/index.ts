@@ -23,6 +23,7 @@ const api: PamOscApi = {
   applySettings: (draft) => ipcRenderer.invoke(IPC.applySettings, draft),
   revealMappingsFolder: () => ipcRenderer.invoke(IPC.revealMappingsFolder),
   duplicateMapping: (id) => ipcRenderer.invoke(IPC.duplicateMapping, id),
+  createMapping: (request) => ipcRenderer.invoke(IPC.createMapping, request),
   pickV1MappingFile: () => ipcRenderer.invoke(IPC.pickV1MappingFile),
   importV1Mapping: (request) => ipcRenderer.invoke(IPC.importV1Mapping, request),
   getMappingForEdit: (id) => ipcRenderer.invoke(IPC.getMappingForEdit, id),

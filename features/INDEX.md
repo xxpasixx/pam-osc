@@ -29,12 +29,13 @@
 | PAM-8  | Code signing & notarization                                                                                                                                             | P2       | —            | Roadmap  | —                                          | 2026-07-16 |
 | PAM-9  | One-click Lua plugin install on the console (feasibility open)                                                                                                          | P2       | PAM-4        | Roadmap  | —                                          | 2026-07-16 |
 | PAM-10 | Colored button feedback                                                                                                                                                 | P2       | PAM-2        | Roadmap  | —                                          | 2026-07-16 |
+| PAM-11 | Board-centric mapping management — boards list their mappings, board-first mapping picker/dropdown in Setup, create new (empty) mappings                                | P1       | PAM-1, PAM-3, PAM-6 | In Review | [PAM-11](PAM-11-board-centric-mapping-management/) | 2026-07-17 |
 
 <!-- Add features above this line -->
 
 **Recommended build order:** PAM-1 → PAM-2 → PAM-3 → PAM-4 → PAM-5 = MVP release, then PAM-6/PAM-7 (P1), then P2.
 
-## Next Available ID: PAM-11
+## Next Available ID: PAM-12
 
 ## Operations
 

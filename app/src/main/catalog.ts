@@ -1,7 +1,9 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import {
+  CURRENT_FORMAT_VERSION,
   loadFormat,
+  mappingSchema,
   orphanedAssignments,
   suffixedCopy,
   validateDeviceDraft,
@@ -12,6 +14,7 @@ import {
   type LoadResult,
   type MappingRef,
 } from "../core/format/index.js";
+import { makeUniqueId } from "../core/import/index.js";
 import type { ActiveMappingDraft } from "../core/settings/schema.js";
 import type {
   BoardInfo,
@@ -98,6 +101,7 @@ export class Catalog {
     return this.loaded.mappings.map((mapping) => ({
       id: mapping.id,
       name: mapping.name,
+      deviceDefinitionId: mapping.deviceDefinitionId,
       boardName: devicesById.get(mapping.deviceDefinitionId)?.name ?? mapping.deviceDefinitionId,
       origin: this.sourceById.get(mapping.id)?.origin ?? "bundled",
       midiPort: { input: mapping.midiPort.input, output: mapping.midiPort.output },
@@ -182,6 +186,46 @@ export class Catalog {
     await this.refresh();
     const entry = this.entries().find((candidate) => candidate.id === raw.id);
     return entry ?? { error: `duplicate of "${id}" was written but failed validation — check the file` };
+  }
+
+  /**
+   * "New mapping" for a board (PAM-11 AC-2/AC-7): an empty user mapping —
+   * no assignments, ports prefilled with the board name as a placeholder
+   * (Setup rebinds them on activation, same as bundled mappings).
+   */
+  async createMapping(deviceDefinitionId: string, name: string): Promise<CatalogEntry | { error: string }> {
+    const device = this.device(deviceDefinitionId);
+    if (!device) return { error: `unknown board "${deviceDefinitionId}" — pick one from the list` };
+    const trimmed = name.trim();
+    if (trimmed.length === 0) return { error: "the new mapping needs a name" };
+
+    // Unique against loaded ids AND files already in the user folder (an
+    // invalid file there has no id but still owns its file name).
+    const taken = new Set(this.validIds());
+    let id = makeUniqueId(trimmed, taken);
+    while (await fileExists(join(this.paths.userMappingsDir, `${id}.json`))) {
+      taken.add(id);
+      id = makeUniqueId(trimmed, taken);
+    }
+
+    const mapping = {
+      formatVersion: CURRENT_FORMAT_VERSION,
+      id,
+      name: trimmed,
+      deviceDefinitionId: device.id,
+      midiPort: { input: device.name, output: device.name },
+      assignments: [],
+    };
+    // Belt and braces: never write a file the loader would reject.
+    const check = mappingSchema.safeParse(mapping);
+    if (!check.success) {
+      const detail = check.error.issues[0];
+      return { error: `could not create the mapping (${detail?.message ?? "unknown"}) — please report this as a bug` };
+    }
+    await atomicWrite(join(this.paths.userMappingsDir, `${id}.json`), mapping);
+    await this.refresh();
+    const entry = this.entries().find((candidate) => candidate.id === id);
+    return entry ?? { error: `mapping "${id}" was written but did not load — check the file in the mappings folder` };
   }
 
   // ---- PAM-6 editor surface ----
@@ -350,4 +394,13 @@ async function atomicWrite(file: string, content: unknown): Promise<void> {
   const temp = `${file}.tmp`;
   await writeFile(temp, JSON.stringify(content, null, 2) + "\n", "utf8");
   await rename(temp, file);
+}
+
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
 }

@@ -1,5 +1,5 @@
 import { readdir, readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import type { ZodType } from "zod";
 import { CURRENT_FORMAT_VERSION } from "./envelope.js";
 import { checkCompatibility } from "./compatibility.js";
@@ -113,7 +113,7 @@ async function loadEntities<T extends { id: string }>(
         issues.push({
           severity: "info",
           file,
-          message: `${kind} "${entity.id}" overrides the ${existing.origin} version (${existing.file})`,
+          message: `${kind} "${entity.id}" overrides the ${existing.origin} version (${basename(existing.file)})`,
         });
       }
       byId.set(entity.id, { value: entity, origin: source.origin, file });

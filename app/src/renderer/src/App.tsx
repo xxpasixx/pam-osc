@@ -242,6 +242,27 @@ export function App() {
     );
   }, []);
 
+  // "New mapping" for a board (PAM-11 AC-2/AC-7): create empty → refresh the
+  // catalog → open the mapping editor. Activation stays a Setup decision.
+  const createMappingAndEdit = useCallback(
+    async (deviceDefinitionId: string, name: string) => {
+      setDialogOpen(false);
+      try {
+        const result = await window.pamOsc.createMapping({ deviceDefinitionId, name });
+        if ("error" in result) {
+          pushError(result.error);
+          return;
+        }
+        const fresh = await window.pamOsc.getSnapshot();
+        adoptEditorSnapshot(fresh);
+        setEditorTarget({ kind: "mapping", id: result.id });
+      } catch (error) {
+        pushError(`creating the mapping failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    },
+    [pushError, adoptEditorSnapshot]
+  );
+
   if (loadError) {
     return <div className="app-body">Failed to load: {loadError}</div>;
   }
@@ -342,8 +363,12 @@ export function App() {
         {tab === "boards" && (
           <BoardsView
             boards={snapshot.boards}
+            catalog={snapshot.catalog}
+            invalidFiles={snapshot.invalidFiles}
             onEdit={(id) => setEditorTarget({ kind: "device", id })}
             onCreate={(name, width, height) => setEditorTarget({ kind: "new-device", name, width, height })}
+            onEditMapping={(id) => setEditorTarget({ kind: "mapping", id })}
+            onCreateMapping={(deviceDefinitionId, name) => void createMappingAndEdit(deviceDefinitionId, name)}
           />
         )}
       </main>
@@ -370,10 +395,12 @@ export function App() {
       />
       <AddDeviceDialog
         open={dialogOpen}
+        boards={snapshot.boards}
         catalog={snapshot.catalog}
         invalidFiles={snapshot.invalidFiles}
         alreadyActive={new Set(draft.activeMappings.map((mapping) => mapping.id))}
         onClose={() => setDialogOpen(false)}
+        onCreateNew={(deviceDefinitionId, name) => void createMappingAndEdit(deviceDefinitionId, name)}
         onPick={(entry) => {
           setDialogOpen(false);
           updateDraft((current) => ({

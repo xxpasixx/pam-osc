@@ -9,3 +9,5 @@
 - timecodeSelect slot cycling — v1 cycled slots 1–8 per press; v2 format stores a fixed slot, PAM-2 could add a "cycle" variant (2026-07-17)
 - Layer-Umschalter im Editor-Canvas (X-Touch Compact A/B) statt Daten-Versatz — braucht Gruppierungs-Info im Format (2026-07-17)
 - Indicate-Mode auch im Status-Tab (Board-Ansicht mit Live-Highlight außerhalb des Editors) (2026-07-17)
+- Format: Push-Fähigkeit auch für Fader-Knobs (X-Touch Compact knob-1–8) bzw. Absolut-Modus für Encoder — dann wäre 1 Control pro Knob möglich statt abs/rel-Twins + Push (2026-07-17)
+- Editor UX: Board- vs. Mapping-Modus sichtbarer trennen/erklären (kurzer Hinweistext o. Onboarding — "Board = Hardware-Fakten, Mapping = deine Belegung"), Nutzer-Feedback: Trennung kommt nicht rüber (2026-07-17)

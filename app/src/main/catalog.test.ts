@@ -41,8 +41,15 @@ describe("Catalog (AC-2, EC-4)", () => {
     await writeFile(join(paths.userMappingsDir, "broken.json"), "{ nope", "utf8");
     await writeFile(
       join(paths.userMappingsDir, "bad-ref.json"),
-      JSON.stringify({ formatVersion: 1, id: "bad-ref", name: "Bad", deviceDefinitionId: "ghost", midiPort: { input: "X" }, assignments: [] }),
-      "utf8",
+      JSON.stringify({
+        formatVersion: 1,
+        id: "bad-ref",
+        name: "Bad",
+        deviceDefinitionId: "ghost",
+        midiPort: { input: "X" },
+        assignments: [],
+      }),
+      "utf8"
     );
     await catalog.refresh();
     const invalid = catalog.invalidFiles();
@@ -102,8 +109,55 @@ describe("Catalog (AC-2, EC-4)", () => {
     expect(raw.name).not.toContain("(2)");
   });
 
+  it("creates an empty user mapping for a board (PAM-11 AC-2/AC-7)", async () => {
+    const created = await catalog.createMapping("test-board", "My Show Setup");
+    expect(created).toMatchObject({
+      id: "my-show-setup",
+      name: "My Show Setup",
+      deviceDefinitionId: "test-board",
+      boardName: "Test Board",
+      origin: "user",
+    });
+
+    const raw = JSON.parse(await readFile(join(paths.userMappingsDir, "my-show-setup.json"), "utf8")) as {
+      assignments: unknown[];
+      midiPort: { input: string };
+    };
+    expect(raw.assignments).toEqual([]); // empty — all controls unassigned
+    expect(raw.midiPort.input).toBe("Test Board"); // placeholder; Setup rebinds
+
+    // The loader accepts the file — it appears as a valid entry, not invalid.
+    expect(catalog.invalidFiles()).toEqual([]);
+    expect(catalog.entries().some((entry) => entry.id === "my-show-setup")).toBe(true);
+  });
+
+  it("createMapping picks a free id on collision and rejects unknown boards and empty names", async () => {
+    await catalog.createMapping("test-board", "My Setup");
+    const second = await catalog.createMapping("test-board", "My Setup");
+    expect(second).toMatchObject({ id: "my-setup-2" });
+    expect(await catalog.createMapping("ghost-board", "X")).toEqual({
+      error: 'unknown board "ghost-board" — pick one from the list',
+    });
+    expect(await catalog.createMapping("test-board", "   ")).toEqual({ error: "the new mapping needs a name" });
+  });
+
+  it("createMapping neutralizes hostile names — file lands in the user folder (security)", async () => {
+    const created = await catalog.createMapping("test-board", "../../../etc/passwd");
+    expect(created).toMatchObject({ id: "etc-passwd", origin: "user" });
+    expect(await readdir(paths.userMappingsDir)).toEqual(["etc-passwd.json"]);
+  });
+
+  it("entries carry the board id for grouping (PAM-11)", () => {
+    const entry = catalog.entries().find((candidate) => candidate.id === "test-map")!;
+    expect(entry.deviceDefinitionId).toBe("test-board");
+  });
+
   it("survives a missing bundled folder (empty catalog, no crash)", async () => {
-    const empty = new Catalog({ ...paths, bundledDevicesDir: join(tmpdir(), "nope-a"), bundledMappingsDir: join(tmpdir(), "nope-b") });
+    const empty = new Catalog({
+      ...paths,
+      bundledDevicesDir: join(tmpdir(), "nope-a"),
+      bundledMappingsDir: join(tmpdir(), "nope-b"),
+    });
     await empty.refresh();
     expect(empty.entries()).toEqual([]);
   });

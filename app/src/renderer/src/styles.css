@@ -604,6 +604,35 @@ dialog .error {
   flex: 1;
 }
 
+/* the editor-wide hardware source for Learn + Test (board mode) */
+.hw-source {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.hw-source select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 5px 8px;
+  max-width: 200px;
+}
+
+.hw-source select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.hw-source select:disabled {
+  opacity: 0.6;
+}
+
 .dirty-dot {
   width: 8px;
   height: 8px;
@@ -794,13 +823,6 @@ button.danger {
   opacity: 0.5;
 }
 
-.learn-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
 button.learning {
   border-color: var(--accent);
   color: var(--accent);
@@ -879,4 +901,61 @@ button.learning {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* board → mappings groups (PAM-11) */
+.board-search {
+  max-width: 320px;
+  margin-bottom: 12px;
+}
+
+.board-group {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.board-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.board-group-name {
+  font-weight: 600;
+}
+
+.board-group-mappings {
+  padding: 6px 12px 10px;
+}
+
+.mapping-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.mapping-row:last-of-type {
+  border-bottom: none;
+}
+
+.mapping-row.invalid {
+  opacity: 0.75;
+}
+
+.mapping-row .error {
+  color: var(--err);
+}
+
+.new-mapping-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 8px 0 2px;
 }

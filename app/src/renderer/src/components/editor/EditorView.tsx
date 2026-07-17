@@ -125,7 +125,9 @@ function newControl(device: DeviceDefinition, type: Control["type"]): Control {
   let counter = 1;
   const ids = new Set(device.controls.map((control) => control.id));
   while (ids.has(`${type}-${counter}`)) counter += 1;
-  const position = { ...freeSpot(device), width: 1, height: 1, shape: "rect" as const };
+  // Encoders are knobs — they start round; everything else starts rect.
+  const shape: "rect" | "circle" = type === "encoder" ? "circle" : "rect";
+  const position = { ...freeSpot(device), width: 1, height: 1, shape };
   const base = { id: `${type}-${counter}`, position };
   // Address fields start empty (invalid until Learn or manual entry — AC-7).
   switch (type) {
@@ -485,8 +487,15 @@ export function EditorView({
     [selected, pushNotices, resumeIndicate]
   );
 
-  const indicatePort =
-    loaded?.mode === "mapping" ? loaded.mapping.midiPort.input : learn.port || (midiPorts.inputs[0] ?? "");
+  // One editor-wide hardware source feeds Learn AND Test — picked in the
+  // header. Defaults to the mapping's bound unit when it is present; a fresh
+  // mapping's placeholder port (the board name) falls back to the first real
+  // input, so Test works before the mapping was ever activated (PAM-11).
+  const mappingPort = loaded?.mode === "mapping" ? loaded.mapping.midiPort.input : undefined;
+  const defaultPort =
+    mappingPort !== undefined && midiPorts.inputs.includes(mappingPort) ? mappingPort : (midiPorts.inputs[0] ?? "");
+  const hwPort = learn.port || defaultPort;
+  const indicatePort = hwPort;
 
   const toggleIndicate = useCallback(() => {
     const state = indicateRef.current;
@@ -642,6 +651,24 @@ export function EditorView({
         )}
         {dirty && <span className="dirty-dot" title="Unsaved changes" />}
         <div className="grow" />
+        <label className="hw-source" title="The connected device that Learn and Test listen to">
+          Hardware
+          <select
+            value={hwPort}
+            disabled={learn.listening || indicateOn}
+            onChange={(event) => setLearn((current) => ({ ...current, port: event.target.value }))}
+          >
+            {midiPorts.inputs.length === 0 && <option value="">no MIDI inputs found</option>}
+            {hwPort !== "" && !midiPorts.inputs.includes(hwPort) && (
+              <option value={hwPort}>{hwPort} (not connected)</option>
+            )}
+            {midiPorts.inputs.map((port) => (
+              <option key={port} value={port}>
+                {port}
+              </option>
+            ))}
+          </select>
+        </label>
         <button
           className={indicateOn ? "learning" : ""}
           onClick={toggleIndicate}
@@ -728,8 +755,7 @@ export function EditorView({
                   : []
               }
               issues={selected ? issuesFor({ id: selected.id }) : []}
-              midiPorts={midiPorts}
-              learn={{ listening: learn.listening, port: learn.port || (midiPorts.inputs[0] ?? "") }}
+              learn={{ listening: learn.listening, port: hwPort }}
               onChangeControl={updateControl}
               onChangeBoard={updateBoard}
               onDelete={requestDelete}
@@ -738,7 +764,6 @@ export function EditorView({
                 void window.pamOsc.cancelMidiLearn();
                 setLearn((current) => ({ ...current, listening: false }));
               }}
-              onLearnPortChange={(port) => setLearn((current) => ({ ...current, port }))}
             />
           )}
         </aside>

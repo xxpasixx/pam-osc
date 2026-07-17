@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, screen, shell } from "electron";
 import type { IpcMainInvokeEvent } from "electron";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { Engine } from "../core/engine/index.js";
 import type { EngineConfig } from "../core/engine/index.js";
 import type { SettingsDraft } from "../core/settings/schema.js";
@@ -58,6 +58,15 @@ async function main(): Promise<void> {
 
   const notices: Notice[] = [];
   const pushNotice = (notice: Notice) => {
+    // Reloads re-emit unchanged conditions — exact repeats are dropped so the
+    // notices area doesn't fill up with copies of the same message.
+    const repeat = notices.some(
+      (existing) =>
+        existing.severity === notice.severity &&
+        existing.source === notice.source &&
+        existing.message === notice.message
+    );
+    if (repeat) return;
     notices.push(notice);
     if (notices.length > 100) notices.shift();
     send(IPC.evNotice, notice);
@@ -106,7 +115,13 @@ async function main(): Promise<void> {
     },
     onDevices: (statuses) => send(IPC.evDevices, statuses),
     onIssue: (issue) => {
-      pushNotice({ severity: issue.severity, source: issue.source, message: issue.message });
+      // Info-level issues (e.g. "user file overrides bundled" — the expected
+      // copy-on-activate state) would re-appear as notices on every engine
+      // reload; they stay in the system log, only real problems pop up.
+      if (issue.severity !== "info") {
+        const source = issue.source?.includes("/") ? basename(issue.source) : issue.source;
+        pushNotice({ severity: issue.severity, source, message: issue.message });
+      }
       trafficBuffer.push({
         at: Date.now(),
         category: "system",
@@ -197,6 +212,13 @@ async function main(): Promise<void> {
     await shell.openPath(join(userData, "mappings"));
   });
   handle(IPC.duplicateMapping, (_event, id) => catalog.duplicate(String(id)));
+  handle(IPC.createMapping, (_event, rawRequest) => {
+    const request = rawRequest as { deviceDefinitionId?: unknown; name?: unknown };
+    if (typeof request?.deviceDefinitionId !== "string" || typeof request.name !== "string") {
+      return { error: "invalid create request" };
+    }
+    return catalog.createMapping(request.deviceDefinitionId, request.name);
+  });
 
   // ---- v1 mapping import (PAM-5) ----
   // Import only accepts paths this dialog handed out — the renderer never

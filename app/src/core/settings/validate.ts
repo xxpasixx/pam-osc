@@ -59,12 +59,19 @@ export function validateDraft(draft: SettingsDraft, validMappingIds: ReadonlySet
 
   const seenInputs = new Map<string, string>();
   const seenOutputs = new Map<string, string>();
+  const seenIds = new Set<string>();
   for (const mapping of draft.activeMappings) {
     const fieldBase = `mapping:${mapping.id}`;
     if (!validMappingIds.has(mapping.id)) {
       errors.push({ field: fieldBase, message: `Mapping "${mapping.id}" does not exist or is invalid` });
       continue;
     }
+    // PAM-11 AC-5: switching a row's mapping must not activate one twice.
+    if (seenIds.has(mapping.id)) {
+      errors.push({ field: fieldBase, message: `Mapping "${mapping.id}" is active more than once — pick another one` });
+      continue;
+    }
+    seenIds.add(mapping.id);
     if (!mapping.input || mapping.input.trim() === "") {
       errors.push({ field: `${fieldBase}.input`, message: "Pick a MIDI input port" });
     } else {

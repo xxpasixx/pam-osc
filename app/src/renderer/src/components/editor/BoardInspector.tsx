@@ -1,5 +1,5 @@
 import type { Control, DeviceDefinition, EditorIssue } from "../../../../core/format/index.js";
-import type { MidiPortList, UsageRef } from "../../../../shared/ipc.js";
+import type { UsageRef } from "../../../../shared/ipc.js";
 
 /**
  * Board mode inspector (design → Inspector panel): control properties with
@@ -39,6 +39,36 @@ function Num({
   );
 }
 
+/** A Learn/Listening button aligned with the inputs of the same form-row. */
+function LearnButton({
+  learn,
+  target,
+  title,
+  onLearnStart,
+  onLearnCancel,
+}: {
+  learn: { listening: boolean; port: string };
+  target: "midi" | "push";
+  title: string;
+  onLearnStart: (port: string, target: "midi" | "push") => void;
+  onLearnCancel: () => void;
+}) {
+  return (
+    <div className="field">
+      <label aria-hidden="true">&nbsp;</label>
+      {learn.listening ? (
+        <button className="learning" onClick={onLearnCancel}>
+          Listening … cancel
+        </button>
+      ) : (
+        <button onClick={() => onLearnStart(learn.port, target)} disabled={learn.port === ""} title={title}>
+          Learn
+        </button>
+      )}
+    </div>
+  );
+}
+
 function GridNum({
   id,
   label,
@@ -72,21 +102,19 @@ export function BoardInspector({
   selected,
   usage,
   issues,
-  midiPorts,
   learn,
   onChangeControl,
   onChangeBoard,
   onDelete,
   onLearnStart,
   onLearnCancel,
-  onLearnPortChange,
 }: {
   device: DeviceDefinition;
   selected: Control | undefined;
   /** Mappings assigning the selected control — the AC-7 delete warning data. */
   usage: UsageRef[];
   issues: EditorIssue[];
-  midiPorts: MidiPortList;
+  /** port = the editor-wide hardware source, picked in the editor header. */
   learn: { listening: boolean; port: string };
   onChangeControl: (next: Control) => void;
   onChangeBoard: (patch: Partial<DeviceDefinition>) => void;
@@ -94,7 +122,6 @@ export function BoardInspector({
   /** target: which address the capture fills — the control's own or its push (AC-9). */
   onLearnStart: (port: string, target: "midi" | "push") => void;
   onLearnCancel: () => void;
-  onLearnPortChange: (port: string) => void;
 }) {
   if (!selected) {
     return (
@@ -211,41 +238,13 @@ export function BoardInspector({
               max={16}
               onChange={(channel) => patchMidi({ channel })}
             />
-          </div>
-
-          <div className="learn-row">
-            <div className="field">
-              <label htmlFor="learn-port">Listen on</label>
-              <select
-                id="learn-port"
-                value={learn.port}
-                disabled={learn.listening}
-                onChange={(e) => onLearnPortChange(e.target.value)}
-              >
-                {midiPorts.inputs.length === 0 && <option value="">no MIDI inputs found</option>}
-                {learn.port !== "" && !midiPorts.inputs.includes(learn.port) && (
-                  <option value={learn.port}>{learn.port} (not connected)</option>
-                )}
-                {midiPorts.inputs.map((port) => (
-                  <option key={port} value={port}>
-                    {port}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {learn.listening ? (
-              <button className="learning" onClick={onLearnCancel}>
-                Listening … cancel
-              </button>
-            ) : (
-              <button
-                onClick={() => onLearnStart(learn.port, "midi")}
-                disabled={learn.port === ""}
-                title="Move or press the physical control to capture its MIDI address"
-              >
-                Learn
-              </button>
-            )}
+            <LearnButton
+              learn={learn}
+              target="midi"
+              title="Move or press the physical control to capture its MIDI address"
+              onLearnStart={onLearnStart}
+              onLearnCancel={onLearnCancel}
+            />
           </div>
         </>
       )}
@@ -448,21 +447,13 @@ function EncoderCapabilities({
                 <option value="velocity-colors">velocity-colors</option>
               </select>
             </div>
-          </div>
-          <div className="learn-row">
-            {learn.listening ? (
-              <button className="learning" onClick={onLearnCancel}>
-                Listening … cancel
-              </button>
-            ) : (
-              <button
-                onClick={() => onLearnStart(learn.port, "push")}
-                disabled={learn.port === ""}
-                title="Press the encoder knob to capture the push address"
-              >
-                Learn push
-              </button>
-            )}
+            <LearnButton
+              learn={learn}
+              target="push"
+              title="Press the encoder knob to capture the push address"
+              onLearnStart={onLearnStart}
+              onLearnCancel={onLearnCancel}
+            />
           </div>
         </>
       )}

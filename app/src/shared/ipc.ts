@@ -34,12 +34,20 @@ export type PortDiagnosis =
 export interface CatalogEntry {
   id: string;
   name: string;
+  /** Id of the referenced board type — groups mappings per board (PAM-11). */
+  deviceDefinitionId: string;
   /** Display name of the referenced board type (device definition). */
   boardName: string;
   origin: "bundled" | "user";
   /** Port names currently stored in the mapping file. */
   midiPort: { input: string; output?: string };
   valid: true;
+}
+
+/** "New mapping" for a board (PAM-11 AC-2/AC-7) — starts empty. */
+export interface CreateMappingRequest {
+  deviceDefinitionId: string;
+  name: string;
 }
 
 /** A file in the mappings folder that failed validation (EC-4). */
@@ -177,6 +185,7 @@ export interface PamOscApi {
   applySettings(draft: SettingsDraft): Promise<ApplyResult>;
   revealMappingsFolder(): Promise<void>;
   duplicateMapping(id: string): Promise<CatalogEntry | { error: string }>;
+  createMapping(request: CreateMappingRequest): Promise<CatalogEntry | { error: string }>;
   pickV1MappingFile(): Promise<PickV1FileResult>;
   importV1Mapping(request: ImportV1Request): Promise<ImportV1Result>;
   getMappingForEdit(id: string): Promise<MappingEditData | { error: string }>;
@@ -211,6 +220,7 @@ export const IPC = {
   applySettings: "pam:applySettings",
   revealMappingsFolder: "pam:revealMappingsFolder",
   duplicateMapping: "pam:duplicateMapping",
+  createMapping: "pam:createMapping",
   pickV1MappingFile: "pam:pickV1MappingFile",
   importV1Mapping: "pam:importV1Mapping",
   getMappingForEdit: "pam:getMappingForEdit",

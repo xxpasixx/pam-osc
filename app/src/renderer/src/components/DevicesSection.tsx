@@ -3,8 +3,9 @@ import type { DeviceStatus } from "../../../core/engine/types.js";
 import type { CatalogEntry, FieldError, MidiPortList } from "../../../shared/ipc.js";
 
 /**
- * One row per active mapping: name, board, port pickers, bound/missing LED,
- * duplicate, remove (design → Devices section; AC-2, AC-5, AC-7, EC-1).
+ * One row per active device: board, mapping dropdown (same-board mappings
+ * only — PAM-11 AC-5), port pickers, bound/missing LED, duplicate, remove
+ * (design → Devices section; AC-2, AC-5, AC-7, EC-1).
  */
 
 function PortPicker({
@@ -90,21 +91,44 @@ export function DevicesSection({
         const status = statusById.get(mapping.id);
         const led = status?.state === "bound" ? "ok" : status ? "err" : "";
         const statusText = status?.state === "bound" ? "bound" : status ? "missing — check port" : "not applied yet";
+        // AC-5: only mappings of the same board are offered; ids already
+        // active in another row are disabled (a mapping runs once).
+        const siblingMappings = entry
+          ? catalog.filter((candidate) => candidate.deviceDefinitionId === entry.deviceDefinitionId)
+          : [];
+        const activeElsewhere = new Set(active.filter((_, i) => i !== index).map((other) => other.id));
         return (
           <div className="device-row" key={`${mapping.id}-${index}`}>
             <span className={`led ${led}`} title={statusText} aria-label={statusText} />
             <div className="device-name">
-              {entry?.name ?? mapping.id}
-              <span className="board">
-                {entry?.boardName ?? "unknown board"} · {entry?.origin ?? "?"}
-              </span>
+              {entry?.boardName ?? "unknown board"}
+              <span className="board">{statusText}</span>
+            </div>
+            <div className={`field ${errorFor(`mapping:${mapping.id}`) ? "invalid" : ""}`}>
+              <label htmlFor={`mapping-${index}`}>Mapping</label>
+              <select
+                id={`mapping-${index}`}
+                value={mapping.id}
+                onChange={(event) => update(index, { id: event.target.value })}
+              >
+                {!entry && <option value={mapping.id}>{mapping.id} (invalid)</option>}
+                {siblingMappings.map((candidate) => (
+                  <option key={candidate.id} value={candidate.id} disabled={activeElsewhere.has(candidate.id)}>
+                    {candidate.name}
+                    {activeElsewhere.has(candidate.id) ? " (already active)" : ""}
+                  </option>
+                ))}
+              </select>
+              {errorFor(`mapping:${mapping.id}`) && (
+                <span className="field-error">{errorFor(`mapping:${mapping.id}`)}</span>
+              )}
             </div>
             <PortPicker
               id={`input-${index}`}
               label="MIDI in"
               value={mapping.input}
               ports={midiPorts.inputs}
-              error={errorFor(`mapping:${mapping.id}.input`) ?? errorFor(`mapping:${mapping.id}`)}
+              error={errorFor(`mapping:${mapping.id}.input`)}
               onChange={(input) => update(index, { input })}
             />
             <PortPicker
