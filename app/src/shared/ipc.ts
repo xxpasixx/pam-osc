@@ -4,7 +4,7 @@
  * The preload exposes exactly this surface as `window.pamOsc`.
  */
 
-import type { ConnectionStatus, DeviceStatus, TrafficDirection } from "../core/engine/types.js";
+import type { ConnectionStatus, ConsoleState, DeviceStatus, TrafficDirection } from "../core/engine/types.js";
 import type { DeviceDefinition, EditorIssue, Mapping } from "../core/format/index.js";
 import type { ImportSummary, V1SectionCounts } from "../core/import/index.js";
 import type { SettingsDraft } from "../core/settings/schema.js";
@@ -183,6 +183,8 @@ export interface Snapshot {
   engineState: EngineState;
   connection: ConnectionStatus | undefined;
   devices: DeviceStatus[];
+  /** DeskLock / CMD-mode / plugin protocol (PAM-12 AC-9/AC-10). */
+  console: ConsoleState | undefined;
   notices: Notice[];
   /** Recent traffic (bounded) so the log survives a renderer (re)mount. */
   traffic: TrafficEntry[];
@@ -229,6 +231,7 @@ export interface PamOscApi {
   checkConnection(): Promise<void>;
   runOutputTest(mappingId: string): Promise<{ ok: boolean; error?: string }>;
   onConnection(listener: (status: ConnectionStatus) => void): () => void;
+  onConsoleState(listener: (state: ConsoleState) => void): () => void;
   onDevices(listener: (statuses: DeviceStatus[]) => void): () => void;
   onEngineState(listener: (state: EngineState) => void): () => void;
   onMidiPorts(listener: (ports: MidiPortList) => void): () => void;
@@ -271,6 +274,7 @@ export const IPC = {
   checkConnection: "pam:checkConnection",
   runOutputTest: "pam:runOutputTest",
   evConnection: "pam:ev:connection",
+  evConsoleState: "pam:ev:consoleState",
   evDevices: "pam:ev:devices",
   evEngineState: "pam:ev:engineState",
   evMidiPorts: "pam:ev:midiPorts",

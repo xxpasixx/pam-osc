@@ -16,7 +16,12 @@ export interface FeedbackContext {
   allUnits: () => UnitRuntime[];
   /** Connection checker taps — pongs are consumed here. */
   onConnectionPong: () => void;
-  onPluginPong: () => void;
+  /** Pong argument = plugin protocol version (PAM-12 AC-7); missing counts as 1 (v1). */
+  onPluginPong: (version: number) => void;
+  /** /status/cmdKeyDone — advances the CMD press queue (PAM-12 AC-11). */
+  onCmdKeyAck: (executor: number) => void;
+  /** deskLocked / cmdFlags / pluginProtocol changed — the engine emits the console event. */
+  onConsoleChanged: () => void;
   log: (line: string) => void;
 }
 
@@ -28,7 +33,29 @@ export function handleOscMessage(context: FeedbackContext, message: OscMessage):
     return;
   }
   if (address === "/status/pluginPong") {
-    context.onPluginPong();
+    const version = typeof args[0]?.value === "number" ? args[0].value : 1;
+    context.state.pluginProtocol = version;
+    context.onPluginPong(version);
+    context.onConsoleChanged();
+    return;
+  }
+  if (address === "/status/cmdFlags") {
+    const flags = args[0]?.value;
+    if (typeof flags !== "number" || !Number.isInteger(flags) || flags < 0) return;
+    if (context.state.cmdFlags === flags) return;
+    const wasActive = context.state.cmdFlags !== 0;
+    context.state.cmdFlags = flags;
+    if (!wasActive && flags !== 0) {
+      context.log("CMD mode active — executor buttons now target the console command line");
+    } else if (wasActive && flags === 0) {
+      context.log("CMD mode ended — executor buttons trigger normally again");
+    }
+    context.onConsoleChanged();
+    return;
+  }
+  if (address === "/status/cmdKeyDone") {
+    const executor = args[0]?.value;
+    if (typeof executor === "number") context.onCmdKeyAck(executor);
     return;
   }
   if (address === "/status/deskLocked") {
@@ -36,9 +63,11 @@ export function handleOscMessage(context: FeedbackContext, message: OscMessage):
     if (lock?.type === "true") {
       context.state.deskLocked = true;
       context.log("desk locked — MIDI input is blocked until unlock");
+      context.onConsoleChanged();
     } else if (lock?.type === "false") {
       context.state.deskLocked = false;
       context.log("desk unlocked");
+      context.onConsoleChanged();
     }
     return;
   }

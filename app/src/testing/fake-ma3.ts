@@ -17,6 +17,12 @@ export class FakeMA3 {
   /** Configure what the "console" answers to the connection check. */
   consoleReachable = true;
   pluginRunning = true;
+  /** Protocol version the plugin pong reports (PAM-12 AC-7); set to 1 to fake the v1 plugin. */
+  pluginProtocol = 2;
+  /** CMD mode: ack pamCmdKey presses automatically via /status/cmdKeyDone (PAM-12 AC-11). */
+  autoAckCmdKeys = true;
+  /** Every executor number received via a pamCmdKey SetVar, in arrival order. */
+  readonly cmdKeyPresses: number[] = [];
 
   private socket: Socket | undefined;
   private port = 0;
@@ -54,7 +60,16 @@ export class FakeMA3 {
       this.send("/status/connectionPong", [{ type: "integer", value: 1 }]);
     }
     if (command.includes('"pamPing"') && this.pluginRunning) {
-      this.send("/status/pluginPong", [{ type: "integer", value: 1 }]);
+      this.send("/status/pluginPong", [{ type: "integer", value: this.pluginProtocol }]);
+    }
+    // Plugin v2 consumes pamCmdKey and acks after executing (PAM-12).
+    const cmdKey = command.match(/"pamCmdKey", (\d+)/);
+    if (cmdKey?.[1] && this.pluginRunning) {
+      const executor = Number.parseInt(cmdKey[1], 10);
+      this.cmdKeyPresses.push(executor);
+      if (this.autoAckCmdKeys) {
+        this.send("/status/cmdKeyDone", [{ type: "integer", value: executor }]);
+      }
     }
   }
 
@@ -91,6 +106,13 @@ export class FakeMA3 {
   }
   sendDeskLocked(locked: boolean): void {
     this.send("/status/deskLocked", [locked ? { type: "true", value: true } : { type: "false", value: false }]);
+  }
+  /** Plugin v2 command-line flags (PAM-12 AC-1): 0 clears, nonzero intercepts. */
+  sendCmdFlags(flags: number): void {
+    this.send("/status/cmdFlags", [{ type: "integer", value: flags }]);
+  }
+  sendCmdKeyDone(executor: number): void {
+    this.send("/status/cmdKeyDone", [{ type: "integer", value: executor }]);
   }
   sendTimecode(slot: number, time: string): void {
     this.send(`/Timecode${slot}`, [{ type: "string", value: time }]);

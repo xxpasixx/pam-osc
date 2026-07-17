@@ -363,9 +363,9 @@ describe("startup & connection check (AC-9)", () => {
     expect(commands.some((command) => command.includes("connectionPong"))).toBe(true);
     expect(commands.some((command) => command.includes("pamPing"))).toBe(true);
 
-    // both pongs answered → connected
+    // both pongs answered (current plugin protocol) → connected
     socket.inject({ address: "/status/connectionPong", args: [{ type: "integer", value: 1 }] });
-    socket.inject({ address: "/status/pluginPong", args: [{ type: "integer", value: 1 }] });
+    socket.inject({ address: "/status/pluginPong", args: [{ type: "integer", value: 2 }] });
     await waitFor(() => harness.connections.some((status) => status.state === "connected"));
   });
 
@@ -575,9 +575,9 @@ describe("diagnostics (PAM-4)", () => {
     await waitFor(() => harness.connections.length > before);
     expect(harness.connections[before]).toEqual({ state: "checking", attempt: 1, gaveUp: false });
 
-    // Console answers this time → connected.
+    // Console answers this time (current plugin protocol) → connected.
     harness.osc.socket().inject({ address: "/status/connectionPong", args: [] });
-    harness.osc.socket().inject({ address: "/status/pluginPong", args: [] });
+    harness.osc.socket().inject({ address: "/status/pluginPong", args: [{ type: "integer", value: 2 }] });
     await waitFor(() => harness.connections.some((status) => status.state === "connected"));
   });
 

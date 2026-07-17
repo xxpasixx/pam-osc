@@ -201,6 +201,7 @@ export const TEST_TIMING: EngineTiming = {
   animationFrameMs: 10,
   hotplugPollMs: 25,
   holdOffMs: 50,
+  cmdAckTimeoutMs: 40,
 };
 
 export interface FixtureOptions {

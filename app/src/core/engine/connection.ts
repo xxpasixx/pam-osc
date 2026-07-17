@@ -1,6 +1,6 @@
 import type { OscMessage } from "../../transports/osc.js";
 import { oscString } from "../../transports/osc.js";
-import type { ConnectionStatus, EngineTiming } from "./types.js";
+import { EXPECTED_PLUGIN_PROTOCOL, type ConnectionStatus, type EngineTiming } from "./types.js";
 
 /**
  * v1's connection check: the console echoes the connectionPong itself (works
@@ -26,6 +26,7 @@ const CONNECTION_PONG_LUA =
 export class ConnectionChecker {
   private connectionPongReceived = false;
   private pluginPongReceived = false;
+  private pluginProtocol: number | undefined;
   private attempt = 0;
   private evaluateTimer: ReturnType<typeof setTimeout> | undefined;
   private retryTimer: ReturnType<typeof setTimeout> | undefined;
@@ -68,8 +69,10 @@ export class ConnectionChecker {
     this.connectionPongReceived = true;
   }
 
-  onPluginPong(): void {
+  /** The pong argument is the plugin's protocol version (PAM-12 AC-7); the v1 plugin sent 1. */
+  onPluginPong(version: number): void {
     this.pluginPongReceived = true;
+    this.pluginProtocol = version;
   }
 
   private sendPing(): void {
@@ -91,7 +94,23 @@ export class ConnectionChecker {
     if (this.stopped) return;
 
     if (this.connectionPongReceived && this.pluginPongReceived) {
-      this.emit({ state: "connected", attempt: this.attempt, gaveUp: false });
+      // Hard version check (PAM-12 AC-7): a wrong protocol is a terminal
+      // result like "connected" — retrying won't change it. Bridging keeps
+      // running; CMD mode stays off (it requires the exact protocol).
+      if (this.pluginProtocol !== EXPECTED_PLUGIN_PROTOCOL) {
+        this.emit({
+          state: "plugin-outdated",
+          attempt: this.attempt,
+          gaveUp: true,
+          pluginProtocol: this.pluginProtocol,
+        });
+        this.log(
+          `the pam-osc plugin answered with protocol ${this.pluginProtocol}, this app needs ${EXPECTED_PLUGIN_PROTOCOL} — ` +
+            "update the plugin on the console (setup assistant), basic bridging keeps working"
+        );
+        return;
+      }
+      this.emit({ state: "connected", attempt: this.attempt, gaveUp: false, pluginProtocol: this.pluginProtocol });
       this.log("OK — GrandMA3 is reachable and the pam-osc plugin is running");
       return; // v1 stops checking once everything is fine
     }

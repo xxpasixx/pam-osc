@@ -1,6 +1,7 @@
 import type { MidiInputEvent } from "../../transports/midi.js";
 import type { OscMessage } from "../../transports/osc.js";
 import { oscFloat, oscInteger, oscString } from "../../transports/osc.js";
+import { cmdModeActive } from "./cmd-keys.js";
 import type { UnitRuntime } from "./device-manager.js";
 import { sendAttributeLeds, sendButtonFeedback } from "./feedback-out.js";
 import { midiKey, type RoutingEntry } from "./routing-table.js";
@@ -21,6 +22,8 @@ export interface InputContext {
   /** All unit runtimes — attribute LEDs update across devices. */
   allUnits: () => UnitRuntime[];
   timing: EngineTiming;
+  /** CMD mode (PAM-12): an intercepted executor press enters the serialized queue. */
+  enqueueCmdKey: (executor: number) => void;
   log: (line: string) => void;
 }
 
@@ -130,13 +133,29 @@ function handleNoteEntry(context: InputContext, unitRuntime: UnitRuntime, entry:
 
   const action = assignment.action;
   switch (action.type) {
-    case "executor":
+    case "executor": {
+      // CMD mode (PAM-12 AC-2): while the console command line waits for a
+      // target, an executor press selects instead of triggering. Press and
+      // release always pair — an intercepted press swallows its release even
+      // if the flags changed in between.
+      const pressKey = accumulatorKey(unitRuntime.unit.mapping.id, entry.control.id);
+      const isPress = value > 0;
+      if (!isPress && context.state.interceptedPresses.has(pressKey)) {
+        context.state.interceptedPresses.delete(pressKey);
+        return;
+      }
+      if (isPress && cmdModeActive(context.state)) {
+        context.state.interceptedPresses.add(pressKey);
+        context.enqueueCmdKey(action.number);
+        return;
+      }
       // Press and release both reach MA3 (flash executors need Key 0).
       context.sendOsc({
         address: `/Page${context.state.page}/Key${action.number}`,
         args: [oscInteger(Math.round((value / 127) * 100))],
       });
       return;
+    }
 
     case "quickKey":
       if (value <= 0) return; // fire on press only (see design notes)

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ConnectionStatus, DeviceStatus } from "../../core/engine/types.js";
+import type { ConnectionStatus, ConsoleState, DeviceStatus } from "../../core/engine/types.js";
 import type { SettingsDraft } from "../../core/settings/schema.js";
 import { validateDraft } from "../../core/settings/validate.js";
 import type {
@@ -42,6 +42,7 @@ export function App() {
   const [serverErrors, setServerErrors] = useState<FieldError[]>([]);
   const [engineState, setEngineState] = useState<EngineState>("stopped");
   const [connection, setConnection] = useState<ConnectionStatus | undefined>();
+  const [consoleState, setConsoleState] = useState<ConsoleState | undefined>();
   const [devices, setDevices] = useState<DeviceStatus[]>([]);
   const [midiPorts, setMidiPorts] = useState<MidiPortList>({ inputs: [], outputs: [] });
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -67,6 +68,7 @@ export function App() {
     setDraft(cloneDraft(next.settings));
     setEngineState(next.engineState);
     setConnection(next.connection);
+    setConsoleState(next.console);
     setDevices(next.devices);
     setMidiPorts(next.midiPorts);
     setTraffic(next.traffic);
@@ -83,6 +85,7 @@ export function App() {
       .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : String(error)));
     const unsubscribe = [
       window.pamOsc.onConnection(setConnection),
+      window.pamOsc.onConsoleState(setConsoleState),
       window.pamOsc.onDevices(setDevices),
       window.pamOsc.onEngineState(setEngineState),
       window.pamOsc.onMidiPorts(setMidiPorts),
@@ -375,6 +378,7 @@ export function App() {
             <StatusView
               engineState={engineState}
               connection={connection}
+              consoleState={consoleState}
               devices={devices}
               catalog={snapshot.catalog}
               portDiagnosis={portDiagnosis}

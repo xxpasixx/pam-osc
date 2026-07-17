@@ -1,4 +1,4 @@
-import type { ConnectionStatus, DeviceStatus } from "../../../core/engine/types.js";
+import { EXPECTED_PLUGIN_PROTOCOL, type ConnectionStatus, type ConsoleState, type DeviceStatus } from "../../../core/engine/types.js";
 import type { CatalogEntry, EngineState, PortDiagnosis } from "../../../shared/ipc.js";
 
 /**
@@ -18,6 +18,11 @@ const PLUGIN_HINTS = [
   "If the plugin is not installed yet, import pam-OSC.lua from the release files into the console.",
 ];
 
+const OUTDATED_HINTS = [
+  "Import the current pam-osc.xml into the console (plugin pool), then restart the “pam-osc Start Stop” plugin.",
+  "Faders, buttons and feedback keep working meanwhile — only command-line targeting (CMD mode) stays off.",
+];
+
 function diagnosisText(diagnosis: PortDiagnosis): string {
   switch (diagnosis.status) {
     case "other":
@@ -34,6 +39,7 @@ function diagnosisText(diagnosis: PortDiagnosis): string {
 function ConnectionCard({
   engineState,
   connection,
+  consoleState,
   portDiagnosis,
   busy,
   onStart,
@@ -42,6 +48,7 @@ function ConnectionCard({
 }: {
   engineState: EngineState;
   connection: ConnectionStatus | undefined;
+  consoleState: ConsoleState | undefined;
   portDiagnosis: PortDiagnosis | undefined;
   busy: boolean;
   onStart: () => void;
@@ -49,6 +56,9 @@ function ConnectionCard({
   onCheck: () => void;
 }) {
   const stopped = engineState === "stopped";
+  // Live console chips (PAM-12 AC-9/AC-10) — only meaningful while running.
+  const deskLocked = !stopped && consoleState?.deskLocked === true;
+  const cmdActive = !stopped && (consoleState?.cmdFlags ?? 0) !== 0;
 
   let led = "";
   let headline = "Engine stopped";
@@ -66,6 +76,10 @@ function ConnectionCard({
       led = "warn";
       headline = "GrandMA3 is reachable, but the pam-osc plugin is not running";
       hints = PLUGIN_HINTS;
+    } else if (connection.state === "plugin-outdated") {
+      led = "err";
+      headline = `Plugin update required — the console plugin speaks protocol ${connection.pluginProtocol ?? 1}, this app needs ${EXPECTED_PLUGIN_PROTOCOL}`;
+      hints = OUTDATED_HINTS;
     } else {
       led = "err";
       headline = connection.gaveUp
@@ -103,6 +117,18 @@ function ConnectionCard({
             <li key={hint}>{hint}</li>
           ))}
         </ul>
+      )}
+      {deskLocked && (
+        <p className="console-chip warn" role="status">
+          <span className="led warn" aria-hidden="true" /> Desk locked — MIDI input is blocked until the console is
+          unlocked.
+        </p>
+      )}
+      {cmdActive && (
+        <p className="console-chip cmd" role="status">
+          <span className="led checking" aria-hidden="true" /> CMD mode — the console command line is waiting for a
+          target; executor buttons now select instead of triggering.
+        </p>
       )}
       {!stopped && portDiagnosis && <p className="diagnosis">{diagnosisText(portDiagnosis)}</p>}
       {stopped && <p className="empty-state">The bridge is not running — MIDI and OSC ports are released.</p>}
@@ -164,6 +190,7 @@ function DevicesCard({
 export function StatusView(props: {
   engineState: EngineState;
   connection: ConnectionStatus | undefined;
+  consoleState: ConsoleState | undefined;
   devices: DeviceStatus[];
   catalog: CatalogEntry[];
   portDiagnosis: PortDiagnosis | undefined;
@@ -180,6 +207,7 @@ export function StatusView(props: {
       <ConnectionCard
         engineState={props.engineState}
         connection={props.connection}
+        consoleState={props.consoleState}
         portDiagnosis={props.portDiagnosis}
         busy={props.busy}
         onStart={props.onStart}

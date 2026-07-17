@@ -9,7 +9,7 @@
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
 -- You should have received a copy of the GNU General Public License
--- along with this program.  If not, see <https://www.gnu.org/licenses/>. 
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 local executorsToWatch = {}
 local oldValues = {}
 local oldButtonValues = {}
@@ -24,10 +24,14 @@ local olsMasterEnabledValue = {
 local oldTimecodes = {}
 local oldDeskLockedStatus = 0
 
-local oscEntry = 2 -- fallback when no OSC entry named "pam-osc" exists (resolved in main)
+-- Protocol version, answered in the pluginPong (PAM-12 AC-7). The app requires
+-- an exact match; the v1 plugin answered 1.
+local PLUGIN_PROTOCOL = 2
 
--- Find the OSC entry to send feedback to: an entry named "pam-osc" wins
--- (any line number), otherwise the fallback entry above is used.
+local oscEntry = nil -- resolved by name only (PAM-12 AC-8) — no numeric fallback
+
+-- Find the OSC entry to send feedback to: only an entry named "pam-osc"
+-- counts (any line number). Returns nil when it is missing.
 local function resolveOscEntry()
     local ok, found = pcall(function()
         for i, entry in ipairs(Root().ShowData.ShowSettings.OSCData:Children()) do
@@ -38,11 +42,18 @@ local function resolveOscEntry()
         return nil
     end)
     if ok and found then
-        Printf("pam-osc: using OSC entry " .. found .. " (named 'pam-osc')")
         return found
     end
-    Printf("pam-osc: no OSC entry named 'pam-osc' found - using entry " .. oscEntry)
-    return oscEntry
+    return nil
+end
+
+-- Send one OSC payload to the resolved entry. Payload strings keep the exact
+-- v1 formatting (including leading spaces); silently skipped while no entry
+-- named "pam-osc" exists.
+local function sendOsc(payload)
+    if oscEntry ~= nil then
+        Cmd('SendOSC ' .. oscEntry .. payload)
+    end
 end
 
 -- Configure here, what executors you want to watch:
@@ -81,6 +92,153 @@ end
 -- the Speed to check executors
 local tick = 1 / 10 -- 1/10
 local resendTick = 0
+
+-- ===========================================================================
+-- CMD mode (PAM-12): command-line awareness + executor targeting
+-- ===========================================================================
+
+-- Flags sent via /status/cmdFlags (PR-compatible values, see design.md):
+local CMD_FLAG_ADD = 2 -- keyword active, append target without execute
+local CMD_FLAG_EXEC = 4 -- keyword active, append target and auto-execute
+local CMD_FLAG_COPY_SRC = 8 -- copy/move with source selected — occupancy decides At/+
+local CMD_FLAG_THRU = 16 -- open thru — append the bare executor number
+
+-- Keywords that intercept executor buttons and auto-execute (verbatim from
+-- EvoFaderWing PR #12 — the proven behavioral reference).
+local CMD_KEYWORDS = {
+    store = true,
+    delete = true,
+    fix = true,
+    update = true,
+    on = true,
+    off = true,
+    toggle = true,
+    release = true,
+    rel = true,
+    load = true,
+    select = true,
+    go = true,
+    top = true,
+    temp = true,
+    flash = true,
+    deactivate = true,
+    kill = true,
+    activate = true,
+    lock = true,
+    label = true,
+    edit = true,
+    assign = true
+}
+
+-- Parses the current MA3 command line into one CMD flag value (0 = no
+-- interception). Ported from EvoFaderWing PR #12 getCmdFlags().
+local function getCmdFlags()
+    local ok, text = pcall(function()
+        local cmd = CmdObj()
+        return cmd and cmd.cmdtext or ""
+    end)
+    if not ok or type(text) ~= "string" or text == "" then
+        return 0
+    end
+
+    -- Command line ends with "At" (destination prompt): always target + execute
+    if string.match(string.lower(text), "%sat%s*$") then
+        return CMD_FLAG_EXEC
+    end
+
+    local keyword = string.lower(string.match(text, "^%s*(%a+)") or "")
+    if keyword == "" then
+        return 0
+    end
+
+    -- copy/move are context-aware: does the command line already hold a source?
+    if keyword == "copy" or keyword == "move" then
+        local rest = string.match(text, "^%s*%a+%s+(.-)%s*$") or ""
+        if rest ~= "" then
+            if string.find(string.lower(rest), "thru", 1, true) then
+                local afterThru = string.match(string.lower(rest), "thru%s+(%S+)")
+                if afterThru and afterThru ~= "" then
+                    return CMD_FLAG_COPY_SRC -- range complete: next press = target
+                else
+                    return CMD_FLAG_THRU -- open range: bare executor number
+                end
+            end
+            return CMD_FLAG_COPY_SRC -- source selected: occupancy decides At/+
+        else
+            return CMD_FLAG_ADD -- just "Copy"/"Move": append source without execute
+        end
+    end
+
+    local entry = CMD_KEYWORDS[keyword]
+    if entry == nil then
+        return 0
+    end
+    return CMD_FLAG_EXEC
+end
+
+-- Live occupancy of one executor on the given page. Errors count as occupied —
+-- the non-destructive branch ("+ Page X.Y" without execute).
+local function isExecutorOccupied(execNo, page)
+    local ok, occupied = pcall(function()
+        for _, maValue in pairs(DataPool().Pages[page]:Children()) do
+            if maValue.No == execNo then
+                return maValue.Object ~= nil
+            end
+        end
+        return false
+    end)
+    if not ok then
+        return true
+    end
+    return occupied and true or false
+end
+
+-- Executes one CMD-mode key press (PAM-12 AC-2/3/4/6): re-reads the command
+-- line fresh, decides the command text, builds the oops-clean pam-osc_CMD
+-- macro and fires it. Always acks via /status/cmdKeyDone so the app queue
+-- advances — including the safe no-op when the command line changed (EC-3).
+local function executeCmdKey(execNo, page)
+    local flags = getCmdFlags()
+    local cmdText = nil
+    local executeFlag = "No"
+
+    if flags == CMD_FLAG_EXEC then
+        cmdText = "Page " .. page .. "." .. execNo
+        executeFlag = "Yes"
+    elseif flags == CMD_FLAG_ADD then
+        cmdText = "Page " .. page .. "." .. execNo
+        executeFlag = "No"
+    elseif flags == CMD_FLAG_THRU then
+        cmdText = tostring(execNo)
+        executeFlag = "No"
+    elseif flags == CMD_FLAG_COPY_SRC then
+        if isExecutorOccupied(execNo, page) then
+            cmdText = "+ Page " .. page .. "." .. execNo
+            executeFlag = "No"
+        else
+            cmdText = "At Page " .. page .. "." .. execNo
+            executeFlag = "Yes"
+        end
+    end
+
+    if cmdText == nil then
+        -- Command line no longer holds a keyword: safe no-op (EC-3).
+        Printf("pam-osc CMD: command line changed - key " .. execNo .. " ignored")
+    else
+        -- Synchronous Cmd() calls — ordered, no UDP between the steps, and the
+        -- plumbing never enters the Oops history (/NoOops, AC-6).
+        Cmd('Delete Macro "pam-osc_CMD" /NoOops')
+        Cmd('Store Macro "pam-osc_CMD" /NoOops')
+        Cmd('Store Macro "pam-osc_CMD".1 /NoOops')
+        Cmd('Set Macro "pam-osc_CMD".1 command="' .. cmdText .. '" /NoOops')
+        Cmd('Set Macro "pam-osc_CMD".1 AddToCmdLine="Yes" /NoOops')
+        Cmd('Set Macro "pam-osc_CMD".1 Execute="' .. executeFlag .. '" /NoOops')
+        Cmd('Go Macro "pam-osc_CMD"')
+        Printf('pam-osc CMD: key ' .. execNo .. ' -> "' .. cmdText .. '" (Execute ' .. executeFlag .. ')')
+    end
+
+    sendOsc(' "/status/cmdKeyDone,i,' .. execNo .. '"')
+end
 
 local function getApereanceColor(sequence)
 	local apper = sequence["APPEARANCE"]
@@ -181,7 +339,7 @@ local function main()
     local sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
     local fixedPageNr = GetVar(GlobalVars(), "fixedPageNr") or 0
 
-    Printf("start pam OSC main()")
+    Printf("start pam OSC main() - protocol " .. PLUGIN_PROTOCOL)
     Printf("automaticResendButtons: " .. (automaticResendButtons and "true" or "false"))
     Printf("sendColors: " .. (sendColors and "true" or "false"))
     Printf("sendNames: " .. (sendNames and "true" or "false"))
@@ -189,11 +347,21 @@ local function main()
     Printf("fixedPageNr: " .. fixedPageNr)
 
     oscEntry = resolveOscEntry()
+    if oscEntry ~= nil then
+        Printf("pam-osc: using OSC entry " .. oscEntry .. " (named 'pam-osc')")
+    else
+        Printf("pam-osc ERROR: no OSC entry named 'pam-osc' found in the MA3 OSC settings.")
+        Printf("pam-osc ERROR: create one (any line) and name it exactly 'pam-osc' - feedback is paused until then.")
+    end
     createQuickeysIfNotExists()
 
     local destPage = 1
     local forceReload = true
     local forceReloadButtons = false
+    local lastCmdFlags = 0
+
+    -- Reset a stale CMD key trigger from a previous run
+    SetVar(GlobalVars(), "pamCmdKey", 0)
 
     if GetVar(GlobalVars(), "opdateOSC") ~= nil then
         SetVar(GlobalVars(), "opdateOSC", not GetVar(GlobalVars(), "opdateOSC"))
@@ -202,12 +370,22 @@ local function main()
     end
 
     while (GetVar(GlobalVars(), "opdateOSC")) do
+        -- Keep looking for the OSC entry until it exists (AC-8) — the user can
+        -- create it while the plugin runs, no restart needed.
+        if oscEntry == nil then
+            oscEntry = resolveOscEntry()
+            if oscEntry ~= nil then
+                Printf("pam-osc: OSC entry 'pam-osc' found (line " .. oscEntry .. ") - feedback active")
+                forceReload = true
+            end
+        end
+
         local currentDeskLocked = DeskLocked()
         if currentDeskLocked ~= oldDeskLockedStatus then
             oldDeskLockedStatus = currentDeskLocked
             forceReload = true
         end
-        
+
         if GetVar(GlobalVars(), "forceReload") == true then
             forceReload = true
             automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
@@ -218,15 +396,30 @@ local function main()
             SetVar(GlobalVars(), "forceReload", false)
         end
 
-        -- Answer ping requests from the OSC module (setup/connection check)
+        -- Answer ping requests from the OSC module (setup/connection check).
+        -- The pong carries the protocol version (PAM-12 AC-7).
         if GetVar(GlobalVars(), "pamPing") == true then
             SetVar(GlobalVars(), "pamPing", false)
-            Cmd('SendOSC ' .. oscEntry .. ' "/status/pluginPong,i,1"')
+            sendOsc(' "/status/pluginPong,i,' .. PLUGIN_PROTOCOL .. '"')
+        end
+
+        -- CMD mode: watch the MA3 command line, push flag changes (PAM-12 AC-1)
+        local currentCmdFlags = getCmdFlags()
+        if currentCmdFlags ~= lastCmdFlags or forceReload then
+            lastCmdFlags = currentCmdFlags
+            sendOsc(' "/status/cmdFlags,i,' .. currentCmdFlags .. '"')
+        end
+
+        -- CMD mode: consume a pressed executor key from the app (PAM-12 AC-2)
+        local pressedKey = tonumber(GetVar(GlobalVars(), "pamCmdKey") or 0) or 0
+        if pressedKey > 0 then
+            SetVar(GlobalVars(), "pamCmdKey", 0)
+            executeCmdKey(math.floor(pressedKey), destPage)
         end
 
         if forceReload == true then
-            Cmd('SendOSC ' .. oscEntry .. ' "/updatePage/current,i,' .. destPage)
-            Cmd('SendOSC ' .. oscEntry .. ' "/status/deskLocked,' .. (currentDeskLocked and "T," or "F,") .. '"')
+            sendOsc(' "/updatePage/current,i,' .. destPage)
+            sendOsc(' "/status/deskLocked,' .. (currentDeskLocked and "T," or "F,") .. '"')
         end
 
         if automaticResendButtons then
@@ -241,7 +434,7 @@ local function main()
         for masterKey, masterValue in pairs(olsMasterEnabledValue) do
             local currValue = getMasterEnabled(masterKey)
             if currValue ~= masterValue then
-                Cmd('SendOSC ' .. oscEntry .. ' "/masterEnabled/' .. masterKey .. ',i,' .. (currValue and 1 or 0))
+                sendOsc(' "/masterEnabled/' .. masterKey .. ',i,' .. (currValue and 1 or 0))
                 olsMasterEnabledValue[masterKey] = currValue
             end
         end
@@ -266,7 +459,7 @@ local function main()
                 oldButtonValues[maKey] = false
             end
             forceReload = true
-            Cmd('SendOSC ' .. oscEntry .. ' "/updatePage/current,i,' .. destPage)
+            sendOsc(' "/updatePage/current,i,' .. destPage)
         end
 
         -- Get all Executors
@@ -306,14 +499,14 @@ local function main()
             -- Send Fader Value
             if (oldValues[listKey] ~= faderValue and not (isFlash and buttonValue and faderValue == 100)) or forceReload then
                 oldValues[listKey] = faderValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Fader' .. listValue .. ',f,' ..
+                sendOsc('  "/Page' .. destPage .. '/Fader' .. listValue .. ',f,' ..
                         string.format("%.2f", faderValue) .. '"')
             end
 
             -- Send Button Value
             if oldButtonValues[listKey] ~= buttonValue or forceReload or forceReloadButtons then
                 oldButtonValues[listKey] = buttonValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Button' .. listValue .. ',s,' ..
+                sendOsc('  "/Page' .. destPage .. '/Button' .. listValue .. ',s,' ..
                         (buttonValue and "On" or "Off") .. '"')
             end
 
@@ -321,33 +514,33 @@ local function main()
             if sendColors and (oldColorValues[listKey] ~= colorValue or forceReload) then
                 oldColorValues[listKey] = colorValue
                 local newValue = string.gsub(colorValue, ",", ";")
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. newValue ..
+                sendOsc('  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. newValue ..
                         '"')
             end
 
             -- Send Name Value
             if sendNames and (oldNameValues[listKey] ~= nameValue or forceReload) then
                 oldNameValues[listKey] = nameValue
-                Cmd('SendOSC ' .. oscEntry .. '  "/Page' .. destPage .. '/Name' .. listValue .. ',s,' .. nameValue ..
+                sendOsc('  "/Page' .. destPage .. '/Name' .. listValue .. ',s,' .. nameValue ..
                         '"')
             end
         end
-        
+
         -- Send Timecode
         if sendTimecode then
             local slots = Root().TimecodeSlots
-                
+
             for _, slot in pairs(slots:Children()) do
                 local time = slot.timestring
-                
+
                 if oldTimecodes[slot.no] ~= time or oldTimecodes[slot.no] == nil or forceReload == true then
                     oldTimecodes[slot.no] = time
-                        
-                    Cmd('SendOSC ' .. oscEntry .. ' "/Timecode' .. slot.no .. ',s,' .. time .. '"')
+
+                    sendOsc(' "/Timecode' .. slot.no .. ',s,' .. time .. '"')
                 end
             end
         end
-        
+
         forceReload = false
         forceReloadButtons = false
 

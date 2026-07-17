@@ -1,5 +1,6 @@
 import type {
   ConnectionStatus,
+  ConsoleState,
   DeviceStatus,
   EngineConfig,
   EngineEvents,
@@ -27,6 +28,8 @@ export interface EngineLike {
 export interface EngineHostEvents {
   onState(state: EngineState): void;
   onConnection(status: ConnectionStatus): void;
+  /** DeskLock / CMD-mode / plugin protocol changed (PAM-12 AC-9/AC-10). */
+  onConsoleState(state: ConsoleState): void;
   onDevices(statuses: DeviceStatus[]): void;
   onIssue(issue: EngineIssue): void;
   onLog(line: string): void;
@@ -41,6 +44,7 @@ export class EngineHost {
   private state: EngineState = "stopped";
   private lastGood: EngineConfig | undefined;
   private connection: ConnectionStatus | undefined;
+  private consoleState: ConsoleState | undefined;
   private devices: DeviceStatus[] = [];
 
   constructor(
@@ -50,6 +54,10 @@ export class EngineHost {
     engine.on("connection", (status) => {
       this.connection = status;
       this.events.onConnection(status);
+    });
+    engine.on("console", (state) => {
+      this.consoleState = state;
+      this.events.onConsoleState(state);
     });
     engine.on("devices", (statuses) => {
       this.devices = statuses;
@@ -67,8 +75,13 @@ export class EngineHost {
     return new Set(this.devices.filter((device) => device.state === "bound").map((device) => device.inputPort));
   }
 
-  snapshot(): { engineState: EngineState; connection: ConnectionStatus | undefined; devices: DeviceStatus[] } {
-    return { engineState: this.state, connection: this.connection, devices: this.devices };
+  snapshot(): {
+    engineState: EngineState;
+    connection: ConnectionStatus | undefined;
+    console: ConsoleState | undefined;
+    devices: DeviceStatus[];
+  } {
+    return { engineState: this.state, connection: this.connection, console: this.consoleState, devices: this.devices };
   }
 
   /** Startup (AC-4): start with the persisted config; failure is a notice, not a crash. */
@@ -151,6 +164,7 @@ export class EngineHost {
 
   private resetLiveStatus(): void {
     this.connection = undefined;
+    this.consoleState = undefined;
     this.devices = [];
   }
 

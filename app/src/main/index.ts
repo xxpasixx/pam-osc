@@ -135,6 +135,7 @@ async function main(): Promise<void> {
       sessionLog.log(`console ${status.state}`);
       send(IPC.evConnection, status);
     },
+    onConsoleState: (state) => send(IPC.evConsoleState, state),
     onDevices: (statuses) => send(IPC.evDevices, statuses),
     onIssue: (issue) => {
       // Info-level issues (e.g. "user file overrides bundled" — the expected

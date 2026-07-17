@@ -45,6 +45,7 @@ const api: PamOscApi = {
   checkConnection: () => ipcRenderer.invoke(IPC.checkConnection),
   runOutputTest: (mappingId) => ipcRenderer.invoke(IPC.runOutputTest, mappingId),
   onConnection: subscribe(IPC.evConnection),
+  onConsoleState: subscribe(IPC.evConsoleState),
   onDevices: subscribe(IPC.evDevices),
   onEngineState: subscribe(IPC.evEngineState),
   onMidiPorts: subscribe(IPC.evMidiPorts),

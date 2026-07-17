@@ -465,6 +465,27 @@ dialog .error {
   font-size: 12px;
 }
 
+/* live console chips (PAM-12): desk lock + CMD mode */
+.console-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.console-chip.warn {
+  border-left: 3px solid var(--warn);
+}
+
+.console-chip.cmd {
+  border-left: 3px solid var(--accent);
+}
+
 /* traffic log (PAM-4) */
 .traffic-card {
   display: flex;

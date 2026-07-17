@@ -25,6 +25,8 @@ export interface EngineTiming {
   hotplugPollMs: number;
   /** timecodePlayPause hold threshold — hold ≥ this sends Off. */
   holdOffMs: number;
+  /** CMD-mode press queue: wait this long for the plugin ack before advancing (PAM-12 AC-11). */
+  cmdAckTimeoutMs: number;
 }
 
 /** The v1 constants — bit-parity with the Open Stage Control module. */
@@ -36,15 +38,33 @@ export const DEFAULT_TIMING: EngineTiming = {
   animationFrameMs: 50,
   hotplugPollMs: 2000,
   holdOffMs: 500,
+  cmdAckTimeoutMs: 300,
 };
 
-export type ConnectionState = "checking" | "connected" | "plugin-missing" | "unreachable";
+/**
+ * Plugin protocol this app speaks (PAM-12 AC-7). The pong carries the
+ * plugin's version; anything else is reported as "plugin-outdated" and CMD
+ * mode stays off. The v1 plugin answered 1.
+ */
+export const EXPECTED_PLUGIN_PROTOCOL = 2;
+
+export type ConnectionState = "checking" | "connected" | "plugin-missing" | "plugin-outdated" | "unreachable";
 
 export interface ConnectionStatus {
   state: ConnectionState;
   /** 1-based check attempt; retries stop after timing.pingMaxRetries. */
   attempt: number;
   gaveUp: boolean;
+  /** Version the plugin pong reported — set once a pong arrived (PAM-12 AC-7). */
+  pluginProtocol?: number;
+}
+
+/** Live console state mirrored for the UI (PAM-12 AC-9/AC-10) — never persisted. */
+export interface ConsoleState {
+  deskLocked: boolean;
+  /** /status/cmdFlags bitmask; nonzero = executor buttons currently target. */
+  cmdFlags: number;
+  pluginProtocol: number | undefined;
 }
 
 export interface DeviceStatus {
@@ -80,4 +100,6 @@ export interface EngineEvents {
   traffic: (event: TrafficEvent) => void;
   /** Raw pass-through of every MIDI input event — the PAM-6 learn tap (AC-4). */
   midiInput: (port: string, event: MidiInputEvent) => void;
+  /** DeskLock / CMD-mode / plugin-protocol changes (PAM-12 AC-9/AC-10). */
+  console: (state: ConsoleState) => void;
 }

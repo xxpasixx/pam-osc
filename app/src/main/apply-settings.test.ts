@@ -68,6 +68,7 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
     const host = new EngineHost(engine, {
       onState: (state) => states.push(state),
       onConnection: () => {},
+      onConsoleState: () => {},
       onDevices: () => {},
       onIssue: () => {},
       onLog: () => {},
@@ -94,6 +95,7 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
         midiPorts: { inputs: [], outputs: [] },
         engineState: "running",
         connection: undefined,
+        console: undefined,
         devices: [],
         notices: [],
         traffic: [],

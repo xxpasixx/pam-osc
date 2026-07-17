@@ -16,6 +16,7 @@ function makeHost(engine: EngineLike) {
   const host = new EngineHost(engine, {
     onState: (state) => states.push(state),
     onConnection: () => {},
+    onConsoleState: () => {},
     onDevices: () => {},
     onIssue: () => {},
     onLog: () => {},

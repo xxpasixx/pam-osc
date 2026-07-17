@@ -3,6 +3,7 @@ import { loadFormat } from "../format/index.js";
 import type { MidiTransport } from "../../transports/midi.js";
 import type { OscMessage, OscSocket, OscTransport } from "../../transports/osc.js";
 import { formatMidiIn, formatMidiOut, formatOsc } from "./traffic.js";
+import { cancelCmdTimers, enqueueCmdKey, onCmdKeyAck, type CmdKeyContext } from "./cmd-keys.js";
 import { ConnectionChecker } from "./connection.js";
 import { DeviceManager, type UnitRuntime } from "./device-manager.js";
 import { handleOscMessage, type FeedbackContext } from "./feedback-router.js";
@@ -33,6 +34,7 @@ export class Engine {
 
   private state: RuntimeState = createRuntimeState();
   private timing: EngineTiming = DEFAULT_TIMING;
+  private cmdContext: CmdKeyContext | undefined;
   private socket: OscSocket | undefined;
   private deviceManager: DeviceManager | undefined;
   private connectionChecker: ConnectionChecker | undefined;
@@ -98,11 +100,21 @@ export class Engine {
         socket.send(message);
       };
 
+      this.cmdContext = {
+        state: this.state,
+        sendOsc,
+        timing: this.timing,
+        log: (line) => this.log(line),
+      };
+
       const inputContext: InputContext = {
         state: this.state,
         sendOsc,
         allUnits: () => this.deviceManager?.units ?? [],
         timing: this.timing,
+        enqueueCmdKey: (executor) => {
+          if (this.cmdContext) enqueueCmdKey(this.cmdContext, executor);
+        },
         log: (line) => this.log(line),
       };
 
@@ -261,7 +273,11 @@ export class Engine {
       state: this.state,
       allUnits: () => this.deviceManager?.units ?? [],
       onConnectionPong: () => this.connectionChecker?.onConnectionPong(),
-      onPluginPong: () => this.connectionChecker?.onPluginPong(),
+      onPluginPong: (version) => this.connectionChecker?.onPluginPong(version),
+      onCmdKeyAck: (executor) => {
+        if (this.cmdContext) onCmdKeyAck(this.cmdContext, executor);
+      },
+      onConsoleChanged: () => this.emitConsole(),
       log: (line) => this.log(line),
     };
     try {
@@ -299,12 +315,23 @@ export class Engine {
     this.connectionChecker?.stop();
     this.connectionChecker = undefined;
     cancelTimecodeTimers(this.state);
+    cancelCmdTimers(this.state);
+    this.cmdContext = undefined;
     this.deviceManager?.stop();
     this.deviceManager = undefined;
     if (this.socket) {
       await this.socket.close();
       this.socket = undefined;
     }
+  }
+
+  /** DeskLock / CMD-mode / plugin-protocol surface for the UI (PAM-12 AC-9/10). */
+  private emitConsole(): void {
+    this.emitter.emit("console", {
+      deskLocked: this.state.deskLocked,
+      cmdFlags: this.state.cmdFlags,
+      pluginProtocol: this.state.pluginProtocol,
+    });
   }
 
   private issue(issue: EngineIssue): void {

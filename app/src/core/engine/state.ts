@@ -17,6 +17,18 @@ export interface RuntimeState {
   encoderFine: boolean;
   encoderRough: boolean;
   deskLocked: boolean;
+  /** /status/cmdFlags bitmask (PAM-12 AC-1) — nonzero intercepts executor buttons. */
+  cmdFlags: number;
+  /** Version from the last plugin pong; interception requires the exact expected value (AC-7). */
+  pluginProtocol: number | undefined;
+  /** CMD press queue (AC-11): one outstanding press, the rest waits for the ack. */
+  cmd: {
+    queue: number[];
+    awaitingAck: number | undefined;
+    ackTimer: ReturnType<typeof setTimeout> | undefined;
+  };
+  /** Controls whose press was intercepted — their release is swallowed too (AC-2). */
+  interceptedPresses: Set<string>;
   /** Per relative-encoder assignment: 0-100, keyed `${mappingId}/${controlId}`. */
   accumulators: Map<string, number>;
   timecode: {
@@ -34,6 +46,10 @@ export function createRuntimeState(): RuntimeState {
     encoderFine: false,
     encoderRough: false,
     deskLocked: false,
+    cmdFlags: 0,
+    pluginProtocol: undefined,
+    cmd: { queue: [], awaitingAck: undefined, ackTimer: undefined },
+    interceptedPresses: new Set(),
     accumulators: new Map(),
     timecode: { selectedSlot: 0, slots: new Map(), holdTimer: undefined },
   };

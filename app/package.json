@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "engine": "tsx src/dev/engine-cli.ts"
+    "engine": "tsx src/dev/engine-cli.ts",
+    "build:plugin": "node scripts/build-plugin-xml.mjs"
   },
   "dependencies": {
     "easymidi": "3.2.0",
