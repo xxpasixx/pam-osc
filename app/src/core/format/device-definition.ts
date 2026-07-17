@@ -45,13 +45,24 @@ const encoderRangeSchema = z.strictObject({
   to: midiValueSchema,
 });
 
+/**
+ * Integrated push button of a composite push-encoder (PAM-1 AC-7): its own
+ * note/cc address (a press is never pitchbend) and LED capability. One
+ * physical knob = one control; mappings address the press via part "push".
+ */
+export const pushCapabilitySchema = z.strictObject({
+  midi: z.discriminatedUnion("kind", [
+    z.strictObject({ kind: z.literal("cc"), channel: midiChannelSchema.optional(), number: midiValueSchema }),
+    z.strictObject({ kind: z.literal("note"), channel: midiChannelSchema.optional(), number: midiValueSchema }),
+  ]),
+  led: z.enum(["none", "on-off", "velocity-colors"]),
+});
+
 export const controlSchema = z.discriminatedUnion("type", [
   z.strictObject({
     ...controlBaseShape,
     type: z.literal("fader"),
-    capabilities: z
-      .strictObject({ motorized: z.boolean().default(false) })
-      .default({ motorized: false }),
+    capabilities: z.strictObject({ motorized: z.boolean().default(false) }).default({ motorized: false }),
   }),
   z.strictObject({
     ...controlBaseShape,
@@ -77,6 +88,7 @@ export const controlSchema = z.discriminatedUnion("type", [
           to: midiValueSchema,
         })
         .optional(),
+      push: pushCapabilitySchema.optional(),
     }),
   }),
   // Displays (scribble strips) are addressed by their slot index via sysex,
@@ -123,5 +135,6 @@ export const deviceDefinitionSchema = z
   });
 
 export type MidiAddress = z.infer<typeof midiAddressSchema>;
+export type PushCapability = z.infer<typeof pushCapabilitySchema>;
 export type Control = z.infer<typeof controlSchema>;
 export type DeviceDefinition = z.infer<typeof deviceDefinitionSchema>;

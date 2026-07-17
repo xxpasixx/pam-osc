@@ -71,6 +71,17 @@ export function validateMappingDraft(raw: unknown, device: DeviceDefinition): Dr
 function duplicateAddressIssues(device: DeviceDefinition): EditorIssue[] {
   const issues: EditorIssue[] = [];
   const seen = new Map<string, Control>();
+  const claim = (control: Control, key: string, path: string) => {
+    const other = seen.get(key);
+    if (other) {
+      issues.push({
+        path,
+        message: `same MIDI address as "${other.id}" (${describeAddress(key)}) — addresses must be unique per board`,
+      });
+      return;
+    }
+    seen.set(key, control);
+  };
   device.controls.forEach((control, index) => {
     if (control.type === "display") return;
     const channel = control.midi.channel ?? device.defaultMidiChannel;
@@ -78,15 +89,13 @@ function duplicateAddressIssues(device: DeviceDefinition): EditorIssue[] {
       control.midi.kind === "pitchbend"
         ? `pitchbend:${channel}`
         : `${control.midi.kind}:${channel}:${control.midi.number}`;
-    const other = seen.get(key);
-    if (other) {
-      issues.push({
-        path: `controls[${index}].midi`,
-        message: `same MIDI address as "${other.id}" (${describeAddress(key)}) — addresses must be unique per board`,
-      });
-      return;
+    claim(control, key, `controls[${index}].midi`);
+    // A push-encoder's integrated button competes in the same address space.
+    if (control.type === "encoder" && control.capabilities.push) {
+      const push = control.capabilities.push.midi;
+      const pushChannel = push.channel ?? device.defaultMidiChannel;
+      claim(control, `${push.kind}:${pushChannel}:${push.number}`, `controls[${index}].capabilities.push.midi`);
     }
-    seen.set(key, control);
   });
   return issues;
 }

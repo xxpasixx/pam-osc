@@ -108,11 +108,14 @@ function MidiValueField({
 
 export function MappingInspector({
   control,
+  part,
   assignment,
   issues,
   onChange,
 }: {
+  /** For part "push" this is the button VIEW of the push declaration (AC-9). */
   control: Control;
+  part: "push" | undefined;
   assignment: Assignment | undefined;
   issues: EditorIssue[];
   onChange: (assignment: Assignment | undefined) => void;
@@ -131,19 +134,23 @@ export function MappingInspector({
 
   return (
     <div className="inspector">
-      <h3>{control.label ?? control.id}</h3>
+      <h3>
+        {control.label ?? control.id}
+        {part === "push" ? " — push" : ""}
+      </h3>
       <p className="inspector-meta mono">
-        {control.type} · {addressText}
+        {part === "push" ? "push button" : control.type} · {addressText}
       </p>
 
       {!assignment && (
         <>
-          <p className="empty-state">Nothing assigned to this control.</p>
+          <p className="empty-state">Nothing assigned to this {part === "push" ? "push button" : "control"}.</p>
           <button
             className="primary"
             onClick={() =>
               onChange({
                 controlId: control.id,
+                ...(part ? { part } : {}),
                 action: defaultAction(actionTypesFor(control)[0]!),
                 feedback: defaultFeedback("none"),
               })

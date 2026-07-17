@@ -213,3 +213,15 @@ Level 5 — Tests:    T7      integration: save→reload against the engine test
 - **`BoardInfo` gained `origin`** (additive) — shared by the boards manager and the PAM-5 import dropdown.
 - **New encoders start with empty detent ranges** (per design, save blocks until filled); an empty new board (AC-6) is blocked from saving by the schema's min-1-control rule with a toolbar hint.
 - **Verified:** 235 checks total — 217/217 Vitest (35 new: 17 editor-rules, 11 catalog editor surface incl. copy-on-edit/retarget/orphan/createNew, 7 MIDI-learn session), typecheck clean, production build green, dev-mode boot smoke on macOS (main/preload/renderer build, app starts without errors). onPC/hardware verification is the user's release gate per AGENTS.md.
+
+## Implementation Notes — delta round (2026-07-17, AC-8…AC-11 + BUG-1…BUG-4)
+
+- **Push routing = virtual button.** `buildUnit` expands a `part: "push"` assignment into a synthetic button control (`<encoderId>#push`, address/LED from the push declaration) — input router, feedback, and caches reuse the button paths untouched. The import module uses the same view for feedback derivation.
+- **Golden proof for the import:** `convertV1(xTouch1.json)` now equals the hand-converted bundled `x-touch-default-1.json` including `part: "push"` assignments — the composite conversion is bit-identical with v1 behavior on the wire.
+- **Bundled content converted by script:** x-touch folds 8 push buttons into their encoders; both xTouch mappings moved to `part: "push"`; X-Touch Compact's 64 layer-B controls moved into their own area below the A layout (height 19 → 21.5) — zero fully-overlapping pairs left (AC-10).
+- **Indicate = second mode of the monitor session** (`midi-learn.ts`, single session slot): learn stays one-shot, indicate is continuous with 50 ms batching. Starting Learn replaces a running indicate session; the editor resumes indicate after the learn ends. Same tap-vs-temporary-open port rule.
+- **Selection carries a part** (`{id, part?}`): the canvas cap selects the push in mapping mode; the mapping inspector edits the push via a button view of the push declaration; board mode edits push address/LED (incl. "Learn push") on the encoder.
+- **Boards tab** replaces the dialog — `BoardsView` under a third tab; `BoardsManagerDialog.tsx` deleted; the "Manage boards" button left Devices (AC-8).
+- **Review fixes:** BUG-1 board save propagates `ok` ("Save & close" keeps the editor open on failure), BUG-2/BUG-3 the delete warning names the real per-case consequence, BUG-4 the learn capture target is pinned at Learn-start (`learnTargetRef`), BUG-7 fixed incidentally (clamp floors at 0/MIN_SIZE via `Math.max`). BUG-5/BUG-6 remain documented in review.md (parked).
+- **`docs/file-format.md`** documents `push` and `part: "push"`.
+- **Verified (delta round):** 227/227 Vitest (10 new: 5 push format rules, 2 push routing, 3 indicate session; golden import test tightened to key by (controlId, part)), typecheck clean, production build green, dev-boot smoke clean.

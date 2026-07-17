@@ -57,6 +57,9 @@ export const feedbackSchema = z.discriminatedUnion("type", [
 
 export const assignmentSchema = z.strictObject({
   controlId: z.string().min(1),
+  // Composite push-encoders (PAM-1 AC-7): absent = the control's main
+  // function; "push" = the encoder's integrated button.
+  part: z.literal("push").optional(),
   action: actionSchema,
   options: z
     .strictObject({
@@ -83,16 +86,19 @@ export const mappingSchema = z
     assignments: z.array(assignmentSchema),
   })
   .superRefine((mapping, ctx) => {
+    // Uniqueness key is (controlId, part): a push-encoder carries at most
+    // one rotate and one push assignment (PAM-1 AC-7).
     const seen = new Set<string>();
     mapping.assignments.forEach((assignment, index) => {
-      if (seen.has(assignment.controlId)) {
+      const key = `${assignment.controlId}#${assignment.part ?? "main"}`;
+      if (seen.has(key)) {
         ctx.addIssue({
           code: "custom",
           path: ["assignments", index, "controlId"],
-          message: `control "${assignment.controlId}" is assigned more than once`,
+          message: `control "${assignment.controlId}"${assignment.part ? ` (${assignment.part})` : ""} is assigned more than once`,
         });
       }
-      seen.add(assignment.controlId);
+      seen.add(key);
     });
   });
 

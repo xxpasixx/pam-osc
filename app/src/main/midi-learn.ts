@@ -1,17 +1,22 @@
 import type { MidiConnection, MidiInputEvent, MidiTransport } from "../transports/midi.js";
-import type { LearnedAddress, MidiLearnEvent, MidiPortList } from "../shared/ipc.js";
+import type { LearnedAddress, MidiActivityEvent, MidiLearnEvent, MidiPortList } from "../shared/ipc.js";
 
 /**
- * The PAM-6 MIDI learn session (design → MIDI learn, AC-4). One session at a
- * time, owned by the main process. When the running engine already holds the
- * requested input port, the session listens on the engine's raw pass-through
- * tap (Windows MME cannot open a port twice); otherwise it opens the port
- * temporarily and closes it on capture/cancel. The first qualifying message
- * wins and ends the session — the transport only ever delivers cc/note/
- * pitchbend, so everything that arrives qualifies.
+ * The PAM-6 MIDI monitor session (design → MIDI learn / Indicate mode).
+ * One session at a time, owned by the main process, in one of two modes:
+ * - "learn" (AC-4): the first qualifying message wins and ends the session.
+ * - "indicate" (AC-11): continuous; addresses are batched (≤ every 50 ms)
+ *   to the renderer, which flashes the matching controls. View-only —
+ *   the tap never feeds anything back into the engine.
+ * When the running engine already holds the requested input port, the
+ * session listens on the engine's raw pass-through tap (Windows MME cannot
+ * open a port twice); otherwise it opens the port temporarily.
  */
 
+const FLUSH_MS = 50;
+
 interface Session {
+  mode: "learn" | "indicate";
   port: string;
   /** Present only when the session opened the port itself. */
   connection: MidiConnection | undefined;
@@ -19,11 +24,14 @@ interface Session {
 
 export class MidiLearn {
   private session: Session | undefined;
+  private pending: LearnedAddress[] = [];
+  private flushTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     private readonly transport: Pick<MidiTransport, "open">,
     private readonly engineHeldPorts: () => Set<string>,
-    private readonly emit: (event: MidiLearnEvent) => void
+    private readonly emit: (event: MidiLearnEvent) => void,
+    private readonly emitActivity: (event: MidiActivityEvent) => void
   ) {}
 
   get active(): boolean {
@@ -31,22 +39,11 @@ export class MidiLearn {
   }
 
   start(port: string): { ok: true } | { ok: false; error: string } {
-    if (this.session) this.end("replaced");
+    return this.startSession("learn", port);
+  }
 
-    if (this.engineHeldPorts().has(port)) {
-      this.session = { port, connection: undefined };
-      return { ok: true };
-    }
-    try {
-      const connection = this.transport.open(port, undefined, (event) => this.capture(port, event));
-      this.session = { port, connection };
-      return { ok: true };
-    } catch (error) {
-      return {
-        ok: false,
-        error: `could not listen on "${port}": ${error instanceof Error ? error.message : String(error)}`,
-      };
-    }
+  startIndicate(port: string): { ok: true } | { ok: false; error: string } {
+    return this.startSession("indicate", port);
   }
 
   cancel(): void {
@@ -70,6 +67,26 @@ export class MidiLearn {
   shutdown(): void {
     this.close();
     this.session = undefined;
+    this.clearFlush();
+  }
+
+  private startSession(mode: Session["mode"], port: string): { ok: true } | { ok: false; error: string } {
+    if (this.session) this.end("replaced");
+
+    if (this.engineHeldPorts().has(port)) {
+      this.session = { mode, port, connection: undefined };
+      return { ok: true };
+    }
+    try {
+      const connection = this.transport.open(port, undefined, (event) => this.capture(port, event));
+      this.session = { mode, port, connection };
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error: `could not listen on "${port}": ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   }
 
   private capture(port: string, event: MidiInputEvent): void {
@@ -79,6 +96,20 @@ export class MidiLearn {
         : event.kind === "cc"
           ? { kind: "cc", channel: event.channel, number: event.controller }
           : { kind: "pitchbend", channel: event.channel };
+
+    if (this.session?.mode === "indicate") {
+      this.pending.push(address);
+      if (!this.flushTimer) {
+        this.flushTimer = setTimeout(() => {
+          this.flushTimer = undefined;
+          if (!this.session || this.pending.length === 0) return;
+          this.emitActivity({ port: this.session.port, addresses: this.pending });
+          this.pending = [];
+        }, FLUSH_MS);
+      }
+      return;
+    }
+
     this.close();
     this.session = undefined;
     this.emit({ status: "captured", port, address });
@@ -87,6 +118,7 @@ export class MidiLearn {
   private end(reason: "canceled" | "port-lost" | "replaced"): void {
     this.close();
     this.session = undefined;
+    this.clearFlush();
     this.emit({ status: "ended", reason });
   }
 
@@ -96,5 +128,11 @@ export class MidiLearn {
     } catch {
       // A yanked device may throw on close — the session is over either way.
     }
+  }
+
+  private clearFlush(): void {
+    if (this.flushTimer) clearTimeout(this.flushTimer);
+    this.flushTimer = undefined;
+    this.pending = [];
   }
 }

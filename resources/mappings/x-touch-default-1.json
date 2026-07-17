@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "x-touch-default-1",
   "name": "X-Touch Default 1",
-  "notes": "Default X-Touch layout 1 (v1 mappings/xTouch1.json): faders on executors 201-208 + main 209, encoders on 401-408, button rows on 401-408 / 301-308 / 201-208 / 101-108, F-keys on 191-198, view row on 291-298, QuickKeys and MA commands on the master section. Converted from v1. The timecodeSelect button cycles through timecode slots 0-8 on every press (0 = none), exactly as in v1. Encoder push buttons carried executor feedback in v1 that the hardware ignored (no LED there) — represented here as feedback 'none'. Modifier buttons (encoder fine/rough, attribute select) keep 'on-off' feedback because v1 drove those LEDs locally (toggle state / selected attribute). Command buttons (Highlight/Solo/Blind/Freeze/...) use 'on-off' feedback: the engine lights them from the MA3 master state (/masterEnabled), exactly as in v1.",
+  "notes": "Default X-Touch layout 1 (v1 mappings/xTouch1.json): faders on executors 201-208 + main 209, encoders on 401-408, button rows on 401-408 / 301-308 / 201-208 / 101-108, F-keys on 191-198, view row on 291-298, QuickKeys and MA commands on the master section. Converted from v1. The timecodeSelect button cycles through timecode slots 0-8 on every press (0 = none), exactly as in v1. Encoder push buttons carried executor feedback in v1 that the hardware ignored (no LED there) \u2014 represented here as feedback 'none'. Modifier buttons (encoder fine/rough, attribute select) keep 'on-off' feedback because v1 drove those LEDs locally (toggle state / selected attribute). Command buttons (Highlight/Solo/Blind/Freeze/...) use 'on-off' feedback: the engine lights them from the MA3 master state (/masterEnabled), exactly as in v1.",
   "deviceDefinitionId": "x-touch",
   "midiPort": {
     "input": "X-Touch",
@@ -578,7 +578,8 @@
       }
     },
     {
-      "controlId": "btn-encoder-push-1",
+      "controlId": "encoder-1",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 201
@@ -588,7 +589,8 @@
       }
     },
     {
-      "controlId": "btn-encoder-push-2",
+      "controlId": "encoder-2",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 202
@@ -598,7 +600,8 @@
       }
     },
     {
-      "controlId": "btn-encoder-push-3",
+      "controlId": "encoder-3",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 203
@@ -608,7 +611,8 @@
       }
     },
     {
-      "controlId": "btn-encoder-push-4",
+      "controlId": "encoder-4",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 204
@@ -618,7 +622,8 @@
       }
     },
     {
-      "controlId": "btn-encoder-push-5",
+      "controlId": "encoder-5",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 205
@@ -628,7 +633,8 @@
       }
     },
     {
-      "controlId": "btn-encoder-push-6",
+      "controlId": "encoder-6",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 206
@@ -638,7 +644,8 @@
       }
     },
     {
-      "controlId": "btn-encoder-push-7",
+      "controlId": "encoder-7",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 207
@@ -648,7 +655,8 @@
       }
     },
     {
-      "controlId": "btn-encoder-push-8",
+      "controlId": "encoder-8",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 208

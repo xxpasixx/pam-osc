@@ -57,12 +57,28 @@ export function buildUnit(mapping: Mapping, device: DeviceDefinition, issues: En
 
   for (const assignment of mapping.assignments) {
     // The loader guarantees the reference resolves; guard anyway (EC-4 spirit).
-    const control = controlsById.get(assignment.controlId);
+    let control = controlsById.get(assignment.controlId);
     if (!control) continue;
+    // Composite push-encoders (PAM-1 AC-7): the push part becomes a virtual
+    // button control, so every downstream path (input routing, LED feedback,
+    // caches) reuses the plain button logic unchanged.
+    if (assignment.part === "push") {
+      if (control.type !== "encoder" || !control.capabilities.push) continue; // loader rejects this; guard
+      const push = control.capabilities.push;
+      control = {
+        id: `${control.id}#push`,
+        label: control.label ? `${control.label} (push)` : `${control.id} (push)`,
+        type: "button",
+        midi: push.midi,
+        position: control.position,
+        capabilities: { led: push.led },
+      };
+    }
     const entry: RoutingEntry = {
       control,
       assignment,
-      channel: control.type === "display" ? device.defaultMidiChannel : (control.midi.channel ?? device.defaultMidiChannel),
+      channel:
+        control.type === "display" ? device.defaultMidiChannel : (control.midi.channel ?? device.defaultMidiChannel),
     };
     unit.entries.push(entry);
     indexInput(unit, entry, issues);
@@ -156,15 +172,18 @@ function indexFeedback(unit: Unit, entry: RoutingEntry): void {
 /** Assignments that can never do anything get a startup warning, not silence. */
 function warnUnusable(unit: Unit, entry: RoutingEntry, issues: EngineIssue[]): void {
   const { control, assignment } = entry;
-  const warn = (message: string) =>
-    issues.push({ severity: "warning", source: unit.mapping.id, message });
+  const warn = (message: string) => issues.push({ severity: "warning", source: unit.mapping.id, message });
 
   const action = assignment.action;
   if ((action.type === "timecodeSelect" || action.type === "timecodePlayPause") && !unit.timecodeEnabled) {
-    warn(`"${control.id}" has a ${action.type} action but the mapping does not set enableTimecodeSend — it will do nothing`);
+    warn(
+      `"${control.id}" has a ${action.type} action but the mapping does not set enableTimecodeSend — it will do nothing`
+    );
   }
   if ((action.type === "timecodeSelect" || action.type === "timecodePlayPause") && !unit.mcMode) {
-    warn(`"${control.id}" has a ${action.type} action but "${unit.device.id}" is not an mc-mode board — the 7-segment display will stay dark`);
+    warn(
+      `"${control.id}" has a ${action.type} action but "${unit.device.id}" is not an mc-mode board — the 7-segment display will stay dark`
+    );
   }
   if (control.type === "fader" && action.type !== "executor") {
     warn(`fader "${control.id}" only supports the executor action — "${action.type}" will do nothing`);

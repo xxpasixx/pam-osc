@@ -113,6 +113,12 @@ export type MidiLearnEvent =
   | { status: "captured"; port: string; address: LearnedAddress }
   | { status: "ended"; reason: "canceled" | "port-lost" | "replaced" };
 
+/** Indicate mode (AC-11): one batch of raw input addresses, ≤ every 50 ms. */
+export interface MidiActivityEvent {
+  port: string;
+  addresses: LearnedAddress[];
+}
+
 /** Result of the native "pick a v1 mapping file" dialog + shape check (PAM-5 AC-1/AC-6). */
 export type PickV1FileResult =
   | { status: "canceled" }
@@ -180,6 +186,8 @@ export interface PamOscApi {
   saveDeviceDefinition(request: SaveDeviceRequest): Promise<EditorSaveResult>;
   startMidiLearn(inputPort: string): Promise<{ ok: boolean; error?: string }>;
   cancelMidiLearn(): Promise<void>;
+  startMidiIndicate(inputPort: string): Promise<{ ok: boolean; error?: string }>;
+  stopMidiIndicate(): Promise<void>;
   startEngine(): Promise<{ ok: boolean; error?: string }>;
   stopEngine(): Promise<void>;
   checkConnection(): Promise<void>;
@@ -193,6 +201,7 @@ export interface PamOscApi {
   onTraffic(listener: (entries: TrafficEntry[]) => void): () => void;
   onPortDiagnosis(listener: (diagnosis: PortDiagnosis | undefined) => void): () => void;
   onMidiLearn(listener: (event: MidiLearnEvent) => void): () => void;
+  onMidiActivity(listener: (event: MidiActivityEvent) => void): () => void;
 }
 
 /** Channel names — single source for preload and main. */
@@ -211,6 +220,8 @@ export const IPC = {
   saveDeviceDefinition: "pam:saveDeviceDefinition",
   startMidiLearn: "pam:startMidiLearn",
   cancelMidiLearn: "pam:cancelMidiLearn",
+  startMidiIndicate: "pam:startMidiIndicate",
+  stopMidiIndicate: "pam:stopMidiIndicate",
   startEngine: "pam:startEngine",
   stopEngine: "pam:stopEngine",
   checkConnection: "pam:checkConnection",
@@ -223,4 +234,5 @@ export const IPC = {
   evTraffic: "pam:ev:traffic",
   evPortDiagnosis: "pam:ev:portDiagnosis",
   evMidiLearn: "pam:ev:midiLearn",
+  evMidiActivity: "pam:ev:midiActivity",
 } as const;

@@ -125,7 +125,8 @@ async function main(): Promise<void> {
   const midiLearn = new MidiLearn(
     easymidiTransport,
     () => engineHost.boundInputPorts(),
-    (event) => send(IPC.evMidiLearn, event)
+    (event) => send(IPC.evMidiLearn, event),
+    (event) => send(IPC.evMidiActivity, event)
   );
 
   const engineConfigFrom = (console: SettingsDraft["console"], mappingIds: string[]): EngineConfig => ({
@@ -296,6 +297,11 @@ async function main(): Promise<void> {
     return midiLearn.start(port);
   });
   handle(IPC.cancelMidiLearn, () => midiLearn.cancel());
+  handle(IPC.startMidiIndicate, (_event, port) => {
+    if (typeof port !== "string" || port.length === 0) return { ok: false, error: "no MIDI input port given" };
+    return midiLearn.startIndicate(port);
+  });
+  handle(IPC.stopMidiIndicate, () => midiLearn.cancel());
 
   // ---- diagnostics & engine control (PAM-4) ----
   handle(IPC.startEngine, async () => {

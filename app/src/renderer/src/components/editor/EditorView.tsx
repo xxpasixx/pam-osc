@@ -12,12 +12,13 @@ import type {
 import type {
   ControlUsageEntry,
   EditorSaveResult,
+  LearnedAddress,
   MidiPortList,
   Notice,
   Snapshot,
   UsageRef,
 } from "../../../../shared/ipc.js";
-import { BoardCanvas } from "./BoardCanvas.js";
+import { BoardCanvas, type PartSelection } from "./BoardCanvas.js";
 import { BoardInspector } from "./BoardInspector.js";
 import { MappingInspector } from "./MappingInspector.js";
 
@@ -25,6 +26,8 @@ import { MappingInspector } from "./MappingInspector.js";
  * The editor view (design → Editor view): full-window work surface on top of
  * the tabs. Loads the full file content, keeps a draft until Save (PAM-3
  * pattern), validates live with the same rules the main process enforces.
+ * Composite push-encoders select per part (AC-9); the Indicate toggle
+ * flashes controls on hardware input (AC-11).
  */
 
 export type EditorTarget =
@@ -52,11 +55,19 @@ type Loaded = LoadedMapping | LoadedDevice;
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
+const FLASH_MS = 300;
+
 const kebab = (name: string): string =>
   name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "board";
+
+const partKey = (controlId: string, part: "push" | undefined): string =>
+  part ? `${controlId}#push` : controlId;
+
+const samePart = (assignment: Assignment, selection: PartSelection): boolean =>
+  assignment.controlId === selection.id && (assignment.part ?? undefined) === selection.part;
 
 function actionSummary(assignment: Assignment): string {
   const action = assignment.action;
@@ -78,6 +89,19 @@ function actionSummary(assignment: Assignment): string {
     case "display":
       return `Disp ${action.number}`;
   }
+}
+
+/** Button VIEW of an encoder's push declaration — inspector + feedback rules (AC-9). */
+function pushView(control: Control): Control | undefined {
+  if (control.type !== "encoder" || !control.capabilities.push) return undefined;
+  return {
+    id: control.id,
+    label: control.label,
+    type: "button",
+    midi: control.capabilities.push.midi,
+    position: control.position,
+    capabilities: { led: control.capabilities.push.led },
+  } as Control;
 }
 
 /** First free 1×1 spot scanning rows from the top-left (design → New control defaults). */
@@ -140,12 +164,21 @@ export function EditorView({
   const [loadError, setLoadError] = useState<string | undefined>();
   const [draft, setDraft] = useState<Mapping | DeviceDefinition | undefined>();
   const baselineRef = useRef<string>("");
-  const [selectedId, setSelectedId] = useState<string | undefined>();
+  const [selected, setSelected] = useState<PartSelection | undefined>();
   const [saving, setSaving] = useState(false);
   const [closePrompt, setClosePrompt] = useState(false);
   const [deletePrompt, setDeletePrompt] = useState<{ control: Control; usage: UsageRef[] } | undefined>();
   const [retargetPrompt, setRetargetPrompt] = useState<{ usage: UsageRef[]; chosen: Set<string> } | undefined>();
   const [learn, setLearn] = useState<{ listening: boolean; port: string }>({ listening: false, port: "" });
+  // BUG-4: the capture target is fixed when Learn starts, not at capture time.
+  const learnTargetRef = useRef<{ controlId: string; target: "midi" | "push" } | undefined>(undefined);
+  const [indicateOn, setIndicateOn] = useState(false);
+  const indicateRef = useRef<{ on: boolean; port: string; suspended: boolean }>({
+    on: false,
+    port: "",
+    suspended: false,
+  });
+  const [flashKeys, setFlashKeys] = useState<Set<string>>(new Set());
 
   const adopt = useCallback((next: Loaded) => {
     setLoaded(next);
@@ -189,30 +222,82 @@ export function EditorView({
     };
   }, [target, adopt]);
 
-  // Learn results (AC-4): captured addresses land in the selected control.
+  const resumeIndicate = useCallback(() => {
+    const state = indicateRef.current;
+    if (!state.suspended || !state.on) return;
+    state.suspended = false;
+    void window.pamOsc.startMidiIndicate(state.port);
+  }, []);
+
+  // Learn results (AC-4): captured addresses land in the Learn-start target.
   useEffect(() => {
     return window.pamOsc.onMidiLearn((event) => {
+      setLearn((current) => ({ ...current, listening: false }));
       if (event.status === "captured") {
-        setLearn((current) => ({ ...current, listening: false }));
-        setDraft((current) => {
-          if (!current || !("controls" in current) || !selectedId) return current;
-          const controls = current.controls.map((control) =>
-            control.id === selectedId && control.type !== "display"
-              ? ({ ...control, midi: event.address } as Control)
-              : control
-          );
-          return { ...current, controls };
-        });
+        const target = learnTargetRef.current;
+        learnTargetRef.current = undefined;
+        if (target) applyCapturedAddress(target, event.address);
+        resumeIndicate();
       } else {
-        setLearn((current) => ({ ...current, listening: false }));
+        if (event.reason !== "replaced") learnTargetRef.current = undefined;
         if (event.reason === "port-lost") {
           pushNotices([{ severity: "warning", message: "MIDI learn ended — the port disappeared" }]);
+          indicateRef.current.on = false;
+          setIndicateOn(false);
         }
+        if (event.reason === "canceled") resumeIndicate();
       }
     });
-  }, [selectedId, pushNotices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pushNotices, resumeIndicate]);
 
-  // Leaving the editor always ends a running learn session.
+  const applyCapturedAddress = (target: { controlId: string; target: "midi" | "push" }, address: LearnedAddress) => {
+    if (target.target === "push" && address.kind === "pitchbend") {
+      pushNotices([{ severity: "warning", message: "a push button cannot be pitchbend — capture ignored" }]);
+      return;
+    }
+    setDraft((current) => {
+      if (!current || !("controls" in current)) return current;
+      const controls = current.controls.map((control) => {
+        if (control.id !== target.controlId || control.type === "display") return control;
+        if (target.target === "midi") return { ...control, midi: address } as Control;
+        if (control.type !== "encoder") return control;
+        const push = control.capabilities.push ?? { led: "none" };
+        return {
+          ...control,
+          capabilities: { ...control.capabilities, push: { ...push, midi: address } },
+        } as Control;
+      });
+      return { ...current, controls };
+    });
+  };
+
+  // Indicate mode (AC-11): flash matching controls on incoming addresses.
+  useEffect(() => {
+    return window.pamOsc.onMidiActivity((event) => {
+      if (!indicateRef.current.on) return;
+      setFlashKeys((current) => {
+        const next = new Set(current);
+        for (const address of event.addresses) {
+          const key = addressMapRef.current.get(addressKey(address));
+          if (key) next.add(key);
+        }
+        return next.size === current.size ? current : next;
+      });
+      setTimeout(() => {
+        setFlashKeys((current) => {
+          const next = new Set(current);
+          for (const address of event.addresses) {
+            const key = addressMapRef.current.get(addressKey(address));
+            if (key) next.delete(key);
+          }
+          return next;
+        });
+      }, FLASH_MS);
+    });
+  }, []);
+
+  // Leaving the editor always ends any monitor session (learn or indicate).
   useEffect(() => {
     return () => {
       void window.pamOsc.cancelMidiLearn();
@@ -222,6 +307,29 @@ export function EditorView({
   const mode: "mapping" | "board" = loaded?.mode === "mapping" ? "mapping" : "board";
   const device: DeviceDefinition | undefined =
     loaded?.mode === "mapping" ? loaded.device : draft && "controls" in draft ? (draft as DeviceDefinition) : undefined;
+
+  const addressKey = (address: LearnedAddress): string =>
+    address.kind === "pitchbend" ? `pitchbend:${address.channel}` : `${address.kind}:${address.channel}:${address.number}`;
+
+  // wire address → flash key (`<id>` or `<id>#push`), rebuilt with the draft.
+  const addressMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!device) return map;
+    for (const control of device.controls) {
+      if (control.type === "display") continue;
+      const midi = control.midi as { kind?: string; channel?: number; number?: number };
+      const channel = midi.channel ?? device.defaultMidiChannel;
+      if (midi.kind === "pitchbend") map.set(`pitchbend:${channel}`, control.id);
+      else if (midi.kind && midi.number !== undefined) map.set(`${midi.kind}:${channel}:${midi.number}`, control.id);
+      if (control.type === "encoder" && control.capabilities.push) {
+        const push = control.capabilities.push.midi;
+        map.set(`${push.kind}:${push.channel ?? device.defaultMidiChannel}:${push.number}`, `${control.id}#push`);
+      }
+    }
+    return map;
+  }, [device]);
+  const addressMapRef = useRef(addressMap);
+  addressMapRef.current = addressMap;
 
   const dirty = draft !== undefined && JSON.stringify(draft) !== baselineRef.current;
 
@@ -253,19 +361,21 @@ export function EditorView({
   }, [draft, loaded]);
 
   const issuesFor = useCallback(
-    (controlId: string): EditorIssue[] => {
+    (selection: PartSelection): EditorIssue[] => {
       if (!draft || !loaded) return [];
       if (loaded.mode === "mapping") {
         const mapping = draft as Mapping;
         return validation.issues.filter((issue) => {
           const match = /^assignments\[(\d+)\]/.exec(issue.path);
-          return match !== null && mapping.assignments[Number(match[1])]?.controlId === controlId;
+          if (!match) return false;
+          const assignment = mapping.assignments[Number(match[1])];
+          return assignment !== undefined && samePart(assignment, selection);
         });
       }
       const board = draft as DeviceDefinition;
       return validation.issues.filter((issue) => {
         const match = /^controls\[(\d+)\]/.exec(issue.path);
-        return match !== null && board.controls[Number(match[1])]?.id === controlId;
+        return match !== null && board.controls[Number(match[1])]?.id === selection.id;
       });
     },
     [draft, loaded, validation]
@@ -282,13 +392,18 @@ export function EditorView({
   const summaries = useMemo(() => {
     if (loaded?.mode !== "mapping" || !draft) return undefined;
     const mapping = draft as Mapping;
-    return new Map(mapping.assignments.map((assignment) => [assignment.controlId, actionSummary(assignment)]));
+    return new Map(
+      mapping.assignments.map((assignment) => [
+        partKey(assignment.controlId, assignment.part),
+        actionSummary(assignment),
+      ])
+    );
   }, [loaded, draft]);
 
-  const selectedControl = device?.controls.find((control) => control.id === selectedId);
+  const selectedControl = selected ? device?.controls.find((control) => control.id === selected.id) : undefined;
   const selectedAssignment =
-    loaded?.mode === "mapping" && draft
-      ? (draft as Mapping).assignments.find((assignment) => assignment.controlId === selectedId)
+    loaded?.mode === "mapping" && draft && selected
+      ? (draft as Mapping).assignments.find((assignment) => samePart(assignment, selected))
       : undefined;
 
   const empty = mode === "board" && device !== undefined && device.controls.length === 0;
@@ -298,15 +413,15 @@ export function EditorView({
 
   const updateAssignment = useCallback(
     (next: Assignment | undefined) => {
-      if (!selectedId) return;
+      if (!selected) return;
       setDraft((current) => {
         if (!current || !("assignments" in current)) return current;
         const mapping = current as Mapping;
-        const rest = mapping.assignments.filter((assignment) => assignment.controlId !== selectedId);
+        const rest = mapping.assignments.filter((assignment) => !samePart(assignment, selected));
         return { ...mapping, assignments: next ? [...rest, next] : rest };
       });
     },
-    [selectedId]
+    [selected]
   );
 
   const updateControl = useCallback((next: Control) => {
@@ -330,7 +445,7 @@ export function EditorView({
           ? { ...(current as DeviceDefinition), controls: [...(current as DeviceDefinition).controls, control] }
           : current
       );
-      setSelectedId(control.id);
+      setSelected({ id: control.id });
     },
     [device]
   );
@@ -341,7 +456,7 @@ export function EditorView({
       const board = current as DeviceDefinition;
       return { ...board, controls: board.controls.filter((control) => control.id !== controlId) };
     });
-    setSelectedId(undefined);
+    setSelected(undefined);
   }, []);
 
   const requestDelete = useCallback(() => {
@@ -351,10 +466,55 @@ export function EditorView({
     else setDeletePrompt({ control: selectedControl, usage });
   }, [selectedControl, loaded, removeControl]);
 
+  // ---- learn & indicate sessions ----
+
+  const startLearn = useCallback(
+    (port: string, target: "midi" | "push") => {
+      if (!selected) return;
+      learnTargetRef.current = { controlId: selected.id, target };
+      if (indicateRef.current.on) indicateRef.current.suspended = true; // main replaces the session
+      void window.pamOsc.startMidiLearn(port).then((result) => {
+        if (result.ok) setLearn({ listening: true, port });
+        else {
+          learnTargetRef.current = undefined;
+          pushNotices([{ severity: "error", message: result.error ?? "MIDI learn failed" }]);
+          resumeIndicate();
+        }
+      });
+    },
+    [selected, pushNotices, resumeIndicate]
+  );
+
+  const indicatePort =
+    loaded?.mode === "mapping" ? loaded.mapping.midiPort.input : learn.port || (midiPorts.inputs[0] ?? "");
+
+  const toggleIndicate = useCallback(() => {
+    const state = indicateRef.current;
+    if (state.on) {
+      state.on = false;
+      state.suspended = false;
+      setIndicateOn(false);
+      setFlashKeys(new Set());
+      void window.pamOsc.stopMidiIndicate();
+      return;
+    }
+    if (indicatePort === "") return;
+    void window.pamOsc.startMidiIndicate(indicatePort).then((result) => {
+      if (!result.ok) {
+        pushNotices([{ severity: "error", message: result.error ?? "indicate mode failed" }]);
+        return;
+      }
+      state.on = true;
+      state.port = indicatePort;
+      state.suspended = false;
+      setIndicateOn(true);
+    });
+  }, [indicatePort, pushNotices]);
+
   // ---- save & close (design → Save → validate → reload; EC-1) ----
 
   const finishSave = useCallback(
-    async (result: EditorSaveResult) => {
+    async (result: EditorSaveResult): Promise<boolean> => {
       if (!result.ok) {
         pushNotices(
           result.errors.map((error) => ({
@@ -362,7 +522,7 @@ export function EditorView({
             message: error.path ? `${error.path}: ${error.message}` : error.message,
           }))
         );
-        return;
+        return false;
       }
       onSaved(result.snapshot);
       // Reload by the final id — copy-on-edit may have renamed the file (AC-5).
@@ -373,13 +533,14 @@ export function EditorView({
         const data = await window.pamOsc.getDeviceDefinitionForEdit(result.id);
         if (!("error" in data)) adopt({ mode: "board", ...data, isNew: false });
       }
+      return true;
     },
     [mode, onSaved, adopt, pushNotices]
   );
 
   const saveDevice = useCallback(
-    async (retargetMappingIds: string[]) => {
-      if (!draft || loaded?.mode !== "board") return;
+    async (retargetMappingIds: string[]): Promise<boolean> => {
+      if (!draft || loaded?.mode !== "board") return false;
       setSaving(true);
       try {
         const result = await window.pamOsc.saveDeviceDefinition({
@@ -387,9 +548,10 @@ export function EditorView({
           retargetMappingIds,
           createNew: loaded.isNew,
         });
-        await finishSave(result);
+        return await finishSave(result);
       } catch (error) {
         pushNotices([{ severity: "error", message: error instanceof Error ? error.message : String(error) }]);
+        return false;
       } finally {
         setSaving(false);
       }
@@ -397,14 +559,13 @@ export function EditorView({
     [draft, loaded, finishSave, pushNotices]
   );
 
-  const save = useCallback(async () => {
+  const save = useCallback(async (): Promise<boolean> => {
     if (!draft || !loaded) return false;
     if (loaded.mode === "mapping") {
       setSaving(true);
       try {
         const result = await window.pamOsc.saveMapping(draft);
-        await finishSave(result);
-        return result.ok;
+        return await finishSave(result);
       } catch (error) {
         pushNotices([{ severity: "error", message: error instanceof Error ? error.message : String(error) }]);
         return false;
@@ -420,8 +581,8 @@ export function EditorView({
         return false; // the dialog continues the save
       }
     }
-    await saveDevice([]);
-    return true;
+    // BUG-1: propagate the outcome — "Save & close" must not close on failure.
+    return saveDevice([]);
   }, [draft, loaded, finishSave, saveDevice, pushNotices]);
 
   const close = useCallback(() => {
@@ -452,6 +613,13 @@ export function EditorView({
   }
 
   const name = loaded.mode === "mapping" ? (draft as Mapping).name : (draft as DeviceDefinition).name;
+  const selectedPushView =
+    selected?.part === "push" && selectedControl ? pushView(selectedControl) : undefined;
+  // BUG-2/BUG-3: the delete warning names what actually happens per case.
+  const deleteConsequence =
+    loaded.mode === "board" && loaded.origin === "bundled" && !loaded.isNew
+      ? "Saving creates a copy of this bundled board — mappings that reference the original keep working and are only affected if you retarget them to the copy."
+      : "Saving the board will remove those assignments from user mapping files. Bundled mappings referencing this board break immediately and appear under invalid files.";
 
   return (
     <div className="editor">
@@ -474,6 +642,14 @@ export function EditorView({
         )}
         {dirty && <span className="dirty-dot" title="Unsaved changes" />}
         <div className="grow" />
+        <button
+          className={indicateOn ? "learning" : ""}
+          onClick={toggleIndicate}
+          disabled={!indicateOn && indicatePort === ""}
+          title="Indicate mode: press hardware controls to light them up in the 2D view (view-only)"
+        >
+          {indicateOn ? `Test: listening on ${indicateRef.current.port}` : "Test"}
+        </button>
         <button onClick={() => adopt(loaded)} disabled={!dirty || saving}>
           Discard
         </button>
@@ -509,10 +685,11 @@ export function EditorView({
         <BoardCanvas
           device={device}
           mode={mode}
-          selectedId={selectedId}
+          selected={selected}
           summaries={summaries}
           invalidIds={validation.invalidIds}
-          onSelect={setSelectedId}
+          flashKeys={flashKeys}
+          onSelect={setSelected}
           onGeometry={
             mode === "board"
               ? (controlId, position) => {
@@ -523,11 +700,12 @@ export function EditorView({
           }
         />
         <aside className="editor-side">
-          {mode === "mapping" && selectedControl && (
+          {mode === "mapping" && selectedControl && selected && (
             <MappingInspector
-              control={selectedControl}
+              control={selectedPushView ?? selectedControl}
+              part={selected.part}
               assignment={selectedAssignment}
-              issues={issuesFor(selectedControl.id)}
+              issues={issuesFor(selected)}
               onChange={updateAssignment}
             />
           )}
@@ -535,7 +713,8 @@ export function EditorView({
             <div className="inspector">
               <h3>{name}</h3>
               <p className="inspector-meta">
-                Board: {device.name} · click a control to edit its assignment (dimmed = unassigned).
+                Board: {device.name} · click a control to edit its assignment (dimmed = unassigned). Encoders with a
+                center cap are push-encoders — the cap is the press.
               </p>
             </div>
           )}
@@ -544,24 +723,17 @@ export function EditorView({
               device={device}
               selected={selectedControl}
               usage={
-                selectedControl
-                  ? (loaded.mode === "board"
-                      ? (loaded.usage.find((entry) => entry.controlId === selectedControl.id)?.mappings ?? [])
-                      : [])
+                selectedControl && loaded.mode === "board"
+                  ? (loaded.usage.find((entry) => entry.controlId === selectedControl.id)?.mappings ?? [])
                   : []
               }
-              issues={selectedControl ? issuesFor(selectedControl.id) : []}
+              issues={selected ? issuesFor({ id: selected.id }) : []}
               midiPorts={midiPorts}
               learn={{ listening: learn.listening, port: learn.port || (midiPorts.inputs[0] ?? "") }}
               onChangeControl={updateControl}
               onChangeBoard={updateBoard}
               onDelete={requestDelete}
-              onLearnStart={(port) => {
-                void window.pamOsc.startMidiLearn(port).then((result) => {
-                  if (result.ok) setLearn({ listening: true, port });
-                  else pushNotices([{ severity: "error", message: result.error ?? "MIDI learn failed" }]);
-                });
-              }}
+              onLearnStart={startLearn}
               onLearnCancel={() => {
                 void window.pamOsc.cancelMidiLearn();
                 setLearn((current) => ({ ...current, listening: false }));
@@ -610,8 +782,7 @@ export function EditorView({
             <h3>Delete “{deletePrompt.control.label ?? deletePrompt.control.id}”?</h3>
             <p>
               This control is assigned in {deletePrompt.usage.length} mapping
-              {deletePrompt.usage.length > 1 ? "s" : ""}. Saving the board will remove those assignments from user
-              mapping files; bundled mappings would show as invalid if retargeted later.
+              {deletePrompt.usage.length > 1 ? "s" : ""}. {deleteConsequence}
             </p>
             <ul className="import-warnings">
               {deletePrompt.usage.map((ref) => (

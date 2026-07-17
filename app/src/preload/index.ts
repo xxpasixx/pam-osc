@@ -32,6 +32,8 @@ const api: PamOscApi = {
   saveDeviceDefinition: (request) => ipcRenderer.invoke(IPC.saveDeviceDefinition, request),
   startMidiLearn: (inputPort) => ipcRenderer.invoke(IPC.startMidiLearn, inputPort),
   cancelMidiLearn: () => ipcRenderer.invoke(IPC.cancelMidiLearn),
+  startMidiIndicate: (inputPort) => ipcRenderer.invoke(IPC.startMidiIndicate, inputPort),
+  stopMidiIndicate: () => ipcRenderer.invoke(IPC.stopMidiIndicate),
   startEngine: () => ipcRenderer.invoke(IPC.startEngine),
   stopEngine: () => ipcRenderer.invoke(IPC.stopEngine),
   checkConnection: () => ipcRenderer.invoke(IPC.checkConnection),
@@ -44,6 +46,7 @@ const api: PamOscApi = {
   onTraffic: subscribe(IPC.evTraffic),
   onPortDiagnosis: subscribe(IPC.evPortDiagnosis),
   onMidiLearn: subscribe(IPC.evMidiLearn),
+  onMidiActivity: subscribe(IPC.evMidiActivity),
 };
 
 contextBridge.exposeInMainWorld("pamOsc", api);

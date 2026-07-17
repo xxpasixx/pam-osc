@@ -91,7 +91,8 @@ export function BoardInspector({
   onChangeControl: (next: Control) => void;
   onChangeBoard: (patch: Partial<DeviceDefinition>) => void;
   onDelete: () => void;
-  onLearnStart: (port: string) => void;
+  /** target: which address the capture fills — the control's own or its push (AC-9). */
+  onLearnStart: (port: string, target: "midi" | "push") => void;
   onLearnCancel: () => void;
   onLearnPortChange: (port: string) => void;
 }) {
@@ -238,7 +239,7 @@ export function BoardInspector({
               </button>
             ) : (
               <button
-                onClick={() => onLearnStart(learn.port)}
+                onClick={() => onLearnStart(learn.port, "midi")}
                 disabled={learn.port === ""}
                 title="Move or press the physical control to capture its MIDI address"
               >
@@ -304,7 +305,10 @@ export function BoardInspector({
       {selected.type === "encoder" && (
         <EncoderCapabilities
           capabilities={selected.capabilities}
+          learn={learn}
           onChange={(next) => patch({ capabilities: next })}
+          onLearnStart={onLearnStart}
+          onLearnCancel={onLearnCancel}
         />
       )}
       {selected.type === "display" && (
@@ -338,14 +342,22 @@ export function BoardInspector({
 interface EncoderCapabilitiesDraft {
   encoding?: { increment?: { from?: number; to?: number }; decrement?: { from?: number; to?: number } };
   ledRing?: { controller?: number; from?: number; to?: number };
+  /** Composite push-encoder (PAM-1 AC-7); midi may be incomplete in a draft. */
+  push?: { midi?: { kind?: "cc" | "note"; channel?: number; number?: number }; led?: string };
 }
 
 function EncoderCapabilities({
   capabilities,
+  learn,
   onChange,
+  onLearnStart,
+  onLearnCancel,
 }: {
   capabilities: EncoderCapabilitiesDraft;
+  learn: { listening: boolean; port: string };
   onChange: (next: EncoderCapabilitiesDraft) => void;
+  onLearnStart: (port: string, target: "midi" | "push") => void;
+  onLearnCancel: () => void;
 }) {
   const range = (side: "increment" | "decrement", edge: "from" | "to", value: number | undefined) =>
     onChange({
@@ -381,6 +393,83 @@ function EncoderCapabilities({
           <Num id="ring-to" label="To" value={capabilities.ledRing.to} max={127} onChange={(to) => ring({ to })} />
         </div>
       )}
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={capabilities.push !== undefined}
+          onChange={(e) =>
+            onChange({
+              ...capabilities,
+              push: e.target.checked ? { midi: { kind: "note" }, led: "none" } : undefined,
+            })
+          }
+        />
+        Integrated push button (press the knob)
+      </label>
+      {capabilities.push && (
+        <>
+          <div className="form-row">
+            <div className="field">
+              <label htmlFor="push-kind">Push kind</label>
+              <select
+                id="push-kind"
+                value={capabilities.push.midi?.kind ?? "note"}
+                onChange={(e) =>
+                  push({ midi: { ...capabilities.push?.midi, kind: e.target.value as "cc" | "note" } })
+                }
+              >
+                <option value="note">note</option>
+                <option value="cc">cc</option>
+              </select>
+            </div>
+            <Num
+              id="push-number"
+              label="Number (0–127)"
+              value={capabilities.push.midi?.number}
+              max={127}
+              onChange={(number) => push({ midi: { kind: "note", ...capabilities.push?.midi, number } })}
+            />
+            <Num
+              id="push-channel"
+              label="Channel (empty = default)"
+              value={capabilities.push.midi?.channel}
+              max={16}
+              onChange={(channel) => push({ midi: { kind: "note", ...capabilities.push?.midi, channel } })}
+            />
+            <div className="field">
+              <label htmlFor="push-led">Push LED</label>
+              <select
+                id="push-led"
+                value={capabilities.push.led ?? "none"}
+                onChange={(e) => push({ led: e.target.value })}
+              >
+                <option value="none">none</option>
+                <option value="on-off">on-off</option>
+                <option value="velocity-colors">velocity-colors</option>
+              </select>
+            </div>
+          </div>
+          <div className="learn-row">
+            {learn.listening ? (
+              <button className="learning" onClick={onLearnCancel}>
+                Listening … cancel
+              </button>
+            ) : (
+              <button
+                onClick={() => onLearnStart(learn.port, "push")}
+                disabled={learn.port === ""}
+                title="Press the encoder knob to capture the push address"
+              >
+                Learn push
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </>
   );
+
+  function push(patch: Partial<NonNullable<EncoderCapabilitiesDraft["push"]>>): void {
+    onChange({ ...capabilities, push: { ...capabilities.push, ...patch } });
+  }
 }

@@ -62,7 +62,7 @@ Both are pure data: **no code, no scripts**. Files are validated on load; proble
 | Type      | Capabilities                                                                                                                                                                                             | Meaning                                                                                                              |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `fader`   | `motorized` (default false)                                                                                                                                                                              | Anything sending _absolute_ values — sliders, and knobs that send absolute CC. Motorized faders can follow the show. |
-| `encoder` | `encoding` (required): `increment`/`decrement`, each `{from, to}` — the raw CC values per detent. `ledRing` (optional): `{controller, from, to}` — the CC number the ring listens on and its value range | _Relative_ rotary encoders.                                                                                          |
+| `encoder` | `encoding` (required): `increment`/`decrement`, each `{from, to}` — the raw CC values per detent. `ledRing` (optional): `{controller, from, to}` — the CC number the ring listens on and its value range. `push` (optional): `{midi, led}` — the knob's integrated press: its own `note`/`cc` address plus an LED capability (composite push-encoder) | _Relative_ rotary encoders. With `push`, one control describes the whole knob: turn **and** press.                   |
 | `button`  | `led`: `"none"`, `"on-off"`, or `"velocity-colors"` (LED color picked by velocity — APC mini, Launchpad)                                                                                                 | Anything sending notes (or CC buttons).                                                                              |
 | `display` | `segments` (character count); `index` (0–7) instead of `midi`                                                                                                                                            | Scribble strips / LED displays, addressed by slot index (the protocol carries 8 strips).                             |
 
@@ -94,20 +94,20 @@ Both are pure data: **no code, no scripts**. Files are validated on load; proble
 
 - `midiPort` — OS port names (the app lists what's connected). `output` is optional for boards without feedback. Two units of the same board type? Two mappings, same `deviceDefinitionId`, different ports.
 - `enableTimecodeSend` — `true` mirrors MA3 timecode on the board's 7-segment area. Only does something on `"mode": "mc"` boards (X-Touch); the timecode actions below need it too.
-- Each control may appear **once** in `assignments`.
+- Each control may appear **once** in `assignments` — except composite push-encoders: add `"part": "push"` to address the knob's press, so one encoder carries at most one rotate **and** one push assignment. Push assignments take button-style actions; `on-off`/`always-on` feedback needs the push's `led`.
 
 **Actions**
 
-| `type`              | Parameters                                                                     | Does                                                                            |
-| ------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| `executor`          | `number`                                                                       | Controls that executor on the current page (fader moves it, button presses it). |
-| `command`           | `command`                                                                      | Sends the text to the MA3 command line.                                         |
-| `quickKey`          | `key`                                                                          | Triggers the QuickKey `pam-osc_<KEY>` (auto-created by the Lua plugin).         |
-| `attribute`         | `attribute`                                                                    | Controls the attribute (e.g. `dimmer`, `pan`, `tilt`).                          |
-| `modifier`          | `modifier`: `encoderFine` / `encoderRough` / `attributeSelect` (+ `attribute`) | App-internal modifier keys — nothing is sent to MA3.                            |
+| `type`              | Parameters                                                                     | Does                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `executor`          | `number`                                                                       | Controls that executor on the current page (fader moves it, button presses it).          |
+| `command`           | `command`                                                                      | Sends the text to the MA3 command line.                                                  |
+| `quickKey`          | `key`                                                                          | Triggers the QuickKey `pam-osc_<KEY>` (auto-created by the Lua plugin).                  |
+| `attribute`         | `attribute`                                                                    | Controls the attribute (e.g. `dimmer`, `pan`, `tilt`).                                   |
+| `modifier`          | `modifier`: `encoderFine` / `encoderRough` / `attributeSelect` (+ `attribute`) | App-internal modifier keys — nothing is sent to MA3.                                     |
 | `timecodeSelect`    | `slot` (optional, 1–8)                                                         | With `slot`: selects that timecode slot. Without: cycles 0→1→…→8→0 per press (0 = none). |
-| `timecodePlayPause` | —                                                                              | Tap: play/pause the selected timecode slot. Hold ≥ 0.5 s: switches it off.     |
-| `display`           | `number`                                                                       | The display shows that executor's sequence, cue, and color.                     |
+| `timecodePlayPause` | —                                                                              | Tap: play/pause the selected timecode slot. Hold ≥ 0.5 s: switches it off.               |
+| `display`           | `number`                                                                       | The display shows that executor's sequence, cue, and color.                              |
 
 **Feedback types** (what the board's LEDs/motors do)
 

@@ -218,14 +218,16 @@ describe("convertV1 against every real v1 file (AC-3)", () => {
     const bundled = mappingSchema.parse(bundledRaw);
     const converted = mappingSchema.parse(mapping);
 
+    // Composite push-encoders carry two assignments per control — the
+    // comparison key is (controlId, part), the mapping's uniqueness key.
     const byControl = (parsed: Mapping) =>
-      new Map(parsed.assignments.map((assignment) => [assignment.controlId, assignment]));
+      new Map(parsed.assignments.map((assignment) => [`${assignment.controlId}#${assignment.part ?? "main"}`, assignment]));
     const bundledMap = byControl(bundled);
     const convertedMap = byControl(converted);
 
     expect([...convertedMap.keys()].sort()).toEqual([...bundledMap.keys()].sort());
-    for (const [controlId, assignment] of convertedMap) {
-      expect(assignment, `assignment for ${controlId}`).toEqual(bundledMap.get(controlId));
+    for (const [key, assignment] of convertedMap) {
+      expect(assignment, `assignment for ${key}`).toEqual(bundledMap.get(key));
     }
     expect(converted.enableTimecodeSend).toBe(true);
   });

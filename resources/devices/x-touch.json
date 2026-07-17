@@ -41,26 +41,14 @@
           "from": 32,
           "to": 43,
           "controller": 48
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 32
+          },
+          "led": "none"
         }
-      }
-    },
-    {
-      "id": "btn-encoder-push-1",
-      "label": "Encoder 1 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 32
-      },
-      "position": {
-        "x": 0.5,
-        "y": 0.5,
-        "width": 1,
-        "height": 1,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "none"
       }
     },
     {
@@ -198,26 +186,14 @@
           "from": 32,
           "to": 43,
           "controller": 49
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 33
+          },
+          "led": "none"
         }
-      }
-    },
-    {
-      "id": "btn-encoder-push-2",
-      "label": "Encoder 2 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 33
-      },
-      "position": {
-        "x": 2.5,
-        "y": 0.5,
-        "width": 1,
-        "height": 1,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "none"
       }
     },
     {
@@ -355,26 +331,14 @@
           "from": 32,
           "to": 43,
           "controller": 50
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 34
+          },
+          "led": "none"
         }
-      }
-    },
-    {
-      "id": "btn-encoder-push-3",
-      "label": "Encoder 3 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 34
-      },
-      "position": {
-        "x": 4.5,
-        "y": 0.5,
-        "width": 1,
-        "height": 1,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "none"
       }
     },
     {
@@ -512,26 +476,14 @@
           "from": 32,
           "to": 43,
           "controller": 51
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 35
+          },
+          "led": "none"
         }
-      }
-    },
-    {
-      "id": "btn-encoder-push-4",
-      "label": "Encoder 4 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 35
-      },
-      "position": {
-        "x": 6.5,
-        "y": 0.5,
-        "width": 1,
-        "height": 1,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "none"
       }
     },
     {
@@ -669,26 +621,14 @@
           "from": 32,
           "to": 43,
           "controller": 52
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 36
+          },
+          "led": "none"
         }
-      }
-    },
-    {
-      "id": "btn-encoder-push-5",
-      "label": "Encoder 5 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 36
-      },
-      "position": {
-        "x": 8.5,
-        "y": 0.5,
-        "width": 1,
-        "height": 1,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "none"
       }
     },
     {
@@ -826,26 +766,14 @@
           "from": 32,
           "to": 43,
           "controller": 53
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 37
+          },
+          "led": "none"
         }
-      }
-    },
-    {
-      "id": "btn-encoder-push-6",
-      "label": "Encoder 6 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 37
-      },
-      "position": {
-        "x": 10.5,
-        "y": 0.5,
-        "width": 1,
-        "height": 1,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "none"
       }
     },
     {
@@ -983,26 +911,14 @@
           "from": 32,
           "to": 43,
           "controller": 54
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 38
+          },
+          "led": "none"
         }
-      }
-    },
-    {
-      "id": "btn-encoder-push-7",
-      "label": "Encoder 7 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 38
-      },
-      "position": {
-        "x": 12.5,
-        "y": 0.5,
-        "width": 1,
-        "height": 1,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "none"
       }
     },
     {
@@ -1140,26 +1056,14 @@
           "from": 32,
           "to": 43,
           "controller": 55
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 39
+          },
+          "led": "none"
         }
-      }
-    },
-    {
-      "id": "btn-encoder-push-8",
-      "label": "Encoder 8 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 39
-      },
-      "position": {
-        "x": 14.5,
-        "y": 0.5,
-        "width": 1,
-        "height": 1,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "none"
       }
     },
     {

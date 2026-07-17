@@ -14,7 +14,7 @@ import type {
 import { AddDeviceDialog } from "./components/AddDeviceDialog.js";
 import { ConsoleSection } from "./components/ConsoleSection.js";
 import { DevicesSection } from "./components/DevicesSection.js";
-import { BoardsManagerDialog } from "./components/editor/BoardsManagerDialog.js";
+import { BoardsView } from "./components/editor/BoardsView.js";
 import { EditorView, type EditorTarget } from "./components/editor/EditorView.js";
 import { ImportV1Dialog, type ImportFlow } from "./components/ImportV1Dialog.js";
 import { NoticesArea } from "./components/NoticesArea.js";
@@ -45,7 +45,7 @@ export function App() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | undefined>();
-  const [tab, setTab] = useState<"setup" | "status">("setup");
+  const [tab, setTab] = useState<"setup" | "status" | "boards">("setup");
   const [traffic, setTraffic] = useState<TrafficEntry[]>([]);
   const [portDiagnosis, setPortDiagnosis] = useState<PortDiagnosis | undefined>();
   const [engineBusy, setEngineBusy] = useState(false);
@@ -53,7 +53,6 @@ export function App() {
   const [importFlow, setImportFlow] = useState<ImportFlow | undefined>();
   const [importBusy, setImportBusy] = useState(false);
   const [editorTarget, setEditorTarget] = useState<EditorTarget | undefined>();
-  const [boardsOpen, setBoardsOpen] = useState(false);
   const appliedRef = useRef<SettingsDraft | undefined>(undefined);
 
   // Notices deliberately stay out: adopting a post-save snapshot would
@@ -275,6 +274,9 @@ export function App() {
         <button className={`tab ${tab === "status" ? "active" : ""}`} onClick={() => setTab("status")}>
           Status
         </button>
+        <button className={`tab ${tab === "boards" ? "active" : ""}`} onClick={() => setTab("boards")}>
+          Boards
+        </button>
       </nav>
       <main className="app-body">
         <NoticesArea
@@ -315,7 +317,6 @@ export function App() {
               onAdd={() => setDialogOpen(true)}
               onImportV1={() => void startImportV1()}
               onEdit={(id) => setEditorTarget({ kind: "mapping", id })}
-              onManageBoards={() => setBoardsOpen(true)}
               onChange={(activeMappings) => updateDraft((current) => ({ ...current, activeMappings }))}
               onDuplicate={async (id) => {
                 const result = await window.pamOsc.duplicateMapping(id);
@@ -338,6 +339,13 @@ export function App() {
             />
           </>
         )}
+        {tab === "boards" && (
+          <BoardsView
+            boards={snapshot.boards}
+            onEdit={(id) => setEditorTarget({ kind: "device", id })}
+            onCreate={(name, width, height) => setEditorTarget({ kind: "new-device", name, width, height })}
+          />
+        )}
       </main>
       {tab === "setup" && (
         <footer className="footer">
@@ -359,19 +367,6 @@ export function App() {
         busy={importBusy}
         onImport={(deviceDefinitionId, name) => void runImportV1(deviceDefinitionId, name)}
         onClose={() => setImportFlow(undefined)}
-      />
-      <BoardsManagerDialog
-        open={boardsOpen}
-        boards={snapshot.boards}
-        onClose={() => setBoardsOpen(false)}
-        onEdit={(id) => {
-          setBoardsOpen(false);
-          setEditorTarget({ kind: "device", id });
-        }}
-        onCreate={(name, width, height) => {
-          setBoardsOpen(false);
-          setEditorTarget({ kind: "new-device", name, width, height });
-        }}
       />
       <AddDeviceDialog
         open={dialogOpen}

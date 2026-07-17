@@ -7,6 +7,29 @@ import type { Assignment } from "./mapping.js";
  * the renderer can validate live without pulling in the Node loader.
  */
 export function checkCompatibility(assignment: Assignment, control: Control): string | undefined {
+  // Composite push-encoders (PAM-1 AC-7): part "push" behaves like a button
+  // whose LED capability comes from the push declaration.
+  if (assignment.part === "push") {
+    if (control.type !== "encoder" || !control.capabilities.push) {
+      return `part "push" needs an encoder with an integrated push button, "${control.id}" has none`;
+    }
+    if (assignment.action.type === "display") {
+      return `action "display" is only valid on display controls, "${control.id}" (push) is a button press`;
+    }
+    switch (assignment.feedback.type) {
+      case "on-off":
+      case "always-on":
+        if (control.capabilities.push.led === "none") {
+          return `feedback "${assignment.feedback.type}" needs a push LED, "${control.id}" declares none`;
+        }
+        return undefined;
+      case "none":
+        return undefined;
+      default:
+        return `feedback "${assignment.feedback.type}" is not valid on a push button ("${control.id}")`;
+    }
+  }
+
   if (assignment.action.type === "display" && control.type !== "display") {
     return `action "display" is only valid on display controls, "${control.id}" is a ${control.type}`;
   }

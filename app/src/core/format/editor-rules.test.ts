@@ -169,6 +169,92 @@ describe("controlUsage / orphanedAssignments", () => {
   });
 });
 
+describe("composite push-encoders (PAM-1 AC-7)", () => {
+  const pushBoard = () => {
+    const draft = board();
+    draft.controls.push({
+      id: "enc-1",
+      type: "encoder",
+      midi: { kind: "cc", number: 16 },
+      position: { x: 2, y: 0, width: 2, height: 2 },
+      capabilities: {
+        encoding: { increment: { from: 1, to: 8 }, decrement: { from: 65, to: 72 } },
+        push: { midi: { kind: "note", number: 40 }, led: "on-off" },
+      },
+    } as unknown as (typeof draft.controls)[0]);
+    return draft;
+  };
+
+  it("accepts a push capability and both parts assigned on one control", () => {
+    const deviceResult = validateDeviceDraft(pushBoard());
+    expect(deviceResult.ok).toBe(true);
+    if (!deviceResult.ok) return;
+    const draft = mapping();
+    draft.assignments.push(
+      { controlId: "enc-1", action: { type: "executor", number: 401 }, feedback: { type: "none" } },
+      {
+        controlId: "enc-1",
+        part: "push",
+        action: { type: "command", command: "Go+" },
+        feedback: { type: "on-off" },
+      } as unknown as (typeof draft.assignments)[0]
+    );
+    expect(validateMappingDraft(draft, deviceResult.value).ok).toBe(true);
+  });
+
+  it("rejects part push on an encoder without a push capability", () => {
+    const draft = mapping();
+    draft.assignments.push({
+      controlId: "fader-1",
+      part: "push",
+      action: { type: "command", command: "Go+" },
+      feedback: { type: "none" },
+    } as unknown as (typeof draft.assignments)[0]);
+    const result = validateMappingDraft(draft, parsedBoard());
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.issues[0]!.message).toContain('part "push"');
+  });
+
+  it("rejects push LED feedback when the push declares no LED", () => {
+    const boardDraft = pushBoard();
+    (boardDraft.controls[2] as unknown as { capabilities: { push: { led: string } } }).capabilities.push.led = "none";
+    const deviceResult = validateDeviceDraft(boardDraft);
+    if (!deviceResult.ok) throw new Error("fixture");
+    const draft = mapping();
+    draft.assignments.push({
+      controlId: "enc-1",
+      part: "push",
+      action: { type: "command", command: "Go+" },
+      feedback: { type: "on-off" },
+    } as unknown as (typeof draft.assignments)[0]);
+    expect(validateMappingDraft(draft, deviceResult.value).ok).toBe(false);
+  });
+
+  it("rejects two push assignments on the same control, allows rotate+push", () => {
+    const deviceResult = validateDeviceDraft(pushBoard());
+    if (!deviceResult.ok) throw new Error("fixture");
+    const draft = mapping();
+    const push = {
+      controlId: "enc-1",
+      part: "push",
+      action: { type: "command", command: "Go+" },
+      feedback: { type: "none" },
+    } as unknown as (typeof draft.assignments)[0];
+    draft.assignments.push(push, { ...push });
+    expect(validateMappingDraft(draft, deviceResult.value).ok).toBe(false);
+  });
+
+  it("push addresses join the duplicate-address namespace (AC-7)", () => {
+    const draft = pushBoard();
+    draft.controls[1]!.midi = { kind: "note", number: 40 }; // collides with enc-1 push
+    const result = validateDeviceDraft(draft);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.issues[0]!.path).toBe("controls[2].capabilities.push.midi");
+  });
+});
+
 describe("suffixedCopy", () => {
   it("appends the first free suffix", () => {
     expect(suffixedCopy("x-touch", "X-Touch", new Set(["x-touch"]))).toEqual({ id: "x-touch-2", name: "X-Touch (2)" });

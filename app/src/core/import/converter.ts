@@ -184,17 +184,39 @@ export function convertV1(input: ConvertV1Input): { mapping: Mapping; summary: I
     const entry = asEntryObject(value, source, warn);
     if (!entry) continue;
     const control = lookup.byNote.get(note);
-    if (!control) {
+    const pushOwner = control ? undefined : lookup.pushByNote.get(note);
+    if (!control && !pushOwner) {
       warn("unmatched-control", `${source}: no control with note ${note} on "${device.name}" — skipped`);
       continue;
     }
     const converted = convertEntry(entry, source, warn);
     if (!converted) continue;
-    add("note", source, control, {
-      controlId: control.id,
+    if (control) {
+      add("note", source, control, {
+        controlId: control.id,
+        action: converted.action,
+        ...(converted.options ? { options: converted.options } : {}),
+        feedback: deriveFeedback(control, converted.action, entry, v1.fileMapper, source, warn),
+      });
+      continue;
+    }
+    // The note belongs to a composite push-encoder (PAM-1 AC-7): convert to
+    // part "push". Feedback derives from a button view of the push declaration.
+    const owner = pushOwner!;
+    if (owner.type !== "encoder" || !owner.capabilities.push) continue; // lookup guarantees; guard
+    const pushView: Control = {
+      id: `${owner.id}#push`,
+      type: "button",
+      midi: owner.capabilities.push.midi,
+      position: owner.position,
+      capabilities: { led: owner.capabilities.push.led },
+    };
+    add("note", source, pushView, {
+      controlId: owner.id,
+      part: "push",
       action: converted.action,
       ...(converted.options ? { options: converted.options } : {}),
-      feedback: deriveFeedback(control, converted.action, entry, v1.fileMapper, source, warn),
+      feedback: deriveFeedback(pushView, converted.action, entry, v1.fileMapper, source, warn),
     });
   }
 
@@ -501,6 +523,8 @@ interface ControlLookup {
   byPitchChannel: Map<number, Control>;
   encoderByCc: Map<number, Control>;
   displayByIndex: Map<number, Control>;
+  /** Composite push-encoders (PAM-1 AC-7): note number → owning encoder. */
+  pushByNote: Map<number, Control>;
 }
 
 function buildControlLookup(device: DeviceDefinition): ControlLookup {
@@ -510,6 +534,7 @@ function buildControlLookup(device: DeviceDefinition): ControlLookup {
     byPitchChannel: new Map(),
     encoderByCc: new Map(),
     displayByIndex: new Map(),
+    pushByNote: new Map(),
   };
   for (const control of device.controls) {
     if (control.type === "display") {
@@ -524,6 +549,9 @@ function buildControlLookup(device: DeviceDefinition): ControlLookup {
       setFirst(lookup.byNote, midi.number, control);
     } else {
       setFirst(lookup.byPitchChannel, midi.channel ?? device.defaultMidiChannel, control);
+    }
+    if (control.type === "encoder" && control.capabilities.push?.midi.kind === "note") {
+      setFirst(lookup.pushByNote, control.capabilities.push.midi.number, control);
     }
   }
   return lookup;

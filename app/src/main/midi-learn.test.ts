@@ -1,15 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { MidiLearn } from "./midi-learn.js";
 import type { MidiConnection, MidiInputEvent, MidiTransport } from "../transports/midi.js";
-import type { MidiLearnEvent } from "../shared/ipc.js";
+import type { MidiActivityEvent, MidiLearnEvent } from "../shared/ipc.js";
 
 /**
- * Learn session (AC-4): temporary port open vs engine tap, capture rules,
- * cancel / replaced / port-lost endings.
+ * Monitor session: learn (AC-4) — temporary port open vs engine tap, capture
+ * rules, cancel / replaced / port-lost endings; indicate (AC-11) — continuous
+ * batched activity.
  */
 
 function harness(options: { held?: string[]; failOpen?: boolean } = {}) {
   const events: MidiLearnEvent[] = [];
+  const activity: MidiActivityEvent[] = [];
   const opened: Array<{ port: string; closed: boolean; emit: (event: MidiInputEvent) => void }> = [];
   const transport: Pick<MidiTransport, "open"> = {
     open: (inputPort, _outputPort, onEvent): MidiConnection => {
@@ -24,8 +26,13 @@ function harness(options: { held?: string[]; failOpen?: boolean } = {}) {
       };
     },
   };
-  const learn = new MidiLearn(transport, () => new Set(options.held ?? []), (event) => events.push(event));
-  return { learn, events, opened };
+  const learn = new MidiLearn(
+    transport,
+    () => new Set(options.held ?? []),
+    (event) => events.push(event),
+    (event) => activity.push(event)
+  );
+  return { learn, events, activity, opened };
 }
 
 describe("MidiLearn (AC-4)", () => {
@@ -99,6 +106,67 @@ describe("MidiLearn (AC-4)", () => {
     learn.start("Port A");
     learn.onPortsChanged({ inputs: ["Port A", "Port B"], outputs: [] });
     expect(events).toHaveLength(0);
+    expect(learn.active).toBe(true);
+  });
+});
+
+describe("indicate mode (AC-11)", () => {
+  it("stays listening and emits batched activity", () => {
+    vi.useFakeTimers();
+    try {
+      const { learn, events, activity, opened } = harness();
+      expect(learn.startIndicate("Port A")).toEqual({ ok: true });
+
+      opened[0]!.emit({ kind: "note", channel: 1, note: 10, value: 127 });
+      opened[0]!.emit({ kind: "cc", channel: 1, controller: 7, value: 3 });
+      expect(activity).toHaveLength(0); // batched, not immediate
+
+      vi.advanceTimersByTime(60);
+      expect(activity).toEqual([
+        {
+          port: "Port A",
+          addresses: [
+            { kind: "note", channel: 1, number: 10 },
+            { kind: "cc", channel: 1, number: 7 },
+          ],
+        },
+      ]);
+      expect(learn.active).toBe(true); // continuous — session survives
+      expect(events).toHaveLength(0); // no learn capture fired
+
+      opened[0]!.emit({ kind: "pitchbend", channel: 9, value: 0 });
+      vi.advanceTimersByTime(60);
+      expect(activity).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("uses the engine tap for held ports and stops cleanly", () => {
+    vi.useFakeTimers();
+    try {
+      const { learn, activity, opened } = harness({ held: ["Held"] });
+      learn.startIndicate("Held");
+      expect(opened).toHaveLength(0);
+      learn.onEngineInput("Held", { kind: "note", channel: 2, note: 5, value: 1 });
+      vi.advanceTimersByTime(60);
+      expect(activity[0]!.addresses).toEqual([{ kind: "note", channel: 2, number: 5 }]);
+
+      learn.cancel();
+      learn.onEngineInput("Held", { kind: "note", channel: 2, note: 6, value: 1 });
+      vi.advanceTimersByTime(60);
+      expect(activity).toHaveLength(1); // nothing after stop
+      expect(learn.active).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a learn start replaces a running indicate session", () => {
+    const { learn, events } = harness();
+    learn.startIndicate("Port A");
+    learn.start("Port A");
+    expect(events).toEqual([{ status: "ended", reason: "replaced" }]);
     expect(learn.active).toBe(true);
   });
 });

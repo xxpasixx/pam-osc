@@ -843,3 +843,40 @@ button.learning {
 .modal h3 {
   margin: 0 0 10px;
 }
+
+/* composite push-encoders + indicate mode (PAM-6 delta) */
+.push-cap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 45%;
+  height: 45%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.push-cap.assigned {
+  border-color: var(--accent);
+}
+
+.push-cap.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.board-control.flash,
+.push-cap.flash {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.new-board-form {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
