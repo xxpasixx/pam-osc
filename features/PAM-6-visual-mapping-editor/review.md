@@ -85,7 +85,71 @@
 - **Steps to reproduce:** Hand-edit a device file so a control is wider than the layout; open the editor; drag the control.
 - **Expected / Actual:** Position stays ≥ 0 / clamp with a negative max yields negative positions. Cosmetic — validation still blocks saving.
 
-### Verdict
+### Verdict (round 1)
 
 - **ACs:** 7/7 passed (+ EC-1 with one failure-path gap) · **Bugs:** 7 (0 Critical / 0 High / 2 Medium / 5 Low) · **Security:** pass, no Critical/High
 - **Ship:** YES — READY. No Critical/High; the two Mediums are narrow failure paths with workarounds (save normally before closing; bundled-shadow scenario is rare). Note: a user-requested spec delta (boards tab, format-level push-encoder combo, Compact layer offsets, indicate mode) is queued — fixing BUG-1..BUG-4 in that same build round is the economical path.
+
+---
+
+# Re-review — delta round (AC-8…AC-11, PAM-1 AC-7, review fixes)
+
+**Reviewed:** 2026-07-17 · **Commit:** `788db02` · **Where tested:** local (Vitest 227/227 incl. PAM-1..5 suites, typecheck, production build); bundled-content facts verified by script; independent red-team subagent, findings merged by the review owner.
+
+### Acceptance Criteria (delta)
+
+- [x] AC-8: Boards tab lists all definitions with badges, Edit / "Edit a copy" / New board; entry removed from Devices — pass
+- [x] AC-9: composite push-encoders render as one component (ring + cap), both parts independently assignable and learnable — pass (golden import test proves wire parity with v1; x-touch: 8/8 encoders carry push, zero leftover push buttons, zero duplicate addresses)
+- [ ] AC-10: Compact layers no longer fully overlap, "every control is clickable" — **FAIL — BUG-8** (layer-A vs layer-B fixed: 0 cross-layer overlaps; but 24 controls remain fully covered by same-rect siblings)
+- [x] AC-11: Indicate toggle flashes matching controls, view-only tap — pass (BUG-10/BUG-11 are polish)
+- [x] PAM-1 AC-7: push declared on the encoder, rotate+push independently assignable, bundled X-Touch re-expressed with v1 behavior — pass
+
+### Review-fix verification (round 1 bugs)
+
+- [x] BUG-1 fixed — board save propagates its outcome on both paths; "Save & close" no longer closes on failure (residual UX gap → BUG-9)
+- [x] BUG-2 / BUG-3 fixed — delete warning names the real per-case consequence
+- [x] BUG-4 fixed — learn target pinned at Learn-start; selection-change / deleted-control / missing-control races all handled
+- [x] BUG-7 fixed — canvas clamps floor at 0 / MIN_SIZE
+- BUG-5 / BUG-6 — parked by decision (unchanged)
+
+### Security (red team, delta surfaces)
+
+- [x] `startMidiIndicate`/`stopMidiIndicate`: port validated (non-empty string), sender check via shared `handle()` wrapper, no path/PII surface
+- [x] Pre-delta mappings without `part` validate and route identically (schema-optional; `buildUnit` diverges only on `part === "push"`)
+- [x] Virtual route id `<id>#push` cannot collide with kebab-case control ids
+
+### Regression
+
+- 227/227 Vitest, typecheck clean, production build green; no dangling references to the deleted BoardsManagerDialog.
+
+### Bugs (delta round — numbering continues)
+
+**BUG-8: X-Touch Compact — 24 controls unreachable in the canvas (AC-10 fail)**
+
+- **Severity:** Medium (single board type; but a hard AC-10 fail — this was the user's original complaint)
+- **Steps to reproduce:** Open the X-Touch Compact board (or a mapping on it) in the editor. Try to select `knob-1` (rotary fader) or `knob-9-abs`. The click always lands on the same-rect sibling rendered on top (`knob-N-push`; for `-abs` knobs a 3-way stack with `-rel` and `-push`).
+- **Expected / Actual:** every control clickable / 8 knobs + 16 `-abs` knobs (both layers) never receive the pointer.
+- **Root cause:** `capabilities.push` is encoder-only by schema; the Compact's knobs are absolute-CC **faders**, so their push buttons (and `-abs`/`-rel` twins) remain separate same-rect controls. spec AC-10 ("every control is clickable") and the round-1 design decision ("overlaps allowed") contradict each other here.
+- **Fix options:** (a) concentric inset in the Compact data — push cap smallest, `-abs` mid, `-rel` outer ring: pure data, everything clickable, visually matches the X-Touch combos; (b) relax AC-10 wording to layer separation only (spec delta); (c) canvas click-cycling through stacked controls (generic code fix).
+
+**BUG-9: "Save & close" on a bundled board drops the close intent when the retarget dialog opens**
+
+- **Severity:** Low
+- **Steps to reproduce:** Edit a bundled board that mappings reference; close with unsaved changes; "Save & close"; retarget dialog appears; "Save copy".
+- **Expected / Actual:** editor closes after the successful save / editor stays open (no data loss — intent only).
+
+**BUG-10: Port-lost during Indicate mode reports "MIDI learn ended"**
+
+- **Severity:** Low
+- **Steps to reproduce:** Enable Test/Indicate, unplug the listened board.
+- **Expected / Actual:** notice about the test mode / notice says "MIDI learn ended — the port disappeared" (toggle state itself is correctly cleared).
+
+**BUG-11: Indicate flash flickers on sustained input**
+
+- **Severity:** Low
+- **Steps to reproduce:** Enable Test, turn an encoder continuously — the highlight blinks off/on every ~300 ms instead of staying lit (each batch schedules an independent clear; no per-key reset).
+
+### Verdict (delta round)
+
+- **ACs:** 4/5 delta ACs passed (AC-8, AC-9, AC-11, PAM-1 AC-7; **AC-10 fails — BUG-8**); rounds 1 ACs regression-clean · **Bugs:** 4 new (0 C / 0 H / 1 M / 3 L) · **Security:** pass
+- **Ship:** NO — NOT READY. No Critical/High, but AC-10 verifiably fails on the exact board the feedback came from. Fix BUG-8 via `/build` (recommendation: option a, concentric inset in the Compact data), then `/review` re-runs AC-10; BUG-9…11 are cheap to take along.
