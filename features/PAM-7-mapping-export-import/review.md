@@ -96,3 +96,31 @@
 
 - **ACs:** 13/14 clean + AC-10 pass-with-a-gap (BUG-4) · **Bugs:** 7 (0 Critical / 0 High / 1 Medium / 6 Low) · **Security:** pass, no Critical/High (path traversal + prototype pollution verified empirically) · **Regression:** none (285/285, six Approved neighbours intact)
 - **Ship:** YES — READY by the rule (no Critical/High). But **BUG-4 undercuts the support package's main purpose** (debugging broken setups), so the economical path — PAM-7 isn't live yet — is one more `/build` round for BUG-4 plus the two trivial log Lows (BUG-5, BUG-6), then ship. Also recommend the 60-second manual menu round-trip (the one surface without automated coverage). Go-live is the user's call.
+
+---
+
+# Re-review — fix round (BUG-4…BUG-7)
+
+**Reviewed:** 2026-07-17 · **Commit:** `e3385b7` · **Where tested:** local — 286/286 Vitest, 64/64 in the touched suites (catalog, session-log, support-package, share-files, sharing), typecheck clean, production build green, dev-boot smoke. Fixes are small and file-scoped, so reviewed inline (no fan-out).
+
+### Fix verification
+
+- [x] **BUG-4 fixed** — `catalog.invalidUserFiles()` returns the full paths of error-severity issues under the user dirs (deduped via Set; bundled and info-level issues correctly excluded); `writeSupportPackage` adds each existing one under `invalid/<basename>`, missing paths skipped. Wired into `exportSupportPackage`. Tests: `catalog.test.ts` asserts both broken user files' paths are returned and all are under the user dirs; `support-package.test.ts` asserts `invalid/broken.json` is in the zip and a missing path is skipped. **AC-10 now passes cleanly** — the support-relevant broken files ship.
+- [x] **BUG-5 fixed** — the v1 import handler logs success id / failure to the session log, matching the share-import path.
+- [x] **BUG-6 fixed** — `SessionLog.logSyncFinal` uses `appendFileSync`; `before-quit` calls it so the "session ending" marker lands without awaiting the async queue. Test asserts it's on disk with no `flush()`.
+- [x] **BUG-7 fixed** — `duplicateMapping`, `createMapping`, and the v1 import call `rebuildMenu()` after a successful mutation; the menu's Export submenus no longer depend on the renderer's follow-up getSnapshot.
+- Parked unchanged: BUG-1 (export TOCTOU — unreachable), BUG-2 (auto-dismiss timers uncleared — bounded/harmless), BUG-3 (PAM-2 onLog boundary — outside PAM-7).
+
+### New findings
+
+- **BUG-8 (Low):** `invalid/<basename>` can collide if an invalid device file and an invalid mapping file share a basename (e.g. both `broken.json`) — yazl then writes two same-named entries. Cosmetic for a support artifact; a `invalid/devices|mappings/` split (as the valid files already use) would remove it.
+- Ultra-low note (no ID): `invalidUserFiles` uses `startsWith` on the dir path without a trailing separator — a theoretical sibling dir sharing the prefix would false-match, but no such sibling exists (dirs are the fixed `userData/devices|mappings`). Not worth a guard here.
+
+### Regression
+
+- Full suite 286/286, typecheck clean, build green. The fix touches only additive catalog/package/log surfaces plus two IPC handlers that gained a post-success `rebuildMenu()` — behavior-preserving for the Approved neighbours (confirmed in the round-1 regression lane; no existing method changed here).
+
+### Verdict (fix round)
+
+- **ACs:** 14/14 clean (AC-10 gap closed) · **Bugs:** BUG-4/5/6/7 fixed; 1 new Low (BUG-8) + 3 parked Lows (BUG-1/2/3) · **Security:** unchanged, pass · **Regression:** none
+- **Ship:** YES — READY. No Critical/High/Medium open. BUG-8 and the parked Lows are cosmetic/robustness only. Recommend the 60-second manual menu round-trip (Export a mapping → Import it back → expect `-2`; Export support package → open the .zip and confirm an `invalid/` entry when a broken file exists) before `/ship`; go-live is the user's call.
