@@ -964,6 +964,16 @@
       }
     },
     {
+      "controlId": "btn-shift",
+      "action": {
+        "type": "executor",
+        "number": 209
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
       "controlId": "btn-scene-1",
       "action": {
         "type": "quickKey",
