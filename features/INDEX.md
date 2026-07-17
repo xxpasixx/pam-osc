@@ -27,15 +27,16 @@
 | PAM-6  | Visual mapping editor — 2D board layout, remap controls, add buttons/faders/encoders                                                                                    | P1       | PAM-1, PAM-3        | Approved | [PAM-6](PAM-6-visual-mapping-editor/)              | 2026-07-16 |
 | PAM-7  | Mapping/device export & import + support package (community sharing)                                                                                                    | P1       | PAM-1, PAM-3, PAM-6 | Approved | [PAM-7](PAM-7-mapping-export-import/)              | 2026-07-16 |
 | PAM-8  | Code signing & notarization                                                                                                                                             | P2       | —                   | Roadmap  | —                                                  | 2026-07-16 |
-| PAM-9  | One-click Lua plugin install on the console (feasibility open)                                                                                                          | P2       | PAM-4               | Roadmap  | —                                                  | 2026-07-16 |
+| PAM-9  | MA3 setup assistant — plugin install into local MA3 folder + in-app console setup guide (live values); network push cut to ideas                                        | P1       | PAM-3, PAM-4        | Spec'd   | [PAM-9](PAM-9-ma3-setup-assistant/)                | 2026-07-16 |
 | PAM-10 | Colored button feedback                                                                                                                                                 | P2       | PAM-2               | Roadmap  | —                                                  | 2026-07-16 |
 | PAM-11 | Board-centric mapping management — boards list their mappings, board-first mapping picker/dropdown in Setup, create new (empty) mappings                                | P1       | PAM-1, PAM-3, PAM-6 | Approved | [PAM-11](PAM-11-board-centric-mapping-management/) | 2026-07-17 |
+| PAM-12 | Command-line aware executor buttons (CMD mode, plugin v2) — console keyword + board button targets executors; oops-clean macros; occupancy; version handshake           | P1       | PAM-2, PAM-4        | Spec'd   | [PAM-12](PAM-12-cmd-mode/)                         | 2026-07-17 |
 
 <!-- Add features above this line -->
 
 **Recommended build order:** PAM-1 → PAM-2 → PAM-3 → PAM-4 → PAM-5 = MVP release, then PAM-6/PAM-7 (P1), then P2.
 
-## Next Available ID: PAM-12
+## Next Available ID: PAM-13
 
 ## Operations
 
