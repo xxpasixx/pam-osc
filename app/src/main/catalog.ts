@@ -410,6 +410,21 @@ export class Catalog {
   }
 
   /**
+   * Full paths of USER files that failed validation (BUG-4): the support
+   * package ships these raw — they're the ones a support case is usually
+   * about ("my mapping won't load"), and they never make it into allFiles().
+   */
+  invalidUserFiles(): string[] {
+    const underUser = (file: string) =>
+      file.startsWith(this.paths.userDevicesDir) || file.startsWith(this.paths.userMappingsDir);
+    const files = new Set<string>();
+    for (const issue of this.loaded.issues) {
+      if (issue.severity === "error" && underUser(issue.file)) files.add(issue.file);
+    }
+    return [...files];
+  }
+
+  /**
    * Import of a validated share mapping (AC-2/AC-3/AC-4): the referenced
    * board must exist, collisions get a suffix (never overwrite), the file
    * lands in the user folder and is NOT activated.

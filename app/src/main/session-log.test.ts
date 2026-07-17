@@ -52,6 +52,15 @@ describe("SessionLog (PAM-7 AC-11)", () => {
     expect(content.trim().split("\n").length).toBeLessThan(10);
   });
 
+  it("writes a final line synchronously so a quit can't drop it (BUG-6)", async () => {
+    const log = new SessionLog(dir);
+    await log.start();
+    log.logSyncFinal("session ending");
+    // no flush() — logSyncFinal must have already hit disk
+    const content = await readFile(log.filePath, "utf8");
+    expect(content).toContain("session ending");
+  });
+
   it("never throws when the folder is unwritable — logging is best-effort", async () => {
     const log = new SessionLog(join(dir, "nope", "deeper", "\0bad"));
     await log.start(); // swallows the mkdir failure

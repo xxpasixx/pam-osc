@@ -13,6 +13,8 @@ import { ZipFile } from "yazl";
 export interface SupportPackageInput {
   devices: Array<{ origin: "bundled" | "user"; file: string }>;
   mappings: Array<{ origin: "bundled" | "user"; file: string }>;
+  /** Full paths of user files that failed validation — shipped raw (BUG-4). */
+  invalidFiles: string[];
   /** settings.json — skipped silently when it doesn't exist (first run). */
   settingsFile: string;
   /** Session logs — missing ones (first run, log disabled) are skipped. */
@@ -28,6 +30,10 @@ export async function writeSupportPackage(target: string, input: SupportPackageI
   }
   for (const mapping of input.mappings) {
     zip.addFile(mapping.file, `mappings/${mapping.origin}/${basename(mapping.file)}`);
+  }
+  // The broken user files a support case is usually about (BUG-4).
+  for (const invalid of input.invalidFiles) {
+    if (await exists(invalid)) zip.addFile(invalid, `invalid/${basename(invalid)}`);
   }
   if (await exists(input.settingsFile)) zip.addFile(input.settingsFile, "settings.json");
   for (const log of input.logFiles) {

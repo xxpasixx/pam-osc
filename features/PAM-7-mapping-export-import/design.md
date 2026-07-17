@@ -28,3 +28,12 @@
 - **Native menu (AC-14):** `Menu.setApplicationMenu` with role-based defaults (appMenu on macOS, edit/view/window everywhere, quit in File on Win/Linux) plus the File sharing actions. The export submenus list the live catalog; `buildSnapshot()` calls `rebuildMenu()` — the one choke point every catalog mutation already passes. Menu imports run in the main process (dialogs live there anyway) and push the outcome as notices + a `catalogChanged` snapshot event; the renderer adopts it exactly like an editor save.
 - **Notices auto-dismiss (PAM-4 AC-7):** per-notice 15 s timer in the renderer, keyed by object identity (each notice object enters the list once); manual dismiss stays. Deliberately all severities — everything is in the session log.
 - **Editor polish (PAM-6):** the Learn button moved next to the Number field it actually fills (both the control row and the push row).
+
+## Implementation notes — review fix round (2026-07-17, BUG-4…BUG-7)
+
+- **BUG-4 (Medium):** the support package now ships invalid user files under `invalid/`. `catalog.invalidUserFiles()` returns the full paths of error-severity issues under the user dirs (the ones that never reach `allFiles()`); the zip adds each raw. A missing path is skipped like any other. Test: broken file appears as `invalid/broken.json`.
+- **BUG-5:** v1 imports now log to the session log (success id / failure) like share imports.
+- **BUG-6:** `SessionLog.logSyncFinal` writes the closing line with `appendFileSync` — `before-quit` can't await the async queue, so the "session ending" marker now reliably lands. Test asserts it's on disk without a flush.
+- **BUG-7:** the `duplicateMapping` and `createMapping` IPC handlers (and the v1 import) call `rebuildMenu()` after a successful mutation — the menu's Export submenus no longer depend on the renderer's follow-up getSnapshot to stay fresh.
+- **Parked (unchanged):** BUG-1 (export TOCTOU — unreachable), BUG-2 (auto-dismiss timers uncleared — bounded/harmless), BUG-3 (PAM-2 onLog boundary — outside this feature).
+- **Verified:** 286/286 Vitest (BUG-4 package test, BUG-6 sync-final test, BUG-4 invalidUserFiles catalog test), typecheck clean, production build green, dev-boot smoke clean.

@@ -52,10 +52,14 @@ describe("writeSupportPackage (PAM-7 AC-10)", () => {
     await writeFile(settingsFile, '{"console":{}}', "utf8");
     await writeFile(logFile, "[t] engine running\n", "utf8");
 
+    const brokenFile = join(dir, "broken.json");
+    await writeFile(brokenFile, "{ not valid", "utf8");
+
     const target = join(dir, "support.zip");
     await writeSupportPackage(target, {
       devices: [{ origin: "bundled", file: deviceFile }],
       mappings: [{ origin: "user", file: mappingFile }],
+      invalidFiles: [brokenFile, join(dir, "gone.json")],
       settingsFile,
       logFiles: [logFile, join(dir, "missing-prev.log")],
       manifest: { app: "pam-osc", version: "2.0.0-test", devices: 1, mappings: 1 },
@@ -67,6 +71,10 @@ describe("writeSupportPackage (PAM-7 AC-10)", () => {
     expect(zip.entries).toContain("mappings/user/map.json");
     expect(zip.entries).toContain("settings.json");
     expect(zip.entries).toContain("log/session.log");
+    // BUG-4: the broken user file ships so a helper can reproduce it
+    expect(zip.entries).toContain("invalid/broken.json");
+    // a missing invalid path is skipped, not an error
+    expect(zip.entries.some((entry) => entry.includes("gone.json"))).toBe(false);
     // the missing previous log is skipped, not an error
     expect(zip.entries.some((entry) => entry.includes("missing-prev"))).toBe(false);
     expect(zip.manifest["version"]).toBe("2.0.0-test");
@@ -77,6 +85,7 @@ describe("writeSupportPackage (PAM-7 AC-10)", () => {
     await writeSupportPackage(target, {
       devices: [],
       mappings: [],
+      invalidFiles: [],
       settingsFile: join(dir, "never-written.json"),
       logFiles: [],
       manifest: { app: "pam-osc" },

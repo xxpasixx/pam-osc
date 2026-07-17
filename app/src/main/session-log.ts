@@ -1,3 +1,4 @@
+import { appendFileSync } from "node:fs";
 import { appendFile, mkdir, rename, rm } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -60,6 +61,20 @@ export class SessionLog {
   /** Wait for queued writes — tests and the support package use this. */
   flush(): Promise<void> {
     return this.queue;
+  }
+
+  /**
+   * Write one final line synchronously (BUG-6): `before-quit` can't await the
+   * async queue, so the end marker would otherwise be lost. Best-effort — a
+   * failure is swallowed like every other log write.
+   */
+  logSyncFinal(message: string): void {
+    if (!this.started) return;
+    try {
+      appendFileSync(this.filePath, `[${new Date().toISOString()}] ${message}\n`, "utf8");
+    } catch {
+      // never block or crash the quit path
+    }
   }
 
   private enqueue(line: string): void {

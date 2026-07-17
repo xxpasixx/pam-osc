@@ -244,13 +244,21 @@ async function main(): Promise<void> {
   handle(IPC.revealMappingsFolder, async () => {
     await shell.openPath(join(userData, "mappings"));
   });
-  handle(IPC.duplicateMapping, (_event, id) => catalog.duplicate(String(id)));
-  handle(IPC.createMapping, (_event, rawRequest) => {
+  // BUG-7: both mutate the catalog — rebuild the menu's Export submenus so
+  // they don't rely on the renderer's follow-up getSnapshot to stay fresh.
+  handle(IPC.duplicateMapping, async (_event, id) => {
+    const result = await catalog.duplicate(String(id));
+    if (!("error" in result)) rebuildMenu();
+    return result;
+  });
+  handle(IPC.createMapping, async (_event, rawRequest) => {
     const request = rawRequest as { deviceDefinitionId?: unknown; name?: unknown };
     if (typeof request?.deviceDefinitionId !== "string" || typeof request.name !== "string") {
       return { error: "invalid create request" };
     }
-    return catalog.createMapping(request.deviceDefinitionId, request.name);
+    const result = await catalog.createMapping(request.deviceDefinitionId, request.name);
+    if (!("error" in result)) rebuildMenu();
+    return result;
   });
 
   // ---- v1 mapping import (PAM-5) ----
@@ -285,7 +293,13 @@ async function main(): Promise<void> {
       return { ok: false, error: "pick the v1 file via the import dialog first" };
     }
     const { filePath, deviceDefinitionId, name } = request;
-    return importSerializer.run(() => importV1File({ filePath, deviceDefinitionId, name }, catalog));
+    return importSerializer.run(async () => {
+      const result = await importV1File({ filePath, deviceDefinitionId, name }, catalog);
+      // BUG-5: v1 imports belong in the support log like every other import.
+      sessionLog.log(result.ok ? `imported v1 mapping "${result.entry.id}"` : `v1 import failed: ${result.error}`);
+      rebuildMenu(); // BUG-7: the new mapping must appear in the Export submenu
+      return result;
+    });
   });
 
   // ---- sharing: single-file export/import + support package (PAM-7) ----
@@ -431,6 +445,7 @@ async function main(): Promise<void> {
       await writeSupportPackage(picked.filePath, {
         devices: files.devices,
         mappings: files.mappings,
+        invalidFiles: catalog.invalidUserFiles(),
         settingsFile: join(userData, "settings.json"),
         logFiles: [sessionLog.filePath, sessionLog.previousPath],
         manifest: {
@@ -606,7 +621,7 @@ async function main(): Promise<void> {
   // (a background/tray mode is a later feature — see docs/ideas.md).
   app.on("window-all-closed", () => app.quit());
   app.on("before-quit", () => {
-    sessionLog.log("session ending");
+    sessionLog.logSyncFinal("session ending"); // sync — the async queue may not drain before exit (BUG-6)
     trafficBuffer.stop();
     void engineHost.shutdown();
   });

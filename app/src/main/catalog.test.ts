@@ -56,6 +56,14 @@ describe("Catalog (AC-2, EC-4)", () => {
     expect(invalid.some((file) => file.file === "broken.json" && file.error.includes("JSON"))).toBe(true);
     expect(invalid.some((file) => file.file === "bad-ref.json" && file.error.includes("ghost"))).toBe(true);
     expect(catalog.entries().some((entry) => entry.id === "bad-ref")).toBe(false);
+
+    // BUG-4: the support package needs the full paths of these broken user files.
+    const invalidPaths = catalog.invalidUserFiles();
+    expect(invalidPaths).toContain(join(paths.userMappingsDir, "broken.json"));
+    expect(invalidPaths).toContain(join(paths.userMappingsDir, "bad-ref.json"));
+    expect(
+      invalidPaths.every((path) => path.startsWith(paths.userMappingsDir) || path.startsWith(paths.userDevicesDir))
+    ).toBe(true);
   });
 
   it("materializes a bundled activation as a user copy with the chosen ports (copy-on-activate)", async () => {
