@@ -3,7 +3,7 @@ name: MA3 Plugin Build
 on:
   pull_request_target:
     paths:
-      - '**/*.lua'
+      - "**/*.lua"
   workflow_dispatch:
 
 permissions:

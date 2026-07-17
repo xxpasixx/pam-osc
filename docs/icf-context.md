@@ -10,11 +10,11 @@ ICF Zürich is a church. The IT ministry builds and runs the digital services, p
 
 Every system, product, and project is assigned to one layer:
 
-| Layer | Name | Examples |
-|-------|------|----------|
-| **1** | Platform & Foundation | Identity/auth (Keycloak), devices, office & hall infrastructure, Google Workspace, collaboration tools |
+| Layer | Name                    | Examples                                                                                                         |
+| ----- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **1** | Platform & Foundation   | Identity/auth (Keycloak), devices, office & hall infrastructure, Google Workspace, collaboration tools           |
 | **2** | Church Business Systems | Salesforce (hub), PCO (Sunday operations), finance (Abacus, FinDock/give.icf.ch, Spendenformular), kids check-in |
-| **3** | Digital Products | Website & Hub, Huulo (Event + Church), Prayer App, event websites, small tools |
+| **3** | Digital Products        | Website & Hub, Huulo (Event + Church), Prayer App, event websites, small tools                                   |
 
 Work is organized in tracks `1.01`–`3.10` (Identity & Access … Digital Products) — see the Projects database in Notion.
 
@@ -32,7 +32,7 @@ Work is organized in tracks `1.01`–`3.10` (Identity & Access … Digital Produ
 - **Stack:** Next.js + TypeScript is the default for web products; hosted on **DigitalOcean App Platform**, secrets in DO environment variables, never client-side.
 - **Repos:** GitLab (`gitlab.com/icf-zh`) is the primary home for product code; GitHub (`201people`) hosts shared templates.
 - **Forms:** Fillout (business-editable), writing into Salesforce staging objects — forms never read data.
-- **Integration motto:** *if we code, we code; if we want flows, business users click them together* (Make is the clicks lane — don't build a hybrid).
+- **Integration motto:** _if we code, we code; if we want flows, business users click them together_ (Make is the clicks lane — don't build a hybrid).
 - **Guarded-zone rule:** code that holds a credential, computes a price, or defines a contract is **guarded** — slow, reviewed, tested. Code that only renders read-only data is **free** — may be AI-generated and churn without ceremony. Enforce the split by repo structure, not discipline.
 - **Salesforce work** follows its own process (request → requirements → kickoff → build & ~2-week testing → go-live), documented on Salesforce Home in Notion. This template does not govern declarative Salesforce work — only the code repos that integrate with it.
 - **Spec language:** team documentation is mixed German/English; each project records its choice in `AGENTS.md → Spec Language` at `/init`.
@@ -41,12 +41,12 @@ Work is organized in tracks `1.01`–`3.10` (Identity & Access … Digital Produ
 
 Documentation scales with the repo — but a minimum **always** exists. Risk overrides size: anything touching **money, credentials, or personal data** moves up at least one tier regardless of how small it is.
 
-| Tier | Trigger | Required documentation |
-|------|---------|------------------------|
-| **0 — always** | Every repo, even a one-script tool | A README answering: **why does this repo exist, what problem does it solve, why did we build it ourselves, and is it live (since when)?** Use `docs/readme-template.md`. |
-| **1 — spec** | More than one script, or any real behavior others rely on | Tier 0 + a `spec.md`: what it must do, in acceptance-criteria form (can be short). In template-based repos, `/spec` or `/build` produces this (lite spec → build → review). |
-| **2 — architecture** | Integrations, a data model, or moving parts (queues, webhooks, syncs) | Tier 1 + a design/architecture doc (`design.md`): systems touched, who owns what data, guarded zones, key decisions with reasons. |
-| **3 — full framework** | Big repo, multiple people working on it | Tier 2 + this spec-driven workflow (features/, AC→Test) and a written development strategy / AI-framework choice — in the repo, or a link to its Notion page. |
+| Tier                   | Trigger                                                               | Required documentation                                                                                                                                                      |
+| ---------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0 — always**         | Every repo, even a one-script tool                                    | A README answering: **why does this repo exist, what problem does it solve, why did we build it ourselves, and is it live (since when)?** Use `docs/readme-template.md`.    |
+| **1 — spec**           | More than one script, or any real behavior others rely on             | Tier 0 + a `spec.md`: what it must do, in acceptance-criteria form (can be short). In template-based repos, `/spec` or `/build` produces this (lite spec → build → review). |
+| **2 — architecture**   | Integrations, a data model, or moving parts (queues, webhooks, syncs) | Tier 1 + a design/architecture doc (`design.md`): systems touched, who owns what data, guarded zones, key decisions with reasons.                                           |
+| **3 — full framework** | Big repo, multiple people working on it                               | Tier 2 + this spec-driven workflow (features/, AC→Test) and a written development strategy / AI-framework choice — in the repo, or a link to its Notion page.               |
 
 A repo may reference its architecture on Notion instead of in-repo (like the Booking Katalog does), but the README must carry the link — nothing should require tribal knowledge to locate.
 

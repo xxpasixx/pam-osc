@@ -25,11 +25,11 @@ function parseColorString(colorString) {
 
 function findNearestDisplayColor(color) {
   const { red, green, blue, alpha } = color;
-  
+
   if ((red === 0 && green === 0 && blue === 0) || alpha === 0) {
     return "00";
   }
-  
+
   const displayColors = [
     { name: "red", id: "01", red: 255, green: 0, blue: 0 },
     { name: "green", id: "02", red: 0, green: 255, blue: 0 },

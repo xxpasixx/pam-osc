@@ -8,9 +8,11 @@ user-invocable: true
 # Help
 
 ## Goal
+
 Read the project state and tell the user where they stand and what a sensible next step would be — in plain, actionable language. Suggest, never enforce: the skills work in any order; what matters is the artifacts (see `.claude/rules/general.md` → Artifact Guarantees).
 
 ## Read the state
+
 1. `docs/PRD.md` — raw template → not initialized
 2. `features/INDEX.md` — features and their statuses
 3. Per feature folder: which of `spec.md`, `design.md`, `review.md` exist
@@ -19,6 +21,7 @@ Read the project state and tell the user where they stand and what a sensible ne
 6. `docs/ideas.md` — anything parked worth mentioning
 
 ## Suggest the next step
+
 - **Not initialized** → `/init` with a one-line description of the idea
 - **Initialized, no specs** → `/spec` for the first roadmap feature — or `/build` directly for something small (it writes its lite spec inline)
 - **Spec'd** → `/build` — or `/design` first when the feature has integrations, a shared data model, moving parts, or risk (money/credentials/personal data → design is required)
@@ -31,7 +34,9 @@ Read the project state and tell the user where they stand and what a sensible ne
 Remind when relevant: the one hard gate — money, credentials/auth, or personal data → full spec + design + review before live. Everything else may fast-lane.
 
 ## Answer questions
+
 If the user asked something specific, answer that FIRST, then the status. Common ones:
+
 - "What skills exist?" → `/init` once · `/spec` · `/design` (when it helps) · `/build` · `/review` · `/ship` · `/maintenance` (upkeep between features) · `/hotfix` (production emergency) · `/autopilot` (quality loop, asks everything upfront then runs unattended) · `/help`
 - "How do I add a feature?" → `/spec` (or `/build` for something small)
 - "How do I change an existing feature?" → `/spec PROJ-X` — updates are deltas, AC-IDs stay stable
@@ -39,4 +44,5 @@ If the user asked something specific, answer that FIRST, then the status. Common
 - "How do I go live?" → `/review` must pass first, then `/ship`
 
 ## Output shape
+
 **Current status** (one short paragraph) → **Features** (table from INDEX) → **Recommended next step** (one command) → **Also possible** (one line). Concise, exact commands, real paths.

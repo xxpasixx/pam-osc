@@ -8,11 +8,11 @@
 
 ## Entities
 
-| Entity | What it represents | Owned by / who can see it |
-|--------|--------------------|---------------------------|
+| Entity            | What it represents                                                                                                                                                                                                                                                                                                                                                                                             | Owned by / who can see it                   |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | Device Definition | A physical MIDI board **type** (e.g. "X-Touch Compact"): its Controls (faders, encoders, buttons), each with a MIDI address (note/CC, channel) and a 2D position/size for the board layout. Deliberately contains **no MIDI port name** — that binding is per mapping, so two units of the same board type can run side by side. Bundled with the app for known boards; users add their own via the P1 editor. | Local user (bundled ones ship with the app) |
-| Mapping | Binds one Device Definition to a **concrete MIDI port** (the connected unit) and assigns its controls to GrandMA3 actions (executor, command, QuickKey, attribute …) including feedback behavior (motor fader, LED, display). Several mappings per device type are possible — different units or different use cases. This is the file users share. | Local user |
-| App Settings | Console connection (IP, send/receive ports), which mappings are active, UI preferences. One per installation. | Local user |
+| Mapping           | Binds one Device Definition to a **concrete MIDI port** (the connected unit) and assigns its controls to GrandMA3 actions (executor, command, QuickKey, attribute …) including feedback behavior (motor fader, LED, display). Several mappings per device type are possible — different units or different use cases. This is the file users share.                                                            | Local user                                  |
+| App Settings      | Console connection (IP, send/receive ports), which mappings are active, UI preferences. One per installation.                                                                                                                                                                                                                                                                                                  | Local user                                  |
 
 ## Relationships
 

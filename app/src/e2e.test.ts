@@ -30,7 +30,7 @@ function freePort(): Promise<number> {
 
 async function untilPortsVisible(name: string): Promise<void> {
   await waitFor(
-    () => easymidiTransport.listPorts().inputs.includes(name) && easymidiTransport.listPorts().outputs.includes(name),
+    () => easymidiTransport.listPorts().inputs.includes(name) && easymidiTransport.listPorts().outputs.includes(name)
   );
 }
 
@@ -53,9 +53,7 @@ describe("E2E: fixture board ↔ engine ↔ fake MA3", () => {
     engine = new Engine(easymidiTransport, udpOscTransport);
     engine.on("connection", (status) => connections.push(status.state));
     engine.on("log", (line) => logs.push(line));
-    await engine.start(
-      testConfig(sources, { sendPort, receivePort, timing: { ...TEST_TIMING, pingMaxRetries: 5 } }),
-    );
+    await engine.start(testConfig(sources, { sendPort, receivePort, timing: { ...TEST_TIMING, pingMaxRetries: 5 } }));
     // startup finished when the plugin reload went out
     await waitFor(() => ma3.commands().some((command) => command.includes("forceReload")));
   }, 15000);
@@ -198,7 +196,7 @@ describe("E2E: bundled X-Touch content, port re-bound via user shadow (v1 parity
 
     board.sendPitch(8190, 0);
     await waitFor(() =>
-      ma3.received.some((m) => m.address === "/Page1/Fader201" && Math.abs((m.args[0]?.value as number) - 50) < 0.01),
+      ma3.received.some((m) => m.address === "/Page1/Fader201" && Math.abs((m.args[0]?.value as number) - 50) < 0.01)
     );
   });
 

@@ -1,8 +1,9 @@
 # pam-osc
+
 Control GrandMA3 with MIDI devices over Open Stage Control and a plugin to get feedback for motorized faders and button lights.
 
-
 ## Features
+
 - **MIDI Control:** Send fader, encoder, and button values to GrandMA3 executors on the current page
 - **WYSIWYG Playback:** Executes what you see in the playback window (configurable: Master, Speed, Temp, Flash, etc.)
 - **Motorized Fader Feedback:** Real-time position feedback for motorized faders
@@ -21,6 +22,7 @@ All changes per release: [CHANGELOG.md](CHANGELOG.md)
 alt="Youtube Video" width="240" height="180" border="10" /></a>
 
 ## Can I use this on a live show?
+
 If you want to use this in a production environment, ensure you have thoroughly tested it in your specific setup before using it.
 
 This software was primarily developed for pre-programming sessions and is provided "as-is" without warranty of any kind.
@@ -34,6 +36,7 @@ Tested with Grandma3 Version **2.3.1.1**
 [Setup Instructions](https://github.com/xxpasixx/pam-osc/wiki/Setup)
 
 ### MA3 OSC entry
+
 Name the OSC entry in the MA3 OSC settings `pam-osc` — pam-osc then finds it no matter which line it is in. Without that name, line **2** is used (like in the setup guide).
 
 Since v1.4, fader values are exchanged in the MA3-native **0-100** range — you no longer need to change the fader range to 127 in the MA3 OSC settings, just leave it at the default.
@@ -49,17 +52,21 @@ Also watch your MIDI device on startup: pam-osc plays a short animation (a runni
 Please make sure you followed all the steps correctly. If something still doesn't work, you can get help on our [Discord](https://discord.gg/4dcKjTH9Pm)
 
 ## QuickKeys (changed in v1.4)
+
 Buttons mapped with `quicKey` now trigger QuickKeys named `pam-osc_<KEY>` (e.g. `pam-osc_CLEAR`). The pam-osc plugin creates these automatically in the QuickKey pool when it starts on the console (starting at slot 1000, skipping occupied slots). The created QuickKeys are stored in your showfile.
 
 **Breaking change:** Run the updated Lua plugin (v1.4) on the console at least once before using the new module version — otherwise QuickKey buttons will do nothing.
 
 ## Known Limitations
+
 Currently it is only possible to give Midi Feedback for Channel 1.
 
 ## Found an Issue ?
+
 Issues could happen. Please create a [Ticket](https://github.com/xxpasixx/pam-osc/issues) if you find something.
 
 ## Upcoming things
+
 - more predefined Devices
 - colored button feedback
 - add for LED Feedback: Freeze, Prvw, Fixture, Channel, Edit, Update, Align, At, Clear

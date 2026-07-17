@@ -2,7 +2,7 @@
 
 > One file per dev: `docs/team/<firstname>.md`. `/review PROJ-X as:<firstname>` runs an extra review pass through that person's eyes — a simulated colleague review for products that get built solo.
 >
-> **Perspective, not code style.** These files describe what you *look for*, never how code should be written — `AGENTS.md` stays the one canonical convention file. Findings from a lens pass are always labeled as simulated from your written profile, never presented as your actual opinion.
+> **Perspective, not code style.** These files describe what you _look for_, never how code should be written — `AGENTS.md` stays the one canonical convention file. Findings from a lens pass are always labeled as simulated from your written profile, never presented as your actual opinion.
 >
 > **How to join:** copy the skeleton below into `<yourname>.md`, fill it in (~20–30 lines, the section ideas are prompts — keep what fits, drop the rest), send it to the template maintainer to commit. Update it whenever your focus shifts.
 

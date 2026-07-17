@@ -2,9 +2,16 @@ import type { ConnectionStatus } from "../../../core/engine/types.js";
 import type { EngineState } from "../../../shared/ipc.js";
 
 /** Always-visible indicators (AC-7) — enough to see that setup worked. */
-export function StatusBar({ engineState, connection }: { engineState: EngineState; connection: ConnectionStatus | undefined }) {
+export function StatusBar({
+  engineState,
+  connection,
+}: {
+  engineState: EngineState;
+  connection: ConnectionStatus | undefined;
+}) {
   const engineLed = engineState === "running" ? "ok" : engineState === "starting" ? "warn checking" : "";
-  const engineText = engineState === "running" ? "engine running" : engineState === "starting" ? "engine starting …" : "engine stopped";
+  const engineText =
+    engineState === "running" ? "engine running" : engineState === "starting" ? "engine starting …" : "engine stopped";
 
   let connectionLed = "";
   let connectionText = "console: –";
@@ -24,7 +31,9 @@ export function StatusBar({ engineState, connection }: { engineState: EngineStat
         break;
       case "unreachable":
         connectionLed = "err";
-        connectionText = connection.gaveUp ? "console: unreachable (gave up)" : `console: unreachable (attempt ${connection.attempt})`;
+        connectionText = connection.gaveUp
+          ? "console: unreachable (gave up)"
+          : `console: unreachable (attempt ${connection.attempt})`;
         break;
     }
   }

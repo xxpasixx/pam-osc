@@ -14,7 +14,7 @@ export class FakeMidiConnection implements MidiConnection {
 
   constructor(
     readonly inputPort: string,
-    readonly onEvent: (event: MidiInputEvent) => void,
+    readonly onEvent: (event: MidiInputEvent) => void
   ) {}
 
   send(message: MidiOutputMessage): void {
@@ -72,7 +72,7 @@ export class FakeOscSocket implements OscSocket {
 
   constructor(
     readonly options: OscTransportOptions,
-    readonly onMessage: (message: OscMessage) => void,
+    readonly onMessage: (message: OscMessage) => void
   ) {}
 
   send(message: OscMessage): void {
@@ -103,7 +103,7 @@ export class FakeOscTransport implements OscTransport {
   open(
     options: OscTransportOptions,
     onMessage: (message: OscMessage) => void,
-    _onError?: (error: Error) => void,
+    _onError?: (error: Error) => void
   ): Promise<OscSocket> {
     if (this.failNextOpen) {
       this.failNextOpen = false;

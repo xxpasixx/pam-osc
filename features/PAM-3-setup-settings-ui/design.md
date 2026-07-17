@@ -77,22 +77,25 @@ Everything is local, single user — no access model. Five behavior groups:
 ### 1. Startup (AC-1, AC-4, EC-2, EC-5)
 
 1. Request the single-instance lock; if another instance holds it, that instance's window is focused/restored and this one quits (EC-5).
-2. Load settings.json: **missing** → in-memory defaults (prefills above), first-run state. **Corrupt/invalid** → same defaults *plus* a notice naming file and problem; the broken file stays on disk untouched until the next successful Save overwrites it (EC-2).
+2. Load settings.json: **missing** → in-memory defaults (prefills above), first-run state. **Corrupt/invalid** → same defaults _plus_ a notice naming file and problem; the broken file stays on disk untouched until the next successful Save overwrites it (EC-2).
 3. Config completeness check: address non-empty, ports valid, at least one active mapping id. **Complete** → engine host starts the engine immediately (before the window is ready — the bridge must not wait for the UI, AC-4). **Incomplete** → engine stays stopped; the window opens on the setup view (AC-1).
 4. Window opens with restored bounds; renderer requests one snapshot: settings + catalog + port list + engine/connection/device status + pending notices.
 
 ### 2. IPC contract (the narrow preload API)
 
 Queries (renderer → main, request/response):
+
 - **getSnapshot** — everything the UI needs at mount (see above)
 - **listMidiPorts** — current input and output port names
 
 Commands (renderer → main):
+
 - **applySettings(draft)** — the Save transaction (below); returns ok + applied snapshot, or a structured error list (field-level for validation, notice-level for engine problems)
 - **revealMappingsFolder** — opens `<userData>/mappings/` in Finder/Explorer
 - **duplicateMapping(id)** — creates the suffixed user copy, returns the new catalog entry
 
 Events (main → renderer, push):
+
 - **connection** — checking | connected | plugin-missing | unreachable, with attempt counter (engine event, AC-7)
 - **devices** — per active mapping: mapping id, port name, bound | missing (AC-7, AC-5)
 - **engineState** — stopped | starting | running
@@ -183,15 +186,15 @@ Level 5 — Tests:     T7      unit: settings store, validation rules, catalog
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| --- | --- | --- | --- | --- |
-| Copy-on-activate: activating a bundled mapping writes a user copy (same id, shadowing); second unit = suffixed duplicate | Port binding belongs to the mapping file (PAM-1 AC-2); engine keys per-unit state by mapping id (PAM-2) | Port overrides stored in App Settings | Bundled improvements don't propagate into existing copies (shadow notice mitigates) | 2026-07-17 |
-| Persist settings.json only after a successful apply | Restart never auto-starts into a known-bad config (AC-4 stays safe) | Persist on Save regardless of engine result | Failed values must be re-typed after a restart | 2026-07-17 |
-| Rollback to last-known-good config on total engine start failure | Reconfigure is stop→start — without rollback a bad Save kills the running bridge (EC-3) | Leave engine stopped, show error | Slightly more host complexity; mapping-file writes intentionally survive | 2026-07-17 |
-| electron-vite pipeline | One dev command with HMR across main/preload/renderer; feeds electron-builder | Hand-rolled Vite configs + electron CLI | One more dev dependency; less config control | 2026-07-17 |
-| Hardened Electron defaults (contextIsolation, sandbox, narrow preload) | Renderer is display-only per spec; Electron security baseline | ipcRenderer exposed directly | Every new IPC call needs a preload addition — deliberate friction | 2026-07-17 |
-| zod + atomic write for settings, no electron-store | Same schema pattern as PAM-1; one less dependency | electron-store | Migrations stay hand-rolled (formatVersion covers it) | 2026-07-17 |
-| First-run prefills 127.0.0.1 / 9003 / 9004 | v1 defaults (OpenStageControlConfig.config): onPC-on-same-machine is the most common first test (AC-1) | Empty fields | Users on a real console must edit the IP — they must anyway | 2026-07-17 |
+| Decision                                                                                                                 | Rationale                                                                                               | Alternative considered                      | Trade-off                                                                           | Date       |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------- | ---------- |
+| Copy-on-activate: activating a bundled mapping writes a user copy (same id, shadowing); second unit = suffixed duplicate | Port binding belongs to the mapping file (PAM-1 AC-2); engine keys per-unit state by mapping id (PAM-2) | Port overrides stored in App Settings       | Bundled improvements don't propagate into existing copies (shadow notice mitigates) | 2026-07-17 |
+| Persist settings.json only after a successful apply                                                                      | Restart never auto-starts into a known-bad config (AC-4 stays safe)                                     | Persist on Save regardless of engine result | Failed values must be re-typed after a restart                                      | 2026-07-17 |
+| Rollback to last-known-good config on total engine start failure                                                         | Reconfigure is stop→start — without rollback a bad Save kills the running bridge (EC-3)                 | Leave engine stopped, show error            | Slightly more host complexity; mapping-file writes intentionally survive            | 2026-07-17 |
+| electron-vite pipeline                                                                                                   | One dev command with HMR across main/preload/renderer; feeds electron-builder                           | Hand-rolled Vite configs + electron CLI     | One more dev dependency; less config control                                        | 2026-07-17 |
+| Hardened Electron defaults (contextIsolation, sandbox, narrow preload)                                                   | Renderer is display-only per spec; Electron security baseline                                           | ipcRenderer exposed directly                | Every new IPC call needs a preload addition — deliberate friction                   | 2026-07-17 |
+| zod + atomic write for settings, no electron-store                                                                       | Same schema pattern as PAM-1; one less dependency                                                       | electron-store                              | Migrations stay hand-rolled (formatVersion covers it)                               | 2026-07-17 |
+| First-run prefills 127.0.0.1 / 9003 / 9004                                                                               | v1 defaults (OpenStageControlConfig.config): onPC-on-same-machine is the most common first test (AC-1)  | Empty fields                                | Users on a real console must edit the IP — they must anyway                         | 2026-07-17 |
 
 ## Open Questions
 

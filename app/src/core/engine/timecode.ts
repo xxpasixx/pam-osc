@@ -29,7 +29,7 @@ export function handleTimecodeFeedback(
   state: RuntimeState,
   unitRuntimes: UnitRuntime[],
   slot: number,
-  time: string,
+  time: string
 ): void {
   const parsed = parseTimecodeString(time);
   const stored = slotState(state, slot);
@@ -56,7 +56,7 @@ export function handleTimecodeRunning(state: RuntimeState, slot: number, value: 
 export function handleTimecodeSelect(
   state: RuntimeState,
   unitRuntimes: UnitRuntime[],
-  fixedSlot: number | undefined,
+  fixedSlot: number | undefined
 ): void {
   const next = fixedSlot ?? (state.timecode.selectedSlot + 1) % 9;
   state.timecode.selectedSlot = next;
@@ -79,7 +79,7 @@ export function handleTimecodePlayPause(
   state: RuntimeState,
   sendOsc: (message: OscMessage) => void,
   timing: EngineTiming,
-  value: number,
+  value: number
 ): void {
   const selected = state.timecode.selectedSlot;
   if (selected === 0) return;

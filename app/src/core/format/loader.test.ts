@@ -106,7 +106,9 @@ describe("loadFormat", () => {
   it("rejects feedback a control's capabilities cannot do", async () => {
     await write(bundled.devicesDir, "test-board.json", minimalDevice());
     const mapping = minimalMapping({
-      assignments: [{ controlId: "btn-1", action: { type: "executor", number: 201 }, feedback: { type: "fader-position" } }],
+      assignments: [
+        { controlId: "btn-1", action: { type: "executor", number: 201 }, feedback: { type: "fader-position" } },
+      ],
     });
     await write(bundled.mappingsDir, "test-mapping.json", mapping);
     const result = await loadFormat(sources());
@@ -120,7 +122,9 @@ describe("loadFormat", () => {
       .ledRing;
     await write(bundled.devicesDir, "test-board.json", device);
     const mapping = minimalMapping({
-      assignments: [{ controlId: "enc-1", action: { type: "attribute", attribute: "dimmer" }, feedback: { type: "encoder-ring" } }],
+      assignments: [
+        { controlId: "enc-1", action: { type: "attribute", attribute: "dimmer" }, feedback: { type: "encoder-ring" } },
+      ],
     });
     await write(bundled.mappingsDir, "test-mapping.json", mapping);
     const result = await loadFormat(sources());
@@ -133,7 +137,9 @@ describe("loadFormat", () => {
     (device.controls as { capabilities: { led: string } }[])[1]!.capabilities = { led: "none" };
     await write(bundled.devicesDir, "test-board.json", device);
     const mapping = minimalMapping({
-      assignments: [{ controlId: "btn-1", action: { type: "executor", number: 201 }, feedback: { type: "always-on", value: 127 } }],
+      assignments: [
+        { controlId: "btn-1", action: { type: "executor", number: 201 }, feedback: { type: "always-on", value: 127 } },
+      ],
     });
     await write(bundled.mappingsDir, "test-mapping.json", mapping);
     const result = await loadFormat(sources());
@@ -149,7 +155,7 @@ describe("loadFormat", () => {
       minimalMapping({
         id: "wrong-target",
         assignments: [{ controlId: "btn-1", action: { type: "display", number: 201 } }],
-      }),
+      })
     );
     await write(
       bundled.mappingsDir,
@@ -157,7 +163,7 @@ describe("loadFormat", () => {
       minimalMapping({
         id: "wrong-action",
         assignments: [{ controlId: "display-1", action: { type: "executor", number: 201 } }],
-      }),
+      })
     );
     const result = await loadFormat(sources());
     expect(result.mappings).toHaveLength(0);

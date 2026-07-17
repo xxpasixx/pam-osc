@@ -54,7 +54,7 @@ describe("MidiPortLister", () => {
         },
       },
       () => {},
-      100,
+      100
     );
     expect(lister.current()).toEqual({ inputs: [], outputs: [] });
   });

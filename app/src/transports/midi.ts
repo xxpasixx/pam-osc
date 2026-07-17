@@ -41,9 +41,5 @@ export interface MidiTransport {
    * Opens the input port (and the output port when given). Throws when a
    * named port is not present — the device manager treats that as "missing".
    */
-  open(
-    inputPort: string,
-    outputPort: string | undefined,
-    onEvent: (event: MidiInputEvent) => void,
-  ): MidiConnection;
+  open(inputPort: string, outputPort: string | undefined, onEvent: (event: MidiInputEvent) => void): MidiConnection;
 }

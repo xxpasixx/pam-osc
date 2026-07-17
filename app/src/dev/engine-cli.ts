@@ -40,7 +40,7 @@ const configSchema = z.object({
         origin: z.enum(["bundled", "user"]),
         devicesDir: z.string(),
         mappingsDir: z.string(),
-      }),
+      })
     )
     .optional(),
 });
@@ -89,14 +89,18 @@ const parsed = configSchema.safeParse(rawJson);
 if (!parsed.success) {
   fail(
     "invalid config file:\n" +
-      parsed.error.issues.map((issue) => `  - ${issue.path.join(".") || "(root)"}: ${issue.message}`).join("\n"),
+      parsed.error.issues.map((issue) => `  - ${issue.path.join(".") || "(root)"}: ${issue.message}`).join("\n")
   );
 }
 
 const configDir = dirname(configPath);
 const sources = (
   parsed.data.sources ?? [
-    { origin: "bundled" as const, devicesDir: resolve(repoRoot, "resources/devices"), mappingsDir: resolve(repoRoot, "resources/mappings") },
+    {
+      origin: "bundled" as const,
+      devicesDir: resolve(repoRoot, "resources/devices"),
+      mappingsDir: resolve(repoRoot, "resources/mappings"),
+    },
   ]
 ).map((source) => ({
   origin: source.origin,
@@ -120,7 +124,9 @@ engine.on("devices", (statuses) => {
   }
 });
 
-console.log(`pam-osc engine — console ${parsed.data.consoleAddress}:${parsed.data.sendPort}, feedback on :${parsed.data.receivePort}`);
+console.log(
+  `pam-osc engine — console ${parsed.data.consoleAddress}:${parsed.data.sendPort}, feedback on :${parsed.data.receivePort}`
+);
 
 // Installed before start() so Ctrl-C during the startup animation still
 // closes the MIDI ports and the UDP socket cleanly.

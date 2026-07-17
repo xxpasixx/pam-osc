@@ -8,5 +8,5 @@ if (!root) throw new Error("missing #root element");
 createRoot(root).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>,
+  </React.StrictMode>
 );

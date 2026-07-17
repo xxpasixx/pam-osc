@@ -28,7 +28,9 @@ export const udpOscTransport: OscTransport = {
           messages = normalizeOscPacket(fromBuffer(data));
         } catch (error) {
           // EC-3: malformed packets never crash the engine.
-          onError?.(new Error(`ignoring malformed OSC packet: ${error instanceof Error ? error.message : String(error)}`));
+          onError?.(
+            new Error(`ignoring malformed OSC packet: ${error instanceof Error ? error.message : String(error)}`)
+          );
           return;
         }
         for (const message of messages) onMessage(message);
@@ -42,7 +44,11 @@ export const udpOscTransport: OscTransport = {
               const buffer = toBuffer(message);
               socket.send(buffer, options.remotePort, options.remoteAddress);
             } catch (error) {
-              onError?.(new Error(`could not send OSC message to ${message.address}: ${error instanceof Error ? error.message : String(error)}`));
+              onError?.(
+                new Error(
+                  `could not send OSC message to ${message.address}: ${error instanceof Error ? error.message : String(error)}`
+                )
+              );
             }
           },
           close() {

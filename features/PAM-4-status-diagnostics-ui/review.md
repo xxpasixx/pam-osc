@@ -15,7 +15,7 @@
 
 ### Edge Cases
 
-- [x] **EC-1** Output test during live operation — pass. Animation frames bypass the feedback cache (`sendDirect`); `restoreUnit` replays only real state. Regression lane confirmed this also *fixes* a latent bug (rebind after test would have snapped faders to 0 under the old caching).
+- [x] **EC-1** Output test during live operation — pass. Animation frames bypass the feedback cache (`sendDirect`); `restoreUnit` replays only real state. Regression lane confirmed this also _fixes_ a latent bug (rebind after test would have snapped faders to 0 under the old caching).
 - [x] **EC-2** Message flood — pass. Main: ring 500 + ≥100 ms batching (unit-tested); renderer: cap 1000; ~10 IPC messages/s worst case.
 - [ ] **EC-3** Engine stopped state — **partial: BUG-1.** Connection card and actions correct, but stale device rows keep rendering after a manual Stop.
 - [x] **EC-4** Start with invalid config / taken port — pass. Error surfaces as notice, engine state stays stopped, no crash (engine-host tests).
@@ -24,7 +24,7 @@
 
 - Tap architecture is sound: exactly one OSC tap (`sendOsc` + `onOsc`) and one MIDI tap (decorated transport) — no missable path; wrapper preserves open/close/throw semantics (regression lane verified against `DeviceManager.tryBind`).
 - No double-wrapping across `reconfigure()`; `listPorts` stays raw.
-- **Low (cosmetic):** out-direction traffic events are emitted *before* the send, so a throwing send still logs an outgoing line (BUG-5).
+- **Low (cosmetic):** out-direction traffic events are emitted _before_ the send, so a throwing send still logs an outgoing line (BUG-5).
 - No leftover mocks, no dead code, no over-engineering found. Matches the design notes in `design.md`.
 
 ### Security (red team, independent subagent)
@@ -51,24 +51,29 @@
 ### Bugs
 
 **BUG-1: Stale device rows after manual engine stop**
+
 - **Severity:** Medium (EC-3)
 - **Steps to reproduce:** 1. Engine running with a bound device, open Status tab. 2. Click "Stop engine".
-- **Expected:** Device list shows the stopped empty-state only. **Actual:** "Engine stopped — no devices are bound." renders *and* the old device rows stay below it with a green "bound" LED — the engine emits no empty devices event on stop and the renderer keeps the last list (`EngineHost.resetLiveStatus` resets only the snapshot copy).
+- **Expected:** Device list shows the stopped empty-state only. **Actual:** "Engine stopped — no devices are bound." renders _and_ the old device rows stay below it with a green "bound" LED — the engine emits no empty devices event on stop and the renderer keeps the last list (`EngineHost.resetLiveStatus` resets only the snapshot copy).
 
 **BUG-2: Failed Save & apply does not trigger the port diagnosis**
+
 - **Severity:** Medium (AC-2 gap)
 - **Steps to reproduce:** 1. Another app holds UDP port X. 2. In Setup, set receive port to X, Save & apply.
-- **Expected:** Error notice *and* port diagnosis naming the blocking process. **Actual:** Only the engine error notice; `runPortDiagnosis` is wired to launch/manual-start/unreachable but not to the apply path (`app/src/main/index.ts` — applySettings outcome is not observed). Workaround: press "Start engine" afterwards — that path diagnoses.
+- **Expected:** Error notice _and_ port diagnosis naming the blocking process. **Actual:** Only the engine error notice; `runPortDiagnosis` is wired to launch/manual-start/unreachable but not to the apply path (`app/src/main/index.ts` — applySettings outcome is not observed). Workaround: press "Start engine" afterwards — that path diagnoses.
 
 **BUG-3: No rate limit on engine-control IPC**
+
 - **Severity:** Low (defense-in-depth; self-inflicted target)
 - A compromised renderer can loop `checkConnection()` → unbounded OSC `/cmd` pings at the console. Throttle (e.g. ≥1 s) in the main-process handlers.
 
 **BUG-4: Settings persisted without schema re-parse**
+
 - **Severity:** Low (defense-in-depth)
 - `applySettings` writes `draft.console` fields after `validateDraft` only; extra keys from a hostile renderer are persisted, then `strictObject` resets the user to defaults on next launch. Re-parse through `persistedSettingsSchema` before `save()`.
 
 **BUG-5: Out-traffic logged before the send happens**
+
 - **Severity:** Low (cosmetic)
 - `midi-out`/`osc-out` events are emitted before `connection.send`/`socket.send`; a throwing send still produces an outgoing log line. Move the emit after a successful send, or accept as "attempted send".
 

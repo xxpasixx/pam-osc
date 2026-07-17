@@ -98,9 +98,15 @@ function playStartupAnimation(routing, durationMs, onDone) {
     const numericSort = (a, b) => a - b;
     return {
       name,
-      notes: Object.keys(device.note || {}).map(Number).sort(numericSort),
-      controls: Object.keys(device.control || {}).map(Number).sort(numericSort),
-      pitches: Object.keys(device.pitch || {}).map(Number).sort(numericSort),
+      notes: Object.keys(device.note || {})
+        .map(Number)
+        .sort(numericSort),
+      controls: Object.keys(device.control || {})
+        .map(Number)
+        .sort(numericSort),
+      pitches: Object.keys(device.pitch || {})
+        .map(Number)
+        .sort(numericSort),
       lastSent: {},
     };
   });
@@ -125,9 +131,7 @@ function playStartupAnimation(routing, durationMs, onDone) {
 
       dev.pitches.forEach((channel, i) => {
         const level = waveLevel(phaseOf(i, dev.pitches), wavePos, 0.3);
-        sendChanged(dev, "p" + channel, Math.round(level * 16380), (v) =>
-          send("midi", dev.name, "/pitch", channel, v)
-        );
+        sendChanged(dev, "p" + channel, Math.round(level * 16380), (v) => send("midi", dev.name, "/pitch", channel, v));
       });
 
       dev.controls.forEach((ctrl, i) => {

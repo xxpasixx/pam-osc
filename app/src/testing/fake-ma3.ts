@@ -23,7 +23,7 @@ export class FakeMA3 {
 
   constructor(
     private readonly engineHost: string,
-    private readonly enginePort: number,
+    private readonly enginePort: number
   ) {}
 
   /** Binds an ephemeral UDP port; returns it (= the engine's sendPort). */

@@ -5,6 +5,7 @@
      READ-ONLY during /build. Technical design lives in design.md, verification in review.md. -->
 
 ## Status: Spec'd
+
 **Created:** 2026-07-16 · **Last Updated:** 2026-07-17
 
 ## Why
@@ -12,6 +13,7 @@
 The engine is the product core: it replaces the Open Stage Control runtime of v1 with a native bridge that owns its transports directly — real MIDI I/O and the OSC/UDP socket to the console. It reads the PAM-1 file format and delivers full v1 feature parity: everything the five supported boards can do today keeps working, plus hot-plug resilience v1 never had.
 
 ## Dependencies
+
 - PAM-1 (device & mapping file format — the engine reads it)
 
 ## Acceptance Criteria
@@ -37,6 +39,7 @@ The engine is the product core: it replaces the Open Stage Control runtime of v1
 - [ ] **AC-11** — Given a config (console IP, send/receive ports, active mappings), when the engine is started programmatically, then it runs headless without any UI, drives several devices at once (including two units of the same board type), and exposes start/stop/reconfigure plus status events (connection, devices, errors); reconfigure applies a changed config cleanly — no duplicate messages from stale listeners afterwards.
 
 ## Out of Scope
+
 - Settings & diagnostics UI — PAM-3/PAM-4 (incl. surfacing port diagnosis and the on-demand MIDI test mode)
 - v1 mapping import — PAM-5
 - Console-side changes — the Lua plugin stays the unchanged v1 plugin
@@ -44,28 +47,32 @@ The engine is the product core: it replaces the Open Stage Control runtime of v1
 - Touch layouts / Open Stage Control replacement — v2 non-goal
 
 ## Edge Cases
+
 - **EC-1** — MIDI events with no assignment in the active mapping are ignored — no crash, no log spam.
 - **EC-2** — OSC feedback no active mapping references is ignored.
 - **EC-3** — Malformed OSC packets or unexpected addresses never crash the engine — log and continue.
 - **EC-4** — A config referencing a missing/invalid mapping or device file: the engine reports it and keeps running with the valid rest (consistent with PAM-1 AC-4).
-- **EC-5** — A reconnected device whose OS port name differs from the configured one is *not* auto-bound: the engine keeps reporting the device as missing (rebinding to a new port name is a settings concern — PAM-3).
+- **EC-5** — A reconnected device whose OS port name differs from the configured one is _not_ auto-bound: the engine keeps reporting the device as missing (rebinding to a new port name is a settings concern — PAM-3).
 - **EC-6** — Optional mapping features (timecode, displays, permanentFeedback, minValue, …) may simply be absent from a mapping: the engine treats a missing field as "feature off", never as a validation error.
 
 ## Technical Requirements
+
 - Events are forwarded immediately (no polling/batching); no perceptible added latency on a local network — the engine is used in live operation.
 - The engine core stays Electron-free (pure Node in `app/src/core`) and is covered by the integration suite: virtual MIDI ports + fake-MA3 OSC emulator (per AGENTS.md).
 - A minimal dev entry point (CLI: start the engine with a config file) ships with the feature, so the engine can be run against onPC and real hardware before any UI exists.
 - Parity is tested against v1 as the reference: the integration suite asserts that mapped controls produce the same observable MIDI output (channel numbering, note/CC values, SysEx bytes) and OSC messages as the v1 runtime — translation differences between v1's MIDI abstraction and the new MIDI layer must not leak into observable behavior.
 
 ## Open Questions
+
 - None
 
 ## Decision Log
 
 ### Product Decisions
-| Decision | Rationale | Date |
-|----------|-----------|------|
-| Engine owns the runtime connection-check logic (ping/pong, retries, status events); PAM-4 only surfaces it | v1.4 connection behavior is engine behavior; UI stays thin | 2026-07-16 |
-| Full v1 parity including timecode (xTouch1/2 use it) | No existing user left behind | 2026-07-16 |
-| Hot-plug auto-reconnect — new vs v1 | Live-operation robustness; v1's bind-at-start-only was an OSC-framework limitation | 2026-07-16 |
+
+| Decision                                                                                                                                            | Rationale                                                                                     | Date       |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------- |
+| Engine owns the runtime connection-check logic (ping/pong, retries, status events); PAM-4 only surfaces it                                          | v1.4 connection behavior is engine behavior; UI stays thin                                    | 2026-07-16 |
+| Full v1 parity including timecode (xTouch1/2 use it)                                                                                                | No existing user left behind                                                                  | 2026-07-16 |
+| Hot-plug auto-reconnect — new vs v1                                                                                                                 | Live-operation robustness; v1's bind-at-start-only was an OSC-framework limitation            | 2026-07-16 |
 | PAM-2 is verifiable standalone: automated emulator/virtual-MIDI suite **plus** a headless dev-harness run against onPC/real hardware — no UI needed | The engine is config-driven and headless anyway (AC-11); verification must not wait for PAM-3 | 2026-07-16 |

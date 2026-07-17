@@ -33,7 +33,7 @@ export interface OscTransport {
     options: OscTransportOptions,
     onMessage: (message: OscMessage) => void,
     /** Called for malformed packets and socket errors — never throws (EC-3). */
-    onError?: (error: Error) => void,
+    onError?: (error: Error) => void
   ): Promise<OscSocket>;
 }
 

@@ -29,7 +29,7 @@ app/src/dev/
 +-- CLI harness                 start the engine from a JSON config file, log events
 ```
 
-The engine core never imports `easymidi` or `osc` directly — both transports are injected interfaces. The integration suite runs the *identical* core against virtual MIDI ports and a fake-MA3 UDP emulator; the CLI harness runs it against the real adapters. That is what makes every AC CI-testable.
+The engine core never imports `easymidi` or `osc` directly — both transports are injected interfaces. The integration suite runs the _identical_ core against virtual MIDI ports and a fake-MA3 UDP emulator; the CLI harness runs it against the real adapters. That is what makes every AC CI-testable.
 
 ## Data Model
 
@@ -47,7 +47,7 @@ Nothing in PAM-2 is persisted (consistent with `docs/data-model.md` — runtime 
   two units of the same board = two mappings, both listed
 ```
 
-Unknown mapping ids, loader errors, or an empty active list are reported as issues; the engine starts with whatever is valid (spec EC-4) and refuses to start only when *nothing* valid remains. v1's unused OSC `prefix` option is dropped.
+Unknown mapping ids, loader errors, or an empty active list are reported as issues; the engine starts with whatever is valid (spec EC-4) and refuses to start only when _nothing_ valid remains. v1's unused OSC `prefix` option is dropped.
 
 **Runtime State** — held per engine run, reset on start/reconfigure:
 
@@ -89,22 +89,22 @@ Events (typed, observable by any consumer):
 
 ### 2. Input routing (MIDI → MA3) — v1 parity table
 
-MIDI events are normalized at the adapter: note-off arrives as a note event with value 0 (v1 semantics). An assignment's `options.minValue` discards **every** event at or below the threshold — including releases (exact v1 behavior, used by MPX16 pads). While `deskLocked` is true, *all* MIDI-originated processing is suppressed (including local toggles); console feedback keeps flowing (AC-8).
+MIDI events are normalized at the adapter: note-off arrives as a note event with value 0 (v1 semantics). An assignment's `options.minValue` discards **every** event at or below the threshold — including releases (exact v1 behavior, used by MPX16 pads). While `deskLocked` is true, _all_ MIDI-originated processing is suppressed (including local toggles); console feedback keeps flowing (AC-8).
 
-| Control + action | Engine sends (v1-identical) |
-| --- | --- |
-| fader (cc) + executor | `/Page<p>/Fader<n>` — float, value ÷ 127 × 100 (AC-1) |
-| fader (pitchbend) + executor | `/Page<p>/Fader<n>` — float, value ÷ 16380 × 100, full 14-bit (AC-1) |
-| encoder + executor | accumulator ± relative detents, clamped 0–100 → `/Page<p>/Fader<n>`; executor numbers above 300 (MA3 rotary knobs) get **additionally** `/Page<p>/Encoder<n>` with the signed relative value (AC-2) |
-| encoder + attribute | `/cmd` — `Attribute <attr> at ± <step>`; step = detents × `options.amount`, × 0.1 while encoderFine, × 10 while encoderRough; attribute "current" resolves to `currentAttribute` (AC-2) |
-| button + executor | `/Page<p>/Key<n>` — integer, round(value ÷ 127 × 100); press and release both sent (unless filtered by minValue) (AC-3) |
-| button + command | `/cmd` — the command text, on every note event passing minValue (AC-3) |
-| button + quickKey | `/cmd` — `Quickey "pam-osc_<key>"` (AC-3) |
-| button + modifier encoderFine / encoderRough | toggle the flag; confirm via on-off feedback on the same control (AC-3) |
-| button + modifier attributeSelect | set `currentAttribute`; refresh the LED of **every** attributeSelect button — only the matching one lit (AC-3) |
-| button + timecodeSelect, no slot | cycle selectedSlot 0→1→…→8→0; reset segments, show slot digit, re-render the slot's time if known (AC-4) |
-| button + timecodeSelect, with slot | select exactly that slot, same display update (AC-4) |
-| button + timecodePlayPause | press starts a 500 ms timer → fires `Off Timecodeslot <sel>` and marks the slot cleared; release before 500 ms cancels the timer and toggles: running → `Pause Timecodeslot <sel>`, stopped → `Go+ Timecodeslot <sel>`; a release after the Off fired is consumed silently (AC-4) |
+| Control + action                             | Engine sends (v1-identical)                                                                                                                                                                                                                                                       |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| fader (cc) + executor                        | `/Page<p>/Fader<n>` — float, value ÷ 127 × 100 (AC-1)                                                                                                                                                                                                                             |
+| fader (pitchbend) + executor                 | `/Page<p>/Fader<n>` — float, value ÷ 16380 × 100, full 14-bit (AC-1)                                                                                                                                                                                                              |
+| encoder + executor                           | accumulator ± relative detents, clamped 0–100 → `/Page<p>/Fader<n>`; executor numbers above 300 (MA3 rotary knobs) get **additionally** `/Page<p>/Encoder<n>` with the signed relative value (AC-2)                                                                               |
+| encoder + attribute                          | `/cmd` — `Attribute <attr> at ± <step>`; step = detents × `options.amount`, × 0.1 while encoderFine, × 10 while encoderRough; attribute "current" resolves to `currentAttribute` (AC-2)                                                                                           |
+| button + executor                            | `/Page<p>/Key<n>` — integer, round(value ÷ 127 × 100); press and release both sent (unless filtered by minValue) (AC-3)                                                                                                                                                           |
+| button + command                             | `/cmd` — the command text, on every note event passing minValue (AC-3)                                                                                                                                                                                                            |
+| button + quickKey                            | `/cmd` — `Quickey "pam-osc_<key>"` (AC-3)                                                                                                                                                                                                                                         |
+| button + modifier encoderFine / encoderRough | toggle the flag; confirm via on-off feedback on the same control (AC-3)                                                                                                                                                                                                           |
+| button + modifier attributeSelect            | set `currentAttribute`; refresh the LED of **every** attributeSelect button — only the matching one lit (AC-3)                                                                                                                                                                    |
+| button + timecodeSelect, no slot             | cycle selectedSlot 0→1→…→8→0; reset segments, show slot digit, re-render the slot's time if known (AC-4)                                                                                                                                                                          |
+| button + timecodeSelect, with slot           | select exactly that slot, same display update (AC-4)                                                                                                                                                                                                                              |
+| button + timecodePlayPause                   | press starts a 500 ms timer → fires `Off Timecodeslot <sel>` and marks the slot cleared; release before 500 ms cancels the timer and toggles: running → `Pause Timecodeslot <sel>`, stopped → `Go+ Timecodeslot <sel>`; a release after the Off fired is consumed silently (AC-4) |
 
 Relative detents come from the device definition's encoder `encoding` ranges (increment range → +1 per step inside it, decrement range → −1), exactly v1's interpretation.
 
@@ -112,18 +112,18 @@ Relative detents come from the device definition's encoder `encoding` ranges (in
 
 Incoming addresses and their handling; anything unmatched is ignored (EC-2), malformed packets are logged and skipped (EC-3):
 
-| Incoming | Engine behavior |
-| --- | --- |
-| `/Page<p>/Fader<n>` (0–100) | every assignment targeting executor n with `fader-position` feedback: cc fader → CC value round(v ÷ 100 × 127); pitchbend fader → pitch value round(v ÷ 100 × 16380); `encoder-ring` feedback → value mapped into the ring's configured range on the ring's CC, **and** the encoder's accumulator is set to v (AC-5) |
-| `…/Button<n>` | assignments targeting executor n with `on-off` feedback: value > 0 → onValue, else offValue; `always-on` assignments keep their fixed value (AC-6) |
-| `/masterEnabled/<name>` | assignments whose command action matches `<name>` case-insensitively: on-off by truthiness, always-on unchanged (AC-6) |
-| `…/Color<n>` | display assignments showing executor n: parse "r;g;b;a", pick nearest of the 7 X-Touch strip colors (black when all-zero or alpha 0), send **one** SysEx color frame carrying all 8 strips (AC-7) |
-| `…/Name<n>` | value "sequence;cue": two SysEx text frames per matching strip — line 1 sequence, line 2 cue, each padded/truncated to 7 chars; text offsets: line 1 = strip-index × 7, line 2 = 56 + strip-index × 7 (AC-7) |
-| `/updatePage/current` | set currentPage; subsequent sends use it (AC-1) |
-| `/status/deskLocked` (T/F) | set/clear deskLocked (AC-8) |
-| `/status/connectionPong`, `/status/pluginPong` | consumed by the connection checker (AC-9) |
-| `/Timecode<slot>` ("1h02m03:04") | store hours/minutes/seconds/hundredths for that slot; if it is the selected slot, re-render the 7-segment display (AC-4) |
-| `/14.<slot>` ("Go+"/other) | set the slot's running flag (AC-4) |
+| Incoming                                       | Engine behavior                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/Page<p>/Fader<n>` (0–100)                    | every assignment targeting executor n with `fader-position` feedback: cc fader → CC value round(v ÷ 100 × 127); pitchbend fader → pitch value round(v ÷ 100 × 16380); `encoder-ring` feedback → value mapped into the ring's configured range on the ring's CC, **and** the encoder's accumulator is set to v (AC-5) |
+| `…/Button<n>`                                  | assignments targeting executor n with `on-off` feedback: value > 0 → onValue, else offValue; `always-on` assignments keep their fixed value (AC-6)                                                                                                                                                                   |
+| `/masterEnabled/<name>`                        | assignments whose command action matches `<name>` case-insensitively: on-off by truthiness, always-on unchanged (AC-6)                                                                                                                                                                                               |
+| `…/Color<n>`                                   | display assignments showing executor n: parse "r;g;b;a", pick nearest of the 7 X-Touch strip colors (black when all-zero or alpha 0), send **one** SysEx color frame carrying all 8 strips (AC-7)                                                                                                                    |
+| `…/Name<n>`                                    | value "sequence;cue": two SysEx text frames per matching strip — line 1 sequence, line 2 cue, each padded/truncated to 7 chars; text offsets: line 1 = strip-index × 7, line 2 = 56 + strip-index × 7 (AC-7)                                                                                                         |
+| `/updatePage/current`                          | set currentPage; subsequent sends use it (AC-1)                                                                                                                                                                                                                                                                      |
+| `/status/deskLocked` (T/F)                     | set/clear deskLocked (AC-8)                                                                                                                                                                                                                                                                                          |
+| `/status/connectionPong`, `/status/pluginPong` | consumed by the connection checker (AC-9)                                                                                                                                                                                                                                                                            |
+| `/Timecode<slot>` ("1h02m03:04")               | store hours/minutes/seconds/hundredths for that slot; if it is the selected slot, re-render the 7-segment display (AC-4)                                                                                                                                                                                             |
+| `/14.<slot>` ("Go+"/other)                     | set the slot's running flag (AC-4)                                                                                                                                                                                                                                                                                   |
 
 Executor numbers are parsed from the trailing digits of the address (v1 read the last 3 characters; digits-parsing is behavior-identical for MA3's 3-digit executors).
 
@@ -139,7 +139,7 @@ All translation happens exactly once, inside the transport adapter:
 
 ### 5. Runtime services
 
-**Startup sequence (AC-9):** bind configured devices → play the output-test animation (~3.5 s: LED running light + fader/ring wave, only value *changes* sent) → restore start state (attributeSelect LEDs, always-on feedback, timecode segment init for enableTimecodeSend devices) → trigger the plugin force-reload (`Lua 'SetVar(GlobalVars(), "forceReload", true)'`) → start the connection check.
+**Startup sequence (AC-9):** bind configured devices → play the output-test animation (~3.5 s: LED running light + fader/ring wave, only value _changes_ sent) → restore start state (attributeSelect LEDs, always-on feedback, timecode segment init for enableTimecodeSend devices) → trigger the plugin force-reload (`Lua 'SetVar(GlobalVars(), "forceReload", true)'`) → start the connection check.
 
 **Connection checker (AC-9):** sends the v1 ping pair (connection-pong Lua echo via the OSC entry named "pam-osc", fallback entry 2; plugin ping via `pamPing` global). 3 s timeout → result: both pongs = connected; console pong only = plugin-missing; none = unreachable. Non-connected results retry every 30 s, max 20 attempts; every result is emitted as a connection event. Port diagnosis (who holds the UDP port) is **not** here — PAM-4 owns it, per spec decision.
 
@@ -194,15 +194,15 @@ Level 3 — Harness/E2E:  T9 [P]  CLI dev harness (config file, event logging, c
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| --- | --- | --- | --- | --- |
-| Ports & adapters: transports injected as interfaces | ACs verifiable in CI with virtual MIDI + fake MA3; core stays hardware-free | Core calls easymidi/osc directly | One indirection layer to maintain | 2026-07-17 |
-| Pure Node in PAM-2, Electron arrives with PAM-3 | Nothing here needs a window; engine stays maximally testable | Scaffold Electron shell now | App frame exists one feature later | 2026-07-17 |
-| PAM-1 delta: timecodeSelect.slot optional, absent = cycle 0–8 | v1 parity (AC-4); PAM-1 approximated cycling as "slot 1" during build | Fixed-slot select only (change AC-4) | Small schema + content change while PAM-1 is In Review | 2026-07-17 |
-| Hot-plug via 2 s port-list polling | easymidi exposes no hot-plug events | Native hot-plug bindings (extra dep, platform-specific) | Up to 2 s bind delay after replug | 2026-07-17 |
-| No startup animation on late binds/rebinds | A device replugged mid-show must not play a light show | Full startup ritual on every bind | Late-bound devices get no visual output test (state restore still confirms output) | 2026-07-17 |
-| v1 scaling constants bit-exact (incl. pitchbend 16380) | Parity is the contract; tests assert identical output to v1 | "Correct" 16383 full-scale | Carries a v1 quirk forward, documented here | 2026-07-17 |
-| Single UDP socket for send + receive | Matches the documented v1 console setup; one port to configure | Separate send socket | None of note | 2026-07-17 |
+| Decision                                                      | Rationale                                                                   | Alternative considered                                  | Trade-off                                                                          | Date       |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------- |
+| Ports & adapters: transports injected as interfaces           | ACs verifiable in CI with virtual MIDI + fake MA3; core stays hardware-free | Core calls easymidi/osc directly                        | One indirection layer to maintain                                                  | 2026-07-17 |
+| Pure Node in PAM-2, Electron arrives with PAM-3               | Nothing here needs a window; engine stays maximally testable                | Scaffold Electron shell now                             | App frame exists one feature later                                                 | 2026-07-17 |
+| PAM-1 delta: timecodeSelect.slot optional, absent = cycle 0–8 | v1 parity (AC-4); PAM-1 approximated cycling as "slot 1" during build       | Fixed-slot select only (change AC-4)                    | Small schema + content change while PAM-1 is In Review                             | 2026-07-17 |
+| Hot-plug via 2 s port-list polling                            | easymidi exposes no hot-plug events                                         | Native hot-plug bindings (extra dep, platform-specific) | Up to 2 s bind delay after replug                                                  | 2026-07-17 |
+| No startup animation on late binds/rebinds                    | A device replugged mid-show must not play a light show                      | Full startup ritual on every bind                       | Late-bound devices get no visual output test (state restore still confirms output) | 2026-07-17 |
+| v1 scaling constants bit-exact (incl. pitchbend 16380)        | Parity is the contract; tests assert identical output to v1                 | "Correct" 16383 full-scale                              | Carries a v1 quirk forward, documented here                                        | 2026-07-17 |
+| Single UDP socket for send + receive                          | Matches the documented v1 console setup; one port to configure              | Separate send socket                                    | None of note                                                                       | 2026-07-17 |
 
 ## Open Questions
 
@@ -212,9 +212,10 @@ Level 3 — Harness/E2E:  T9 [P]  CLI dev harness (config file, event logging, c
 
 **Dependency deviation:** `osc-min@2.1.2` + `node:dgram` instead of the planned `osc` package — `osc` drags a vulnerable `ws` (high-severity advisories) and the native `serialport` module for transports we never use; we own the UDP socket per this design anyway. `easymidi@3.2.0` as planned (ships its own TypeScript types). `tsx@4.23.1` (dev) runs the CLI harness. Versions pinned from the npm registry on 2026-07-17.
 
-**Level 0 grew a second content fix.** The PAM-1 bundled x-touch mappings had feedback `none` on command buttons, with a note claiming the format "cannot express master-state feedback". That was a misreading of the format's semantics: the *action* determines the feedback source (command → `/masterEnabled/<name>`), `on-off` only describes the rendering. Restored `on-off` on all 17 x-touch-default-1 command buttons and HIGHLIGHT/BLIND in default-2 — v1 master-LED parity.
+**Level 0 grew a second content fix.** The PAM-1 bundled x-touch mappings had feedback `none` on command buttons, with a note claiming the format "cannot express master-state feedback". That was a misreading of the format's semantics: the _action_ determines the feedback source (command → `/masterEnabled/<name>`), `on-off` only describes the rendering. Restored `on-off` on all 17 x-touch-default-1 command buttons and HIGHLIGHT/BLIND in default-2 — v1 master-LED parity.
 
 **Documented behavior deviations from v1** (all safe-direction, none observable with the bundled mappings):
+
 - "Off" goes out as **note-on velocity 0 for every board**, not just MC-mode. All five supported boards treat it as note-off per MIDI spec, and X-Touch MC requires it — one code path instead of v1's sysex trick.
 - `command`/`quickKey`/`modifier`/`timecodeSelect` fire on **press only** when no `minValue` is set. v1 fired them on release too, but every v1 mapping guards them with `minValue` — releases still reach `executor` actions (flash needs Key 0), exactly as in v1.
 - Relative CC values outside both encoder ranges are **ignored**; v1's NaN handling reset the accumulator to 0.
@@ -228,9 +229,10 @@ Level 3 — Harness/E2E:  T9 [P]  CLI dev harness (config file, event logging, c
 
 **BUG-7 rule (from the PAM-1 review):** all assignments sharing a MIDI address fire on every event — v1's behavior — and the engine emits a startup warning naming both controls.
 
-**Engine start policy:** `start()` rejects only when *nothing* can run (no valid active mapping, or the UDP receive port cannot be bound). Everything partial — unknown mapping ids, broken files, missing devices — is an issue event, and the engine runs with the valid rest (EC-4).
+**Engine start policy:** `start()` rejects only when _nothing_ can run (no valid active mapping, or the UDP receive port cannot be bound). Everything partial — unknown mapping ids, broken files, missing devices — is an issue event, and the engine runs with the valid rest (EC-4).
 
 **Post-review fixes (2026-07-17, from review.md):**
+
 - **Hostile-file hardening (BUG-1/3/4):** display `index` is bounded 0–7 in the schema (the supported scribble protocol carries exactly 8 strips; larger indices let a shared device file freeze the engine); the feedback path guards the bound again defensively.
 - **LAN hardening (BUG-2):** only timecode slots 0–8 are tracked — arbitrary `/Timecode<n>` addresses no longer grow memory.
 - **Schema ceilings (BUG-6):** executor/display `number` ≤ 9999, `amount` ≤ 1000 — hostile values can no longer reach OSC addresses or command strings.

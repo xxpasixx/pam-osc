@@ -47,13 +47,7 @@
       "Write(**/.env.production)",
       "Write(**/.env.test)"
     ],
-    "ask": [
-      "Bash(rm -rf:*)",
-      "Bash(rm -fr:*)",
-      "Bash(rm -r:*)",
-      "Bash(rm -R:*)",
-      "Bash(git clean:*)"
-    ],
+    "ask": ["Bash(rm -rf:*)", "Bash(rm -fr:*)", "Bash(rm -r:*)", "Bash(rm -R:*)", "Bash(git clean:*)"],
     "allow": [
       "Bash(git commit:*)",
       "Bash(git push:*)",

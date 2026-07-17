@@ -118,7 +118,7 @@ describe("mappingSchema", () => {
 
   it("defaults feedback to none", () => {
     const mapping = mappingSchema.parse(
-      minimalMapping({ assignments: [{ controlId: "btn-1", action: { type: "command", command: "Go+" } }] }),
+      minimalMapping({ assignments: [{ controlId: "btn-1", action: { type: "command", command: "Go+" } }] })
     );
     expect(mapping.assignments[0]?.feedback).toEqual({ type: "none" });
   });
@@ -147,18 +147,20 @@ describe("mappingSchema", () => {
 
   it("accepts timecodeSelect without a slot (cycle mode) and with slots 1-8", () => {
     const cycle = mappingSchema.parse(
-      minimalMapping({ assignments: [{ controlId: "btn-1", action: { type: "timecodeSelect" } }] }),
+      minimalMapping({ assignments: [{ controlId: "btn-1", action: { type: "timecodeSelect" } }] })
     );
     expect(cycle.assignments[0]?.action).toEqual({ type: "timecodeSelect" });
     const fixed = mappingSchema.parse(
-      minimalMapping({ assignments: [{ controlId: "btn-1", action: { type: "timecodeSelect", slot: 8 } }] }),
+      minimalMapping({ assignments: [{ controlId: "btn-1", action: { type: "timecodeSelect", slot: 8 } }] })
     );
     expect(fixed.assignments[0]?.action).toEqual({ type: "timecodeSelect", slot: 8 });
   });
 
   it("rejects timecodeSelect slots outside 1-8", () => {
     for (const slot of [0, 9]) {
-      const mapping = minimalMapping({ assignments: [{ controlId: "btn-1", action: { type: "timecodeSelect", slot } }] });
+      const mapping = minimalMapping({
+        assignments: [{ controlId: "btn-1", action: { type: "timecodeSelect", slot } }],
+      });
       expect(mappingSchema.safeParse(mapping).success).toBe(false);
     }
   });

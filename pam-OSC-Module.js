@@ -57,7 +57,9 @@ const oscEntry = 2; // fallback when no OSC entry named "pam-osc" exists in the 
 // Executed on the console via the Lua keyword: picks the OSC entry named "pam-osc"
 // (any line number), falls back to entry 2, then echoes the connectionPong back.
 const connectionPongLua =
-  "local n = " + oscEntry + " " +
+  "local n = " +
+  oscEntry +
+  " " +
   "local ok, found = pcall(function() " +
   "for i, e in ipairs(Root().ShowData.ShowSettings.OSCData:Children()) do " +
   "if string.lower(e.name or [[]]) == [[pam-osc]] then return i end " +
@@ -105,9 +107,15 @@ function checkPingResult() {
     scheduleNextPing();
   } else {
     console.error(
-      "pam-osc: no response from GrandMA3 (" + ip + ":" + oscPort + "). Check that:\n" +
+      "pam-osc: no response from GrandMA3 (" +
+        ip +
+        ":" +
+        oscPort +
+        "). Check that:\n" +
         "  - the send=<ip>:<port> option of Open Stage Control points to the console\n" +
-        "  - OSC is enabled in MA3 (Menu > In & Out > OSC) and the entry is named 'pam-osc' (or is entry " + oscEntry + ")\n" +
+        "  - OSC is enabled in MA3 (Menu > In & Out > OSC) and the entry is named 'pam-osc' (or is entry " +
+        oscEntry +
+        ")\n" +
         "  - the MA3 OSC destination IP/port points back to this computer\n" +
         "  - no firewall is blocking UDP between the console and this computer"
     );
@@ -116,18 +124,30 @@ function checkPingResult() {
     portUtils.findUdpPortUser(oscInPort, function (result) {
       if (result && result.status === "other") {
         console.error(
-          'pam-osc: port check: UDP port ' + oscInPort + ' is already used by "' + result.name + '" (PID ' + result.pid + ").\n" +
+          "pam-osc: port check: UDP port " +
+            oscInPort +
+            ' is already used by "' +
+            result.name +
+            '" (PID ' +
+            result.pid +
+            ").\n" +
             "  -> Open Stage Control can not receive feedback on it. Close that program, or use a different\n" +
             "     osc-port option and set the same port as destination port in the MA3 OSC settings."
         );
       } else if (result && result.status === "self") {
         console.log(
-          "pam-osc: port check: UDP port " + oscInPort + " is open and held by Open Stage Control - the port itself is fine.\n" +
-            "  -> Check that MA3 sends its feedback to this computer on port " + oscInPort + " and that no firewall blocks UDP."
+          "pam-osc: port check: UDP port " +
+            oscInPort +
+            " is open and held by Open Stage Control - the port itself is fine.\n" +
+            "  -> Check that MA3 sends its feedback to this computer on port " +
+            oscInPort +
+            " and that no firewall blocks UDP."
         );
       } else if (result && result.status === "free") {
         console.error(
-          "pam-osc: port check: nothing is listening on UDP port " + oscInPort + " - Open Stage Control did not open its OSC input.\n" +
+          "pam-osc: port check: nothing is listening on UDP port " +
+            oscInPort +
+            " - Open Stage Control did not open its OSC input.\n" +
             "  -> Check the osc-port option."
         );
       }
@@ -149,7 +169,6 @@ function scheduleNextPing() {
 (settings.read("midi") || []).forEach((deviceMidi) => {
   const name = deviceMidi.split(":")[0];
   const fileName = name + ".json";
-
 
   const value = loadJSON("mappings/" + fileName, (e) =>
     console.error(
@@ -212,9 +231,9 @@ module.exports = {
 
     if (address === "/status/deskLocked" && args.length > 0) {
       const lockStatus = args[0];
-      if (lockStatus.type === 'T') {
+      if (lockStatus.type === "T") {
         deskLocked = true;
-      } else if (lockStatus.type === 'F') {
+      } else if (lockStatus.type === "F") {
         deskLocked = false;
       }
       return;
@@ -249,9 +268,9 @@ module.exports = {
         // handle relative Rotary encoders to act as Absolute
         if (routing[port]["rltvControl"][ctrl] && routing[port]["rltvControl"][ctrl].exec) {
           const { exec, currValue, posFrom, posTo, negFrom, negTo } = routing[port]["rltvControl"][ctrl];
-        
-          // Handle GrandMA encoders Knobs (Playback Section) with relative values 
-          if(routing[port]["rltvControl"][ctrl].exec > 300) {
+
+          // Handle GrandMA encoders Knobs (Playback Section) with relative values
+          if (routing[port]["rltvControl"][ctrl].exec > 300) {
             var relativeValue = utils.getRelativeValue(value, posFrom, posTo, negFrom, negTo);
             send(ip, oscPort, prefix + "/Page" + page + "/Encoder" + exec, {
               type: "i",
@@ -431,7 +450,14 @@ module.exports = {
         const mappings = routingUtils.getRoutingNoteByExecId(routing, fader);
         mappings.forEach((mapping) => {
           const value = mapping.permanentFeedback || args[0].value;
-          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midiChannel);
+          midiUtils.sendNoteResponse(
+            routing,
+            mapping.device,
+            mapping.midiId,
+            value,
+            mapping.buttonFeedbackMapper,
+            mapping.midiChannel
+          );
         });
       }
       if (address?.includes("/updatePage/current")) {
@@ -442,7 +468,14 @@ module.exports = {
 
         mappings.forEach((mapping) => {
           const value = mapping.permanentFeedback || args[0].value ? "On" : "Off";
-          midiUtils.sendNoteResponse(routing, mapping.device, mapping.midiId, value, mapping.buttonFeedbackMapper, mapping.midiChannel);
+          midiUtils.sendNoteResponse(
+            routing,
+            mapping.device,
+            mapping.midiId,
+            value,
+            mapping.buttonFeedbackMapper,
+            mapping.midiChannel
+          );
         });
       }
 
@@ -482,7 +515,7 @@ module.exports = {
             "/sysex",
             "f0 00 00 66 14 12 " + seqMidiNote + " " + utils.stringToAsciiHex(seq) + "f7"
           );
-          send( 
+          send(
             "midi",
             mapping.device,
             "/sysex",

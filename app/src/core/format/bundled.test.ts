@@ -54,7 +54,7 @@ describe("bundled resources", () => {
   it("uses every action facility of the v1 feature set somewhere (AC-3)", async () => {
     const result = await loadBundled();
     const actionTypes = new Set(
-      result.mappings.flatMap((mapping) => mapping.assignments.map((assignment) => assignment.action.type)),
+      result.mappings.flatMap((mapping) => mapping.assignments.map((assignment) => assignment.action.type))
     );
     for (const required of [
       "executor",
@@ -69,7 +69,7 @@ describe("bundled resources", () => {
       expect(actionTypes, `no bundled mapping uses action "${required}"`).toContain(required);
     }
     const feedbackTypes = new Set(
-      result.mappings.flatMap((mapping) => mapping.assignments.map((assignment) => assignment.feedback.type)),
+      result.mappings.flatMap((mapping) => mapping.assignments.map((assignment) => assignment.feedback.type))
     );
     for (const required of ["on-off", "always-on", "fader-position", "encoder-ring"]) {
       expect(feedbackTypes, `no bundled mapping uses feedback "${required}"`).toContain(required);

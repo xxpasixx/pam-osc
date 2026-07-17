@@ -3,7 +3,7 @@
   "version": "2.0.0-dev",
   "private": true,
   "type": "module",
-  "description": "pam-osc v2 desktop app \u2014 MIDI to GrandMA3 OSC bridge",
+  "description": "pam-osc v2 desktop app — MIDI to GrandMA3 OSC bridge",
   "license": "GPL-3.0",
   "scripts": {
     "dev": "electron-vite dev",

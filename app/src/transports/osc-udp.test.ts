@@ -23,9 +23,9 @@ describe("normalizeOscPacket guards (BUG-5)", () => {
     expect(normalizeOscPacket(null)).toEqual([]);
     expect(normalizeOscPacket(undefined)).toEqual([]);
     expect(normalizeOscPacket(42)).toEqual([]);
-    expect(normalizeOscPacket({ oscType: "bundle", elements: [null, { oscType: "message", address: "/a", args: [] }] })).toEqual([
-      { address: "/a", args: [] },
-    ]);
+    expect(
+      normalizeOscPacket({ oscType: "bundle", elements: [null, { oscType: "message", address: "/a", args: [] }] })
+    ).toEqual([{ address: "/a", args: [] }]);
   });
 
   it("caps bundle recursion depth instead of blowing the stack", () => {
@@ -51,7 +51,7 @@ describe("udpOscTransport ↔ FakeMA3", () => {
     socket = await udpOscTransport.open(
       { localPort, remoteAddress: "127.0.0.1", remotePort },
       (message) => messages.push(message),
-      (error) => errors.push(error),
+      (error) => errors.push(error)
     );
   });
 

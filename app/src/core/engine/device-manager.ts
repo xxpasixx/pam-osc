@@ -53,7 +53,7 @@ export class DeviceManager {
   constructor(
     private readonly transport: MidiTransport,
     private readonly timing: EngineTiming,
-    private readonly callbacks: DeviceManagerCallbacks,
+    private readonly callbacks: DeviceManagerCallbacks
   ) {}
 
   /** Binds what is connected now; everything else is picked up by the poll. */
@@ -95,7 +95,7 @@ export class DeviceManager {
     const { input, output } = unitRuntime.unit.mapping.midiPort;
     try {
       unitRuntime.connection = this.transport.open(input, output, (event) =>
-        this.callbacks.onEvent(unitRuntime, event),
+        this.callbacks.onEvent(unitRuntime, event)
       );
     } catch {
       unitRuntime.connection = undefined;

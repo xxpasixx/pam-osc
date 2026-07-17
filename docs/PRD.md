@@ -14,18 +14,18 @@ pam-osc v2 is a standalone desktop app (macOS, Windows, Linux) that turns afford
 
 _Priority only — feature status lives in `features/INDEX.md`._
 
-| Priority | Feature |
-|----------|---------|
-| P0 (MVP) | Bridge engine — ported v1 core with feature parity (faders, encoders, buttons, LED/display feedback, DeskLock) |
+| Priority | Feature                                                                                                                                                                     |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0 (MVP) | Bridge engine — ported v1 core with feature parity (faders, encoders, buttons, LED/display feedback, DeskLock)                                                              |
 | P0 (MVP) | Device & mapping file format — devices (controls, MIDI notes, 2D positions) separated from mappings (control → MA3 action), bundled definitions for the v1-supported boards |
-| P0 (MVP) | Setup & settings UI — console IP/ports, device selection, persisted locally |
-| P0 (MVP) | Status & diagnostics UI — connection check, plugin check, port diagnosis, MIDI test mode (v1.4 logic, surfaced in the UI) |
-| P0 (MVP) | v1 mapping import |
-| P1 | Visual mapping editor — 2D board layout, remap controls, add buttons/faders/encoders |
-| P1 | Mapping export/import as file (community sharing) |
-| P2 | Code signing & notarization |
-| P2 | One-click Lua plugin install on the console (open question: feasibility of pushing plugins from outside) |
-| P2 | More device definitions, colored button feedback |
+| P0 (MVP) | Setup & settings UI — console IP/ports, device selection, persisted locally                                                                                                 |
+| P0 (MVP) | Status & diagnostics UI — connection check, plugin check, port diagnosis, MIDI test mode (v1.4 logic, surfaced in the UI)                                                   |
+| P0 (MVP) | v1 mapping import                                                                                                                                                           |
+| P1       | Visual mapping editor — 2D board layout, remap controls, add buttons/faders/encoders                                                                                        |
+| P1       | Mapping export/import as file (community sharing)                                                                                                                           |
+| P2       | Code signing & notarization                                                                                                                                                 |
+| P2       | One-click Lua plugin install on the console (open question: feasibility of pushing plugins from outside)                                                                    |
+| P2       | More device definitions, colored button feedback                                                                                                                            |
 
 ## Success Metrics
 

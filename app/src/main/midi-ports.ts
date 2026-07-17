@@ -13,7 +13,7 @@ export class MidiPortLister {
   constructor(
     private readonly transport: Pick<MidiTransport, "listPorts">,
     private readonly onChange: (ports: MidiPortList) => void,
-    private readonly intervalMs = 2000,
+    private readonly intervalMs = 2000
   ) {}
 
   private lastKnown: MidiPortList = { inputs: [], outputs: [] };

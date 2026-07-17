@@ -21,7 +21,7 @@ describe("easymidiTransport", () => {
     await waitFor(
       () =>
         easymidiTransport.listPorts().inputs.includes(PORT_NAME) &&
-        easymidiTransport.listPorts().outputs.includes(PORT_NAME),
+        easymidiTransport.listPorts().outputs.includes(PORT_NAME)
     );
     connection = easymidiTransport.open(PORT_NAME, PORT_NAME, (event) => events.push(event));
   });

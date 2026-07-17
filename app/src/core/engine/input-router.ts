@@ -68,7 +68,11 @@ function handleCcEntry(context: InputContext, unitRuntime: UnitRuntime, entry: R
   }
 
   if (control.type !== "encoder") return;
-  const detents = relativeDetents(value, control.capabilities.encoding.increment, control.capabilities.encoding.decrement);
+  const detents = relativeDetents(
+    value,
+    control.capabilities.encoding.increment,
+    control.capabilities.encoding.decrement
+  );
   if (detents === undefined) return; // outside both ranges — ignored (documented deviation)
 
   if (assignment.action.type === "executor") {
@@ -99,8 +103,7 @@ function handleCcEntry(context: InputContext, unitRuntime: UnitRuntime, entry: R
     change = context.state.encoderFine ? change / 10 : change;
     change = context.state.encoderRough ? change * 10 : change;
     const plusMinus = change > 0 ? " + " : " - ";
-    const attribute =
-      assignment.action.attribute === "current" ? context.state.attribute : assignment.action.attribute;
+    const attribute = assignment.action.attribute === "current" ? context.state.attribute : assignment.action.attribute;
     // v1's exact command string — including the double space after "at".
     context.sendOsc({
       address: "/cmd",
@@ -172,7 +175,7 @@ function handleModifier(
   unitRuntime: UnitRuntime,
   entry: RoutingEntry,
   modifier: "encoderFine" | "encoderRough" | "attributeSelect",
-  attribute: string | undefined,
+  attribute: string | undefined
 ): void {
   const state = context.state;
   switch (modifier) {

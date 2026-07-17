@@ -88,7 +88,7 @@ export function sendSlotDigit(unitRuntime: UnitRuntime, slot: number): void {
 /** v1 updateSegmentsBySlot: hours 2-4, minutes 5-6, seconds 7-8, hundredths 9-10. */
 export function sendSlotTime(
   unitRuntime: UnitRuntime,
-  slot: { hrs: string; mins: string; secs: string; mili: string },
+  slot: { hrs: string; mins: string; secs: string; mili: string }
 ): void {
   const write = (startPosition: number, text: string) => {
     for (let i = 0; i < text.length; i++) {
@@ -110,7 +110,7 @@ export function sendStripColors(unitRuntime: UnitRuntime): void {
   sendToUnit(
     unitRuntime,
     { kind: "sysex", bytes: [...SYSEX_HEADER, 0x72, ...unitRuntime.colors, 0xf7] },
-    "sysex:color",
+    "sysex:color"
   );
 }
 
@@ -122,12 +122,12 @@ export function sendStripText(unitRuntime: UnitRuntime, stripIndex: number, sequ
   sendToUnit(
     unitRuntime,
     { kind: "sysex", bytes: [...SYSEX_HEADER, 0x12, stripIndex * 7, ...scribbleLine(sequence), 0xf7] },
-    `sysex:name:${stripIndex}:1`,
+    `sysex:name:${stripIndex}:1`
   );
   sendToUnit(
     unitRuntime,
     { kind: "sysex", bytes: [...SYSEX_HEADER, 0x12, 56 + stripIndex * 7, ...scribbleLine(cue), 0xf7] },
-    `sysex:name:${stripIndex}:2`,
+    `sysex:name:${stripIndex}:2`
   );
 }
 

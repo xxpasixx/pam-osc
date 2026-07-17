@@ -13,7 +13,7 @@ export const MA3_KNOB_THRESHOLD = 300;
 export function relativeDetents(
   value: number,
   increment: { from: number; to: number },
-  decrement: { from: number; to: number },
+  decrement: { from: number; to: number }
 ): number | undefined {
   if (value >= increment.from && value <= increment.to) {
     return value - increment.from + 1;

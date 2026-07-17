@@ -29,9 +29,15 @@ export class VirtualMidiDevice {
     this.source = new Output(name, true);
     this.sink = new Input(name, true);
 
-    this.sink.on("noteon", (m) => this.received.push({ kind: "noteon", channel: m.channel, note: m.note, velocity: m.velocity }));
-    this.sink.on("noteoff", (m) => this.received.push({ kind: "noteoff", channel: m.channel, note: m.note, velocity: m.velocity }));
-    this.sink.on("cc", (m) => this.received.push({ kind: "cc", channel: m.channel, controller: m.controller, value: m.value }));
+    this.sink.on("noteon", (m) =>
+      this.received.push({ kind: "noteon", channel: m.channel, note: m.note, velocity: m.velocity })
+    );
+    this.sink.on("noteoff", (m) =>
+      this.received.push({ kind: "noteoff", channel: m.channel, note: m.note, velocity: m.velocity })
+    );
+    this.sink.on("cc", (m) =>
+      this.received.push({ kind: "cc", channel: m.channel, controller: m.controller, value: m.value })
+    );
     this.sink.on("pitch", (m) => this.received.push({ kind: "pitch", channel: m.channel, value: m.value }));
     this.sink.on("sysex", (m) => this.received.push({ kind: "sysex", bytes: [...m.bytes] }));
   }

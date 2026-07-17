@@ -41,8 +41,12 @@ describe("SettingsStore (AC-1, AC-4, EC-2)", () => {
   it("schema-invalid content → defaults + notice naming the problem", async () => {
     await writeFile(
       join(dir, "settings.json"),
-      JSON.stringify({ formatVersion: 1, console: { address: "", sendPort: "x", receivePort: 9004 }, activeMappingIds: [] }),
-      "utf8",
+      JSON.stringify({
+        formatVersion: 1,
+        console: { address: "", sendPort: "x", receivePort: 9004 },
+        activeMappingIds: [],
+      }),
+      "utf8"
     );
     const loaded = await new SettingsStore(dir).load();
     expect(loaded.firstRun).toBe(true);

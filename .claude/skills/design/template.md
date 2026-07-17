@@ -72,9 +72,9 @@ Level 3 — Interface: T4      login form incl. error/loading states · files: p
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| --- | --- | --- | --- | --- |
-| Client-side storage over a hosted database | No user accounts needed; data is device-local | Hosted database | No cross-device sync; data lost if storage is cleared | YYYY-MM-DD |
+| Decision                                   | Rationale                                     | Alternative considered | Trade-off                                             | Date       |
+| ------------------------------------------ | --------------------------------------------- | ---------------------- | ----------------------------------------------------- | ---------- |
+| Client-side storage over a hosted database | No user accounts needed; data is device-local | Hosted database        | No cross-device sync; data lost if storage is cleared | YYYY-MM-DD |
 
 ## Open Questions
 

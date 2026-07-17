@@ -9,7 +9,7 @@ const fromWire = (channel: number): number => channel + 1;
 class EasymidiConnection implements MidiConnection {
   constructor(
     private readonly input: Input,
-    private readonly output: Output | undefined,
+    private readonly output: Output | undefined
   ) {}
 
   send(message: MidiOutputMessage): void {
