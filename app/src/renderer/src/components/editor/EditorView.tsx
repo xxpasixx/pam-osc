@@ -2,13 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // Runtime imports come from the browser-safe modules directly — the format
 // barrel re-exports the Node loader, which must never enter the renderer.
 import { validateDeviceDraft, validateMappingDraft } from "../../../../core/format/editor-rules.js";
-import type {
-  Assignment,
-  Control,
-  DeviceDefinition,
-  EditorIssue,
-  Mapping,
-} from "../../../../core/format/index.js";
+import type { Assignment, Control, DeviceDefinition, EditorIssue, Mapping } from "../../../../core/format/index.js";
 import type {
   ControlUsageEntry,
   EditorSaveResult,
@@ -63,8 +57,7 @@ const kebab = (name: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "board";
 
-const partKey = (controlId: string, part: "push" | undefined): string =>
-  part ? `${controlId}#push` : controlId;
+const partKey = (controlId: string, part: "push" | undefined): string => (part ? `${controlId}#push` : controlId);
 
 const samePart = (assignment: Assignment, selection: PartSelection): boolean =>
   assignment.controlId === selection.id && (assignment.part ?? undefined) === selection.part;
@@ -138,9 +131,7 @@ function newControl(device: DeviceDefinition, type: Control["type"]): Control {
     case "encoder":
       return { ...base, type, midi: { kind: "cc" }, capabilities: { encoding: {} } } as unknown as Control;
     case "display": {
-      const used = new Set(
-        device.controls.flatMap((control) => (control.type === "display" ? [control.index] : []))
-      );
+      const used = new Set(device.controls.flatMap((control) => (control.type === "display" ? [control.index] : [])));
       let index = 0;
       while (used.has(index) && index < 7) index += 1;
       return { ...base, type, index, capabilities: { segments: 7 } } as unknown as Control;
@@ -181,6 +172,10 @@ export function EditorView({
     suspended: false,
   });
   const [flashKeys, setFlashKeys] = useState<Set<string>>(new Set());
+  // BUG-9: "Save & close" survives the retarget dialog — the dialog finishes the save, then honors this.
+  const closeAfterSaveRef = useRef(false);
+  // BUG-11: one clear-timer per flash key; sustained input keeps renewing it instead of blinking.
+  const flashTimersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   const adopt = useCallback((next: Loaded) => {
     setLoaded(next);
@@ -241,9 +236,16 @@ export function EditorView({
         if (target) applyCapturedAddress(target, event.address);
         resumeIndicate();
       } else {
+        // BUG-10: the session slot is shared — name the mode that actually died.
+        const wasLearn = learnTargetRef.current !== undefined;
         if (event.reason !== "replaced") learnTargetRef.current = undefined;
         if (event.reason === "port-lost") {
-          pushNotices([{ severity: "warning", message: "MIDI learn ended — the port disappeared" }]);
+          pushNotices([
+            {
+              severity: "warning",
+              message: wasLearn ? "MIDI learn ended — the port disappeared" : "Test mode ended — the port disappeared",
+            },
+          ]);
           indicateRef.current.on = false;
           setIndicateOn(false);
         }
@@ -275,28 +277,45 @@ export function EditorView({
   };
 
   // Indicate mode (AC-11): flash matching controls on incoming addresses.
+  // BUG-11: each key holds one clear-timer that every new batch renews, so
+  // sustained input stays lit instead of blinking off at batch boundaries.
   useEffect(() => {
-    return window.pamOsc.onMidiActivity((event) => {
+    const timers = flashTimersRef.current;
+    const unsubscribe = window.pamOsc.onMidiActivity((event) => {
       if (!indicateRef.current.on) return;
+      const keys: string[] = [];
+      for (const address of event.addresses) {
+        const key = addressMapRef.current.get(addressKey(address));
+        if (key) keys.push(key);
+      }
+      if (keys.length === 0) return;
       setFlashKeys((current) => {
         const next = new Set(current);
-        for (const address of event.addresses) {
-          const key = addressMapRef.current.get(addressKey(address));
-          if (key) next.add(key);
-        }
+        for (const key of keys) next.add(key);
         return next.size === current.size ? current : next;
       });
-      setTimeout(() => {
-        setFlashKeys((current) => {
-          const next = new Set(current);
-          for (const address of event.addresses) {
-            const key = addressMapRef.current.get(addressKey(address));
-            if (key) next.delete(key);
-          }
-          return next;
-        });
-      }, FLASH_MS);
+      for (const key of keys) {
+        const existing = timers.get(key);
+        if (existing) clearTimeout(existing);
+        timers.set(
+          key,
+          setTimeout(() => {
+            timers.delete(key);
+            setFlashKeys((current) => {
+              if (!current.has(key)) return current;
+              const next = new Set(current);
+              next.delete(key);
+              return next;
+            });
+          }, FLASH_MS)
+        );
+      }
     });
+    return () => {
+      unsubscribe();
+      for (const timer of timers.values()) clearTimeout(timer);
+      timers.clear();
+    };
   }, []);
 
   // Leaving the editor always ends any monitor session (learn or indicate).
@@ -311,7 +330,9 @@ export function EditorView({
     loaded?.mode === "mapping" ? loaded.device : draft && "controls" in draft ? (draft as DeviceDefinition) : undefined;
 
   const addressKey = (address: LearnedAddress): string =>
-    address.kind === "pitchbend" ? `pitchbend:${address.channel}` : `${address.kind}:${address.channel}:${address.number}`;
+    address.kind === "pitchbend"
+      ? `pitchbend:${address.channel}`
+      : `${address.kind}:${address.channel}:${address.number}`;
 
   // wire address → flash key (`<id>` or `<id>#push`), rebuilt with the draft.
   const addressMap = useMemo(() => {
@@ -435,7 +456,9 @@ export function EditorView({
   }, []);
 
   const updateBoard = useCallback((patch: Partial<DeviceDefinition>) => {
-    setDraft((current) => (current && "controls" in current ? { ...(current as DeviceDefinition), ...patch } : current));
+    setDraft((current) =>
+      current && "controls" in current ? { ...(current as DeviceDefinition), ...patch } : current
+    );
   }, []);
 
   const addControl = useCallback(
@@ -568,7 +591,7 @@ export function EditorView({
     [draft, loaded, finishSave, pushNotices]
   );
 
-  const save = useCallback(async (): Promise<boolean> => {
+  const save = useCallback(async (): Promise<boolean | "prompted"> => {
     if (!draft || !loaded) return false;
     if (loaded.mode === "mapping") {
       setSaving(true);
@@ -587,7 +610,7 @@ export function EditorView({
       const usage = await window.pamOsc.getDefinitionUsage((draft as DeviceDefinition).id);
       if (usage.length > 0) {
         setRetargetPrompt({ usage, chosen: new Set() });
-        return false; // the dialog continues the save
+        return "prompted"; // the dialog continues the save (and any pending close — BUG-9)
       }
     }
     // BUG-1: propagate the outcome — "Save & close" must not close on failure.
@@ -622,8 +645,7 @@ export function EditorView({
   }
 
   const name = loaded.mode === "mapping" ? (draft as Mapping).name : (draft as DeviceDefinition).name;
-  const selectedPushView =
-    selected?.part === "push" && selectedControl ? pushView(selectedControl) : undefined;
+  const selectedPushView = selected?.part === "push" && selectedControl ? pushView(selectedControl) : undefined;
   // BUG-2/BUG-3: the delete warning names what actually happens per case.
   const deleteConsequence =
     loaded.mode === "board" && loaded.origin === "bundled" && !loaded.isNew
@@ -639,9 +661,7 @@ export function EditorView({
             className="editor-name"
             aria-label="Mapping name"
             value={name}
-            onChange={(event) =>
-              setDraft((current) => (current ? { ...current, name: event.target.value } : current))
-            }
+            onChange={(event) => setDraft((current) => (current ? { ...current, name: event.target.value } : current))}
           />
         ) : (
           <span className="editor-name-static">{name}</span>
@@ -789,8 +809,10 @@ export function EditorView({
                 disabled={!canSave}
                 onClick={() => {
                   setClosePrompt(false);
-                  void save().then((ok) => {
-                    if (ok) onClose();
+                  void save().then((result) => {
+                    if (result === true) onClose();
+                    // BUG-9: the retarget dialog finishes the save — carry the close intent over.
+                    else if (result === "prompted") closeAfterSaveRef.current = true;
                   });
                 }}
               >
@@ -859,18 +881,33 @@ export function EditorView({
                     }
                   />
                   {ref.name}
-                  {ref.origin === "bundled" ? " (bundled — activate it first, then retarget)" : ref.active ? " (active)" : ""}
+                  {ref.origin === "bundled"
+                    ? " (bundled — activate it first, then retarget)"
+                    : ref.active
+                      ? " (active)"
+                      : ""}
                 </label>
               ))}
             </div>
             <div className="dialog-actions">
-              <button onClick={() => setRetargetPrompt(undefined)}>Cancel</button>
+              <button
+                onClick={() => {
+                  setRetargetPrompt(undefined);
+                  closeAfterSaveRef.current = false;
+                }}
+              >
+                Cancel
+              </button>
               <button
                 className="primary"
                 onClick={() => {
                   const chosen = [...retargetPrompt.chosen];
                   setRetargetPrompt(undefined);
-                  void saveDevice(chosen);
+                  void saveDevice(chosen).then((ok) => {
+                    const shouldClose = ok && closeAfterSaveRef.current;
+                    closeAfterSaveRef.current = false;
+                    if (shouldClose) onClose();
+                  });
                 }}
               >
                 Save copy

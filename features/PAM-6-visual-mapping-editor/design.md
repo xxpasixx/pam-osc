@@ -225,3 +225,11 @@ Level 5 — Tests:    T7      integration: save→reload against the engine test
 - **Review fixes:** BUG-1 board save propagates `ok` ("Save & close" keeps the editor open on failure), BUG-2/BUG-3 the delete warning names the real per-case consequence, BUG-4 the learn capture target is pinned at Learn-start (`learnTargetRef`), BUG-7 fixed incidentally (clamp floors at 0/MIN_SIZE via `Math.max`). BUG-5/BUG-6 remain documented in review.md (parked).
 - **`docs/file-format.md`** documents `push` and `part: "push"`.
 - **Verified (delta round):** 227/227 Vitest (10 new: 5 push format rules, 2 push routing, 3 indicate session; golden import test tightened to key by (controlId, part)), typecheck clean, production build green, dev-boot smoke clean.
+
+## Implementation Notes — BUG-8…BUG-11 fix round (2026-07-17)
+
+- **BUG-8 (AC-10) fixed in data, review option (a) inverted:** the Compact's relative knobs fold their push buttons into the encoders (`part: "push"`, both compact mappings retargeted); the two remaining same-rect stacks became concentric insets — push caps 0.4 centered inside knob-1..8, rel encoders 0.5 centered inside their abs twins. The **later-rendered** control is always the inner one (DOM order = stacking order), so the outer ring stays clickable — no canvas code needed. Regression locked in `bundled.test.ts`: no bundled control fully covered by a later sibling.
+- **BUG-9:** `save()` now returns `"prompted"` when the retarget dialog takes over; "Save & close" stores the close intent in a ref, the dialog's "Save copy" honors it after a successful save, Cancel clears it.
+- **BUG-10:** the port-lost notice names the mode that actually died (learn target ref set → "MIDI learn ended", otherwise "Test mode ended").
+- **BUG-11:** indicate flashes keep one clear-timer per key, renewed on every batch — sustained input stays lit; timers are cleared on unmount.
+- **Verified:** 233/233 Vitest (1 new: bundled coverage invariant), typecheck clean, production build green.

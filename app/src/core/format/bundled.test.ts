@@ -81,15 +81,14 @@ describe("bundled resources", () => {
     for (const device of result.devices) {
       const controls = device.controls;
       for (let i = 0; i < controls.length; i += 1) {
-        const a = controls[i].position;
+        const lower = controls[i]!;
+        const a = lower.position;
         for (let j = i + 1; j < controls.length; j += 1) {
-          const b = controls[j].position;
+          const upper = controls[j]!;
+          const b = upper.position;
           const covered =
             b.x <= a.x && b.y <= a.y && b.x + b.width >= a.x + a.width && b.y + b.height >= a.y + a.height;
-          expect(
-            covered,
-            `${device.id}: "${controls[i].id}" is fully covered by later sibling "${controls[j].id}"`
-          ).toBe(false);
+          expect(covered, `${device.id}: "${lower.id}" is fully covered by later sibling "${upper.id}"`).toBe(false);
         }
       }
     }
