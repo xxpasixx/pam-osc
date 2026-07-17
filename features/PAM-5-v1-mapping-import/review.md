@@ -83,3 +83,43 @@ Faithful to `design.md`; the three documented deviations (feedback-by-action-sta
 
 - **ACs:** 6/6 passed (AC-4 functionally correct but its matcher is the BUG-1 surface) · **Bugs:** 7 (0 Critical / 1 High / 0 Medium / 6 Low) · **Security:** all promised guarantees hold except the BUG-1 ReDoS
 - **Ship:** **NO** — one High (BUG-1 ReDoS freezes the main process on untrusted input). Fix BUG-1, then re-review; BUG-2/BUG-3 are worth folding into the same pass, the rest are optional polish.
+
+# Re-review — fix round (BUG-1…BUG-3)
+
+**Reviewed:** 2026-07-17
+**Commit:** 3f19540 "fix(PAM-5): review round 1 — ReDoS guard (BUG-1 High), serialize imports (BUG-2), Escape-during-import (BUG-3)"
+**Where tested:** local — targeted suites `npx vitest run src/core/import/converter.test.ts src/main/import-v1.test.ts` (45/45) + `npm run typecheck` (clean); regex backtracking re-measured directly with Node against inputs at/over the new cap; renderer dialog logic + IPC serialization path read in context. (Full suite deliberately not run — a parallel lane holds the virtual MIDI ports.)
+**Reviewer:** Review (AI), adversarial re-verification
+
+### Fix verification
+
+**BUG-1 (High, ReDoS) — FIXED.** `mapperToOnOff` (`converter.ts:491`) now rejects any `buttonFeedbackMapper` longer than `MAX_MAPPER_LENGTH = 300` before `V1_MAPPER_PATTERN.exec`, returning the `on-off` 127/0 fallback + a warning that states the function was NOT executed. Verified adversarially:
+- The guard is in the **single** `mapperToOnOff`, which serves **both** the top-level `fileMapper` and per-entry `buttonFeedbackMapper` (`converter.ts:472-473`) — the whole attack surface is covered, not just one path.
+- Re-measured the raw pattern against every input that can still reach the regex (≤300, plus one 340-char case): worst case **0.15 ms** (pad@50 0.14ms, pad@150/250/299 <0.1ms, all-whitespace-slots / full-backtrack cases 0.002ms). The documented O(n²) blowup (6 s @ 100k) is fully bounded — 300² is trivial, and there is no exponential path (the ambiguity is bounded `\s*;?\s*` groups separated by required literals, i.e. polynomial, so the cap is decisive even against the worst case).
+- The 1 MB adversarial string from the round-1 repro is rejected before the regex; the committed converter test asserts <100 ms and the fallback + "too long" warning.
+- Legitimacy preserved: the bundled/whitespace-padded mappers still match (`["127","0"]` at 81 chars, `["5","0"]` at 108 chars); the 300-char margin is ~3× the most generous legitimate mapper. AC-4 behavior (match → clamped values; no match / over-long → default + warning, never executed) holds.
+- No unicode/`.length` bypass: `.length` counts UTF-16 code units, so astral characters count as 2 — the cap is if anything *stricter* on multi-byte input, never looser.
+- The two other regexes on the import surface (`/^\d+$/` in `toInt`, the id-slug `.replace`s) are anchored/linear — not backtracking-prone, correctly left alone.
+
+**BUG-2 (Low, concurrent-import race) — FIXED.** `ImportSerializer` (`import-v1.ts:114`) chains tasks on a single promise; the `importV1Mapping` IPC handler (`index.ts:241,255`) is the **only** production caller of `importV1File` and routes through it (grep-confirmed — no bypass). A rejected task advances the chain via `.catch(() => undefined)`, so a failure can't wedge the queue. Committed tests confirm concurrent same-name imports produce distinct `compact` + `compact-2` (neither clobbered) and that a rejected task doesn't block the next import. Non-atomic id-check → write → refresh can no longer interleave.
+
+**BUG-3 (Low, Escape glitch) — FIXED.** `ImportV1Dialog` (`ImportV1Dialog.tsx:69-74`) handles the native `<dialog>` `cancel` event and `preventDefault`s while `busy`, so Escape mid-import no longer tears the dialog out of the DOM; when not busy, cancel proceeds to `onClose`. Logic is sound; not exercised by an Electron E2E harness (out of scope, consistent with round 1), verified by reading.
+
+### Parked Lows (incidental state)
+
+- **BUG-4** — unchanged; the defensive post-write "did not load" branch (`import-v1.ts:94-101`) is byte-identical. Still open.
+- **BUG-5** — unchanged; schema fields still unbounded, fs errors still unwrapped. Still open.
+- **BUG-6** — unchanged; the only dialog edit was `onCancel`; empty-boards dead-end logic untouched. Still open.
+- **BUG-7** — unchanged; `cmd`/`quicKey`/`attribute` still accepted verbatim. Still open (inherent to the feature).
+
+### New bugs
+
+**None.** No regressions or new defects introduced by the fix. One non-bug observation: capping at 300 means a hypothetical legitimate mapper padded with >300 chars of whitespace would now fall back to the default instead of matching — no realistic v1 file approaches this, it is documented in `design.md`, and it only affects the warning text (the fallback value is unchanged), so it is an accepted tradeoff, not a defect.
+
+### Regression
+
+Targeted suites green: `converter.test.ts` + `import-v1.test.ts` 45/45 passed; `npm run typecheck` clean. (Full suite / virtual-MIDI lanes owned by a parallel reviewer.)
+
+### Verdict — fix round
+
+**READY.** The one blocking High (BUG-1 ReDoS) is genuinely fixed and adversarially confirmed bounded; BUG-2 and BUG-3 are resolved. No Critical/High remaining — the four parked Lows are unchanged and non-blocking. PAM-5 is clear to move to Approved.

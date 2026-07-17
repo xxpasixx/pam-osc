@@ -90,3 +90,46 @@
 
 - **ACs:** 8/8 passed (7 AC + 1 EC) · **Bugs:** 8 (0 Critical / 0 High / 0 Medium / 8 Low) · **Security:** pass (2 Low robustness notes: BUG-1/BUG-2)
 - **Ship:** YES — all ACs pass, no Critical/High; the Low findings are polish (error handling, cosmetics) and none blocks the core flows.
+
+---
+
+# Re-review — delta round (AC-8 + editor hardware picker)
+
+**Reviewed:** 2026-07-17 · **Commit:** 3d36d9d · **Reviewer:** Review (AI), red-team lane — code trace + targeted regression (running app held the single-instance lock, so no live click-through)
+
+Scope: the two additions that landed after the round-1 READY verdict and were never reviewed — AC-8 (board search in `BoardsView.tsx`) and the editor-header Hardware picker (`EditorView.tsx` + `BoardInspector.tsx` `LearnButton`).
+
+### Acceptance Criteria
+
+- [x] AC-8: Board search filters by name **or** id (case-insensitive), never matches mapping names, clearing restores all, no-match shows an empty state — pass (code trace `BoardsView`: `needle = query.trim().toLowerCase()`; filter tests only `board.name`/`board.id`; `needle === ""` returns all boards, whitespace-only query trims to empty and restores; `boards.length > 0 && visibleBoards.length === 0` renders `No board matches "…"`). Uses `String.includes` not regex — no injection; query echoed through React escaping. Search input gated by `boards.length > 0`, no remount/focus loss (stable position, not keyed by query).
+
+### Hardware-picker verification
+
+- **(a) mapping port connected** — `defaultPort = mappingPort` when `midiPorts.inputs.includes(mappingPort)`; header defaults to the bound unit. Pass.
+- **(b) mapping port NOT connected (placeholder = board name)** — the placeholder is never in `midiPorts.inputs`, so `defaultPort` falls back to `inputs[0]`. The phantom board-name port is **never offered and never listened on** — the core concern is correctly handled (no silent listen-on-nothing). See BUG-9 for the one nit.
+- **(c) no MIDI inputs at all** — `defaultPort = inputs[0] ?? ""` → `hwPort = ""`. Test button `disabled={!indicateOn && indicatePort === ""}` (disabled); `toggleIndicate` guards `if (indicatePort === "") return`; `LearnButton` `disabled={learn.port === ""}`. No crash, no listener started. Pass.
+- **(d) board mode / new board** — `mappingPort = undefined` → `defaultPort = inputs[0]`. Pass.
+- **Port flow into sessions** — `hwPort` is passed to `BoardInspector` as `learn.port`; `LearnButton` calls `onLearnStart(learn.port, target)` → `startLearn(port)` → `startMidiLearn(port)`; `indicatePort = hwPort` → `startMidiIndicate(indicatePort)`. Same source feeds both, as designed. Pass.
+- **Mid-session switch impossible** — the `<select>` is `disabled={learn.listening || indicateOn}`; no alternate mutation path (the inspector Learn button only toggles to "Listening … cancel" while active, and `learn.port` is frozen). The capture target is also fixed at Learn-start via `learnTargetRef`. No path around it. Pass.
+- **Cross-target leak** — `EditorView` is only entered from a closed state (`onClose` sets `editorTarget = undefined`, unmounting it), so `learn.port` cannot bleed from one target into the next. Verified in `App.tsx`.
+
+### New Bugs
+
+**BUG-9: A real (non-placeholder) bound port that is currently disconnected is silently replaced by the first input instead of shown as "(not connected)"**
+
+- **Severity:** Low
+- **Steps to reproduce:** Activate a mapping on a real unit (e.g. "X-Touch"), unplug that unit while at least one other MIDI input stays connected, open the mapping in the editor.
+- **Expected / Actual:** Header shows the bound unit as "X-Touch (not connected)" so it's clear Learn/Test aren't listening to that unit / `defaultPort` silently falls to `inputs[0]` (an unrelated device). The `"(not connected)"` `<option>` only ever renders for a port the user picked manually that then vanished — never for the default — so the disconnected bound unit is invisible unless the user reads the substituted port name. Discoverable (the select shows the active port) and consistent with the "fall back to first real input" design intent, so cosmetic. (`EditorView.tsx` `defaultPort`)
+
+### Regression
+
+Targeted only (virtual-MIDI suite left to the other lane): `npx vitest run src/main/catalog.test.ts src/core/settings/validate.test.ts` → 18/18 pass; `npm run typecheck` → clean.
+
+### Notes (verified, not bugs)
+
+- Invalid-files section + "+ New board" stay visible during an active search (even at zero board matches). Not filtered — this is correct: filtering invalid files would conflict with AC-6 ("never silently hidden"). The only cost is a mild "No board matches" + invalid-files co-render; acceptable.
+
+### Delta Verdict
+
+- **AC-8:** pass · **Hardware picker:** all four cases + port-flow + lockout verified · **New bugs:** 1 (0 Critical / 0 High / 0 Medium / 1 Low — BUG-9) · **Regression:** green (targeted) · **Typecheck:** clean
+- **Ship:** **READY** — the delta additions meet AC-8 and the picker correctly avoids the phantom-port trap; BUG-9 is a Low cosmetic that doesn't block.

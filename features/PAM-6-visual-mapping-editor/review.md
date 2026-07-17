@@ -153,3 +153,42 @@
 
 - **ACs:** 4/5 delta ACs passed (AC-8, AC-9, AC-11, PAM-1 AC-7; **AC-10 fails — BUG-8**); rounds 1 ACs regression-clean · **Bugs:** 4 new (0 C / 0 H / 1 M / 3 L) · **Security:** pass
 - **Ship:** NO — NOT READY. No Critical/High, but AC-10 verifiably fails on the exact board the feedback came from. Fix BUG-8 via `/build` (recommendation: option a, concentric inset in the Compact data), then `/review` re-runs AC-10; BUG-9…11 are cheap to take along.
+
+---
+
+# Re-review — fix round (BUG-8…BUG-11)
+
+**Reviewed:** 2026-07-17 · **Commits:** `f699a23` (BUG-8 / AC-10) + `f437a44` (BUG-9/10/11) · **Where tested:** local (Vitest 233/233 incl. PAM-1..5 suites, typecheck clean); Compact geometry re-derived by an independent overlap script; wire-parity of the push-fold checked against `f699a23^`; adversarial code trace of the three EditorView paths. Real-window onPC/hardware verification remains the user's release gate.
+
+### Acceptance Criteria (re-check)
+
+- [x] **AC-10 — PASS.** "Every control clickable" on the bundled X-Touch Compact now holds. Independent check + the new `bundled.test.ts` regression ("no control fully covered by a later-rendered sibling") both report **0 full-coverage overlaps** across all bundled devices (144 controls on the Compact); 0 identical rects; 0 out-of-bounds. Concentric stacking is correct and the later-rendered control is always the smaller inner one: `knob-N` (0.8) ⊃ `knob-N-push` (0.4, rendered later, on top); `knob-N-abs` (0.8) ⊃ `knob-N-rel` (0.5, later) ⊃ its `.push-cap` (45% of rel, DOM child = topmost). Every ring stays reachable — and because `.circle` uses `border-radius: 50%`, the inner square's corners pass the pointer through to the outer ring, widening the outer hit area. Layer-A/B separation from the prior round is intact.
+
+### Fix verification (BUG-8…BUG-11)
+
+- [x] **BUG-8 fixed (AC-10).** See above. Wire behavior preserved: the removed standalone `knob-9-push`…`knob-16-push` (v1 notes 8–15) fold into the `-rel` encoders' `capabilities.push` with identical notes; `knob-1-push`…`knob-8-push` (notes 0–7) correctly stay standalone (absolute-CC knobs are faders — the schema's `push` is encoder-only). Both Compact mappings retargeted: all `controlId`(+`part`) refs resolve, no duplicate assignment keys, `part: "push"` only on encoders that declare a push cap.
+- [x] **BUG-9 fixed.** `closeAfterSaveRef` lifecycle traced across every path: "Save & close" → `save()` returns `"prompted"` → ref set true → retarget "Save copy" closes only on `ok && ref`, resets ref first; "Save copy" failure keeps the editor open (ref reset, no close); retarget "Cancel" clears the intent (ref=false). Plain header Save never sets the ref, so a plain-Save→retarget→Save-copy does **not** close. No stale-ref leak: the flag is only ever set in the Save&close handler and is reset on every terminal branch.
+- [x] **BUG-10 fixed.** Discriminator `wasLearn = learnTargetRef.current !== undefined` names the mode correctly for port-lost: indicate-only → "Test mode ended…"; active learn (incl. learn while indicate suspended) → "MIDI learn ended…"; learn-canceled-then-lost → learnTargetRef already cleared in the "canceled" branch (which also `resumeIndicate()`s) → subsequent port-lost reads as Test mode. `reason: "replaced"` correctly keeps the ref (learn supersedes the suspended indicate). Toggle state is force-cleared (`indicateRef.on=false`, `setIndicateOn(false)`) either way.
+- [x] **BUG-11 fixed.** One clear-timer per flash key in `flashTimersRef`; each incoming batch `clearTimeout`s and re-arms only its own keys, so sustained input on a key keeps renewing its timer (stays lit) while independent keys expire independently. No stale closure — the handler reads `indicateRef.current` and `addressMapRef.current` (both refs, kept current every render), effect deps `[]` are therefore safe, and `flashKeys` updates are functional. Unmount clears every pending timer and empties the map — no leak.
+
+### Security (red team)
+
+- No new surface: the fix is pure bundled data (`x-touch-compact.json` + two mappings) plus renderer-only control flow. No new IPC handler, no path/filename input, no credentials/PII. `startMidiIndicate`/`stopMidiIndicate`/learn IPC were already validated in the prior round and are unchanged here.
+
+### Regression
+
+- 233/233 Vitest (up from 227 — the new AC-10 coverage test plus PAM-11 additions), typecheck clean. Import/v1-parity suites (`converter.test.ts`, `import-v1.test.ts`, `bundled.test.ts` = 50 tests) green — the push-fold did not disturb v1 wire addresses.
+
+### Bugs (fix round — numbering continues)
+
+**BUG-12: Concentric 3-deep hit targets on the Compact relative knobs are fiddly at minimum zoom**
+
+- **Severity:** Low (cosmetic/usability; AC-10 requires "clickable", which is satisfied — not blocking)
+- **Detail:** For `knob-9-rel`…`knob-16-rel`, one physical knob renders three stacked click zones (abs ring / rel ring / push cap). At the zoom-to-fit floor (`scale` clamped to 20 px/unit) the innermost push cap is ~4.5 px across; at typical window widths (~74 px/unit) it is ~17 px — reachable but tight. Also, showing `-abs` and `-rel` simultaneously is inherently redundant (a real unit is in one mode at a time) — a data-model artifact of PAM-1 AC-7, not of this fix. Consider a per-knob abs/rel toggle or larger caps if users report mis-clicks.
+
+**Minor (no bug ID):** toggling Indicate **off** clears `flashKeys` but not the pending `flashTimersRef` timers; they fire ~300 ms later as guarded no-ops (`if (!current.has(key)) return current`) and self-delete. Harmless — no visual glitch, no leak — but clearing them in `toggleIndicate` would be tidier.
+
+### Verdict (fix round)
+
+- **ACs:** AC-10 now **PASSES**; AC-1…AC-9, AC-11, EC-1 regression-clean · **Bugs:** BUG-8/9/10/11 all fixed; 1 new Low (BUG-12) + 1 benign note · **Security:** pass, no new surface
+- **Ship:** **YES — READY.** No Critical/High/Medium open. AC-10 is verified in the data and locked by a new regression test; the three EditorView fixes hold under adversarial tracing. BUG-12 is a non-blocking usability polish. Remaining parked items (BUG-5/BUG-6 by decision) unchanged.
