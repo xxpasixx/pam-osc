@@ -30,17 +30,19 @@ Sharing is the point of the mapping format (PRD P1), but today the only way to s
 
 **Format:** **AC-N** — Given [a starting state] / When [the user acts] / Then [the observable result]
 
-- [ ] **AC-1** — Given any mapping in the catalog (bundled or user), when I choose "Export" on it, then a save dialog writes **the raw mapping file** to the location I pick — byte-compatible with the files the loader reads.
+- [ ] **AC-1** — Given any mapping in the catalog (bundled or user), when I choose "Export" on it, then a save dialog writes **the raw mapping file** (custom extension `.pammap`, JSON content) to the location I pick — byte-compatible with the files the loader reads.
 - [ ] **AC-2** — Given a mapping file, when I import it, then it is validated against the strict schema before anything is written; a valid mapping lands as a new user mapping file, appears in the catalog, and is **not** auto-activated.
 - [ ] **AC-3** — Given an import whose id already exists locally, then user content is never overwritten — the imported entity gets a suffixed unique id (same rule as duplicate/v1 import).
 - [ ] **AC-4** — Given a mapping import referencing a board that is neither bundled nor local, then the import is refused with a friendly message naming the missing board id and pointing at "import its device file first" — never a silently broken catalog entry.
 - [ ] **AC-5** — Given an invalid, oversized (loader cap: 1 MB), or malformed file, then the import reports a friendly error and writes nothing; export refuses to produce a file the loader would reject on re-import.
 - [ ] **AC-6** — Given a successfully imported mapping, when I activate it in Setup, then the normal port-rebind flow applies (the exporter's MIDI port name never binds automatically on my machine).
 - [ ] **AC-7** — Given an imported mapping that contains free-text MA3 commands, then the import summary shows a one-line caution that button commands run verbatim on the console (carries over the PAM-5 review's BUG-7 note to the sharing surface).
-- [ ] **AC-8** — Given any board in the Boards tab, when I choose "Export" on it, then a save dialog writes **the raw device definition file** to the location I pick.
+- [ ] **AC-8** — Given any board in the Boards tab, when I choose "Export" on it, then a save dialog writes **the raw device definition file** (custom extension `.pamdev`, JSON content) to the location I pick.
 - [ ] **AC-9** — Given a device definition file, when I import it, then it is validated the same way (AC-3/AC-5 rules apply); bundled definitions are never overwritten or shadowed without the id-suffix rule.
 - [ ] **AC-10** — Given the app, when I choose "Export support package", then one **.zip** archive is written containing **all** device definitions and mappings visible in the app (user files at minimum), the current `settings.json`, the latest session log, and a manifest (app version, date) — enough for someone else (or future me) to reproduce the setup.
 - [ ] **AC-11** — Given a running session, then the app writes a session log file (engine/OSC/MIDI lifecycle events, errors) to the user data folder with a bounded size/rotation, so AC-10 always has a "latest log" to include.
+- [ ] **AC-12** — Given the import dialog, when it opens, then it is filtered to the matching custom extension (`.pammap` for mapping import, `.pamdev` for device import) so the file picker only surfaces the right kind by default; the filter also accepts plain `.json` (hand-copied files stay importable). _(Delta 2026-07-17: maintainer request — custom extensions.)_
+- [ ] **AC-13** — Given any imported file, when it is read, then the importer determines the entity kind **from the content, not the extension** (mapping = has `assignments` + `deviceDefinitionId`; device = has `controls` + `layout`) and routes it accordingly; a file whose content doesn't match the action (e.g. a device file dropped into "Import mapping", or a renamed/foreign file) is refused with a friendly, specific message ("this looks like a device definition — use Import device instead" / "this isn't a pam-osc mapping or device file") and nothing is written. This content check — plus the strict schema (AC-5) — is the real guard; the extension (AC-12) is only a convenience filter. _(Delta 2026-07-17: maintainer request — prevent importing the wrong file.)_
 
 ## Security notes (same bar as PAM-5/PAM-6 reviews)
 
@@ -52,6 +54,6 @@ Sharing is the point of the mapping format (PRD P1), but today the only way to s
 ## Out of Scope
 
 - Online gallery, URL import, or any cloud/sync (PRD non-goal — sharing is files)
-- Package **import**/restore (pending open question 1 — default: manual restore)
+- Package **import**/restore (decided: manual restore — copy files back or import them individually per AC-2/AC-9)
 - Auto-updating previously imported mappings ("this file changed upstream")
 - Migration/versioning beyond `formatVersion: 1` validation
