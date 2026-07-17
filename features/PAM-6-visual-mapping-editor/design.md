@@ -177,6 +177,30 @@ Level 5 — Tests:    T7      integration: save→reload against the engine test
 
 - None
 
+## Design Delta (2026-07-17 — spec AC-8…AC-11 + review BUG-1…BUG-4)
+
+**Format (owned by PAM-1 AC-7, built here as Level 0):**
+
+- Encoder `capabilities.push` — optional: `midi` (kind `note` or `cc` only, channel optional, number required) and `led` (one of `none`, `on-off`, `velocity-colors`). Pitchbend is not a press.
+- Assignment gains optional `part` — only value `"push"`; absent = the control's main function. Valid only when the target control is an encoder with a push capability. Uniqueness key becomes (controlId, part) — one rotate and one push assignment may coexist on the same control.
+- Compatibility for `part: "push"`: actions as for buttons (no `display`); feedback `on-off`/`always-on` valid iff `push.led ≠ none`; `encoder-ring`/`fader-position` invalid. Rotate part unchanged.
+- The duplicate-address rule includes push addresses in the same namespace as every other control address.
+- `formatVersion` stays 1 (pre-release schema evolution — PAM-1 decision log).
+
+**Bundled content:** `x-touch.json` drops the 8 `btn-encoder-push-*` buttons; `encoder-1…8` carry their addresses/LEDs as `push`. `xTouch1`/`xTouch2` mappings move those assignments to `controlId: encoder-N, part: "push"` — v1 behavior identical on the wire. `x-touch-compact.json`: every `-b` control moves into a visibly separate "Layer B" area below the A layout (layout height grows); no two controls fully overlap (AC-10).
+
+**Engine:** `buildUnit` expands a push assignment into a synthetic button route (internal id `<encoderId>#push`, address = `push.midi`, LED per `push.led`) and reuses the existing button input/feedback logic unchanged — feedback caches key on the synthetic id. No wire-level change vs v1.
+
+**Import (PAM-5 module):** v1 `note` entries whose address matches a device encoder's `push.midi` convert to `{controlId, part: "push"}` instead of reporting "no matching control".
+
+**Renderer:**
+
+- **Boards tab (AC-8):** third tab "Boards" renders the former BoardsManagerDialog content as a page section; the "Manage boards" button in Devices disappears.
+- **Combo component (AC-9):** an encoder with `push` renders ring + center cap as one element; cap click selects the push part (selection becomes `{controlId, part?}`). Mapping inspector shows two assignment sections on such encoders; board inspector gains a push block (address + Learn + LED).
+- **Indicate mode (AC-11):** toggle in the editor header. Main process: the learn session manager generalizes to one **monitor session** (modes `learn` = one-shot, `indicate` = continuous); same port rule (engine tap when held, temporary open otherwise), activity events batched ≤ every 50 ms as addresses. The renderer matches addresses against the device definition (incl. push addresses) and flashes the control (CSS class, ~300 ms). Starting Learn suspends indicate; the editor resumes it afterwards. View-only by construction — the tap never feeds the engine anything.
+
+**Review fixes in the same round:** BUG-1 (board save propagates its outcome; "Save & close" only closes on success), BUG-2/BUG-3 (delete-warning text becomes case-aware: copy-on-edit vs in-place, immediate breakage of bundled-referencing mappings named), BUG-4 (learn captures to the control selected at Learn-start, stored as session target).
+
 ## Implementation Notes (added during /build, 2026-07-17)
 
 - **Built sequentially inline, no worktree fan-out.** The working tree carried an unrelated repo-wide Prettier reformat; parallel worktree agents would have forked from HEAD and collided on merge-back.

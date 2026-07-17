@@ -7,3 +7,5 @@
 - Feedback `channel` field for LED modes — APC mini mk2 brightness / Launchpad flash+pulse run over MIDI channels; belongs to PAM-10 colored button feedback (2026-07-17)
 - Feedback type "executor-level on button LED" — v1 mirrored fader level as CC value on Launchpad top-row buttons; decide in PAM-2 whether to resurrect (2026-07-17)
 - timecodeSelect slot cycling — v1 cycled slots 1–8 per press; v2 format stores a fixed slot, PAM-2 could add a "cycle" variant (2026-07-17)
+- Layer-Umschalter im Editor-Canvas (X-Touch Compact A/B) statt Daten-Versatz — braucht Gruppierungs-Info im Format (2026-07-17)
+- Indicate-Mode auch im Status-Tab (Board-Ansicht mit Live-Highlight außerhalb des Editors) (2026-07-17)

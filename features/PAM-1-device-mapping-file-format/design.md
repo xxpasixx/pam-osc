@@ -37,7 +37,7 @@ Envelope (every file):
 - notes — free text, optional (JSON has no comments; this is where they go)
 ```
 
-**Device Definition** — describes a board *type*, never a concrete unit:
+**Device Definition** — describes a board _type_, never a concrete unit:
 
 ```
 - manufacturer — text, optional
@@ -120,6 +120,7 @@ Validation rules (loader):
 ```
 
 **Stored in:**
+
 - Bundled content ships read-only inside the app package (`resources/`)
 - User files live in the OS app-data folder (`<userData>/devices/`,
   `<userData>/mappings/`), created on first start; hand-edited files there are
@@ -130,7 +131,7 @@ Access: everything is local files owned by the local user — consistent with `d
 ## Tech Decisions
 
 - **JSON as the file format** — native to the stack, v1 users already know JSON mappings, and the PAM-6 editor can read/write it losslessly. Comments are replaced by explicit `notes` fields.
-- **One schema library as single source of truth (zod)** — the same schema validates files at runtime *and* derives the TypeScript types, so format and code can never drift apart; its error messages map cleanly to "file + path + problem" (AC-4).
+- **One schema library as single source of truth (zod)** — the same schema validates files at runtime _and_ derives the TypeScript types, so format and code can never drift apart; its error messages map cleanly to "file + path + problem" (AC-4).
 - **Hardware facts live in the device definition, user choices in the mapping** — v1 mixed encoder encoding ranges (hardware) with executor targets (user intent) in one file; the split is what makes definitions reusable across many mappings (AC-5) and is the line the PAM-6 editor will draw in its UI.
 - **Ports by OS name, not index** — v1 used Open Stage Control port indexes ("0,1"), which shift when devices are re-plugged; names are stable and human-readable.
 - **Integer formatVersion per file** — cheap to check, unambiguous to migrate; rejecting newer-than-known versions with a clear message beats guessing.
@@ -161,13 +162,13 @@ Note: T3/T4 need the app scaffold (`app/` with Vite/Electron/Vitest) to exist �
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| --- | --- | --- | --- | --- |
-| JSON file format | Stack-native, v1-familiar, editor-safe round-tripping | YAML (comments, friendlier syntax) | No comments → explicit `notes` fields; stricter syntax for hand-editing | 2026-07-16 |
-| zod schema as single source (validation + types) | Format and code can't drift; precise error paths for AC-4 | Hand-written TS types + JSON Schema files | Runtime dependency; JSON-Schema export possible later if editors want it | 2026-07-16 |
-| Encoder encoding ranges in device definition, not mapping | Hardware fact vs user intent; makes definitions reusable (AC-5) | Keep v1 shape (all in mapping) | Bundled definitions must be captured carefully once per board | 2026-07-16 |
-| User file shadows bundled file with same id (with notice) | Lets users tweak bundled boards before the PAM-6 editor exists | Reject duplicate ids | A stale user copy can hide bundled improvements — the notice mitigates | 2026-07-16 |
-| MIDI ports referenced by OS name | Stable across replugging, human-readable, PAM-3 picks them from a list | Numeric port indexes (v1) | Name changes across OSes/hubs → PAM-3 re-pick, PAM-7 import remaps | 2026-07-16 |
+| Decision                                                  | Rationale                                                              | Alternative considered                    | Trade-off                                                                | Date       |
+| --------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------ | ---------- |
+| JSON file format                                          | Stack-native, v1-familiar, editor-safe round-tripping                  | YAML (comments, friendlier syntax)        | No comments → explicit `notes` fields; stricter syntax for hand-editing  | 2026-07-16 |
+| zod schema as single source (validation + types)          | Format and code can't drift; precise error paths for AC-4              | Hand-written TS types + JSON Schema files | Runtime dependency; JSON-Schema export possible later if editors want it | 2026-07-16 |
+| Encoder encoding ranges in device definition, not mapping | Hardware fact vs user intent; makes definitions reusable (AC-5)        | Keep v1 shape (all in mapping)            | Bundled definitions must be captured carefully once per board            | 2026-07-16 |
+| User file shadows bundled file with same id (with notice) | Lets users tweak bundled boards before the PAM-6 editor exists         | Reject duplicate ids                      | A stale user copy can hide bundled improvements — the notice mitigates   | 2026-07-16 |
+| MIDI ports referenced by OS name                          | Stable across replugging, human-readable, PAM-3 picks them from a list | Numeric port indexes (v1)                 | Name changes across OSes/hubs → PAM-3 re-pick, PAM-7 import remaps       | 2026-07-16 |
 
 ## Open Questions
 
@@ -176,7 +177,7 @@ Note: T3/T4 need the app scaffold (`app/` with Vite/Electron/Vitest) to exist �
 ## Implementation Notes (added during /build)
 
 - **Display controls carry an `index` instead of a `midi` address.** v1 addresses scribble strips per sysex by slot index (0–7); a CC/note number would have been fiction. Deviation from the original data model table, same product behavior.
-- **Absolute-CC rotary knobs are modeled as `fader` with `shape: "circle"`.** The v2 `encoder` type means *relative* encoding; X-Touch Compact knobs in standard mode send absolute CC and behave protocol-wise like faders.
+- **Absolute-CC rotary knobs are modeled as `fader` with `shape: "circle"`.** The v2 `encoder` type means _relative_ encoding; X-Touch Compact knobs in standard mode send absolute CC and behave protocol-wise like faders.
 - **App scaffold kept minimal (TypeScript + Vitest + zod only).** Electron/Vite/React arrive with the first feature that needs them (PAM-2/PAM-3) — nothing in PAM-1 runs in a window. The loader takes folder paths as parameters, so wiring bundled/userData paths is trivial later.
 - Versions pinned from the npm registry on 2026-07-16: zod 4.4.3, TypeScript 7.0.2, Vitest 4.1.10.
 - **`ledRing` addresses a CC number (`controller`), not a MIDI channel.** v1's `returnChannel` is in truth the ring's CC number (X-Touch: encoders in on CC 16–23, rings out on CC 48–55); the original design's channel field would have rejected the only board with rings. Found during content conversion.
@@ -184,3 +185,4 @@ Note: T3/T4 need the app scaffold (`app/` with Vite/Electron/Vitest) to exist �
 - **X-Touch Compact: `motorized: true` expresses "value feedback via the control's own CC".** v1 sends MA3 fader levels back to every absolute-CC control (motor faders and encoder LED rings alike); `fader-position` feedback + the motorized flag is the schema-honest way to carry that, documented in the device's `notes`.
 - **Known, documented approximations** (each recorded in the affected file's `notes`): v1's cycling timecode-slot select became `timecodeSelect slot 1`; Launchpad top-row CC buttons mirrored the executor fader level in v1, now `on-off`; APC mini mk2 per-LED brightness channels and Launchpad flash/pulse channels are not machine-readable yet (parked in `docs/ideas.md` for PAM-10).
 - **2026-07-17 — delta scheduled by PAM-2:** `timecodeSelect.slot` becomes optional; absent = cycle slots 0–8 (restores v1 parity for the approximation above). Runs as Level 0 of PAM-2's build plan (schema, xTouch bundled mappings, format docs).
+- **2026-07-17 — delta scheduled by PAM-6 (AC-7):** composite push-encoders — encoder `capabilities.push` (note/cc address + led), assignments gain optional `part: "push"`, uniqueness key (controlId, part). Bundled X-Touch re-expressed (8 push buttons fold into their encoders; xTouch1/2 mappings follow). `formatVersion` stays 1 (pre-release). Exact shapes in PAM-6 design.md → Design Delta.
