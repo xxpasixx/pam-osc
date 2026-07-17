@@ -6,7 +6,7 @@
 
 ## Status: Spec'd
 
-**Created:** 2026-07-17 · **Last Updated:** 2026-07-17
+**Created:** 2026-07-17 · **Last Updated:** 2026-07-17 (delta: AC-7 notice auto-dismiss)
 
 ## Why
 
@@ -25,11 +25,12 @@ v1 buried its diagnostics (connection check, port diagnosis, MIDI test) in the O
 - [ ] **AC-4** — **MIDI output test on demand.** Given a bound device, when the user triggers its output test, then the device plays the v1 test animation (LED running light + fader/encoder wave) and afterwards returns to its live feedback state (permanent feedback, attribute LED, current executor values).
 - [ ] **AC-5** — **Traffic log.** Given the engine is running, when MIDI or OSC messages flow, then the log view shows them as human-readable entries, filterable by **MIDI IN / MIDI OUT / OSC IN / OSC OUT** (engine/system lines always available as their own category), with copy-to-clipboard; the buffer is bounded — long sessions never grow memory without limit.
 - [ ] **AC-6** — **Engine start/stop.** Given the engine is running, when the user hits Stop, then the engine stops cleanly (MIDI and UDP ports released) and the UI shows a distinct "stopped" state; Start runs it again with the saved settings. Auto-start on launch (PAM-3 AC-4) stays the default.
+- [ ] **AC-7** — **Notices auto-dismiss.** Given a notice appears in the notices area, when 15 seconds pass without the user dismissing it, then it disappears on its own (all severities — every notice also lands in the PAM-7 session log, so nothing is lost). _(Delta 2026-07-17: maintainer request.)_
 
 ## Out of Scope
 
 - Sending arbitrary/custom MIDI or OSC messages from the UI (test mode is the predefined animation only)
-- Persisting logs to disk / log files — copy-to-clipboard covers support cases
+- Persisting the **traffic log** to disk — copy-to-clipboard covers support cases. _(Superseded in part 2026-07-17: PAM-7 AC-11 adds a lifecycle/error session log on disk; per-message traffic stays memory-only.)_
 - Colored button feedback diagnostics — PAM-10
 
 ## Edge Cases

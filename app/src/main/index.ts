@@ -1,5 +1,5 @@
-import { app, BrowserWindow, dialog, ipcMain, screen, shell } from "electron";
-import type { IpcMainInvokeEvent } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from "electron";
+import type { IpcMainInvokeEvent, MenuItemConstructorOptions } from "electron";
 import { copyFile, stat } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 import { MAX_SHARE_BYTES, type ShareKind } from "../core/sharing/share.js";
@@ -197,6 +197,9 @@ async function main(): Promise<void> {
   });
 
   async function buildSnapshot(): Promise<Snapshot> {
+    // Every catalog change funnels through here — keep the menu's export
+    // submenus in sync (PAM-7 AC-14). Hoisted function, defined below.
+    rebuildMenu();
     return {
       settings: draftFromPersisted(settingsStore.settings, catalog),
       firstRun: !settingsStore.hasPersisted,
@@ -338,7 +341,83 @@ async function main(): Promise<void> {
   handle(IPC.importMappingFile, () => importShare("mapping"));
   handle(IPC.importDeviceFile, () => importShare("device"));
 
-  handle(IPC.exportSupportPackage, async (): Promise<ExportFileResult> => {
+  // Native application menu (PAM-7 AC-14): File carries the sharing actions;
+  // the export submenus mirror the current catalog, so the menu is rebuilt
+  // by buildSnapshot() — the single choke point every catalog change passes.
+  const menuImport = (kind: ShareKind) => {
+    void importShare(kind).then(async (result) => {
+      if ("canceled" in result) return;
+      if (!result.ok) {
+        pushNotice({ severity: "error", message: result.error });
+        return;
+      }
+      pushNotice({
+        severity: "info",
+        message: `imported ${result.kind === "mapping" ? "mapping" : "board"} "${result.name}" as ${result.id}${
+          result.renamed ? " (id was taken — renamed)" : ""
+        }`,
+      });
+      if (result.caution) pushNotice({ severity: "warning", message: result.caution });
+      send(IPC.evCatalogChanged, await buildSnapshot());
+    });
+  };
+  const menuExport = (kind: ShareKind, id: string) => {
+    void exportShare(kind, id).then((result) => {
+      if (result.status === "error") pushNotice({ severity: "error", message: result.error });
+      else if (result.status === "saved") pushNotice({ severity: "info", message: `exported to ${result.file}` });
+    });
+  };
+  function rebuildMenu(): void {
+    const entries = catalog.entries();
+    const boards = catalog.boards();
+    const fileMenu: MenuItemConstructorOptions = {
+      label: "File",
+      submenu: [
+        { label: "Import Mapping…", click: () => menuImport("mapping") },
+        { label: "Import Board…", click: () => menuImport("device") },
+        { type: "separator" },
+        {
+          label: "Export Mapping",
+          enabled: entries.length > 0,
+          submenu: entries.map((entry) => ({
+            label: `${entry.name} (${entry.boardName})`,
+            click: () => menuExport("mapping", entry.id),
+          })),
+        },
+        {
+          label: "Export Board",
+          enabled: boards.length > 0,
+          submenu: boards.map((board) => ({ label: board.name, click: () => menuExport("device", board.id) })),
+        },
+        { type: "separator" },
+        {
+          label: "Export Support Package…",
+          click: () => {
+            void exportSupportPackageToPickedFile().then((result) => {
+              if (result.status === "error") pushNotice({ severity: "error", message: result.error });
+              else if (result.status === "saved") {
+                pushNotice({ severity: "info", message: `support package saved to ${result.file}` });
+              }
+            });
+          },
+        },
+        ...(process.platform === "darwin"
+          ? []
+          : [{ type: "separator" } as MenuItemConstructorOptions, { role: "quit" } as MenuItemConstructorOptions]),
+      ],
+    };
+    const template: MenuItemConstructorOptions[] = [
+      ...(process.platform === "darwin" ? [{ role: "appMenu" } as MenuItemConstructorOptions] : []),
+      fileMenu,
+      { role: "editMenu" },
+      { role: "viewMenu" },
+      { role: "windowMenu" },
+    ];
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  }
+  rebuildMenu();
+
+  async function exportSupportPackageToPickedFile(): Promise<ExportFileResult> {
     if (!window) return { status: "canceled" };
     const picked = await dialog.showSaveDialog(window, {
       title: "Export support package",
@@ -368,7 +447,8 @@ async function main(): Promise<void> {
     }
     sessionLog.log("exported support package");
     return { status: "saved", file: picked.filePath };
-  });
+  }
+  handle(IPC.exportSupportPackage, () => exportSupportPackageToPickedFile());
 
   // ---- visual mapping editor (PAM-6) ----
   const activeIds = () => new Set(settingsStore.settings.activeMappingIds);

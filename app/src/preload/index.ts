@@ -53,6 +53,7 @@ const api: PamOscApi = {
   onPortDiagnosis: subscribe(IPC.evPortDiagnosis),
   onMidiLearn: subscribe(IPC.evMidiLearn),
   onMidiActivity: subscribe(IPC.evMidiActivity),
+  onCatalogChanged: subscribe(IPC.evCatalogChanged),
 };
 
 contextBridge.exposeInMainWorld("pamOsc", api);

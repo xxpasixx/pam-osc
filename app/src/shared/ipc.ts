@@ -238,6 +238,8 @@ export interface PamOscApi {
   onPortDiagnosis(listener: (diagnosis: PortDiagnosis | undefined) => void): () => void;
   onMidiLearn(listener: (event: MidiLearnEvent) => void): () => void;
   onMidiActivity(listener: (event: MidiActivityEvent) => void): () => void;
+  /** Menu-driven imports (PAM-7 AC-14): main changed the catalog on its own. */
+  onCatalogChanged(listener: (snapshot: Snapshot) => void): () => void;
 }
 
 /** Channel names — single source for preload and main. */
@@ -277,4 +279,5 @@ export const IPC = {
   evPortDiagnosis: "pam:ev:portDiagnosis",
   evMidiLearn: "pam:ev:midiLearn",
   evMidiActivity: "pam:ev:midiActivity",
+  evCatalogChanged: "pam:ev:catalogChanged",
 } as const;

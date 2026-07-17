@@ -25,6 +25,9 @@ import { TrafficLog } from "./components/TrafficLog.js";
 /** Renderer-side cap for the traffic log (EC-2) — main sends batches. */
 const TRAFFIC_LIMIT = 1000;
 
+/** Notices fade on their own (PAM-4 delta) — everything stays in the session log. */
+const NOTICE_DISMISS_MS = 15_000;
+
 /**
  * The single settings page (design → Component Structure). Draft edits live
  * here until Save; validation runs live with the same pure rules the main
@@ -145,6 +148,19 @@ export function App() {
     setNotices((current) => [...current, { severity: "error", message }]);
   }, []);
 
+  // Every notice dismisses itself after 15 s (per-notice timer, keyed by
+  // object identity — each notice object enters the list exactly once).
+  const autoDismissScheduled = useRef(new WeakSet<Notice>());
+  useEffect(() => {
+    for (const notice of notices) {
+      if (autoDismissScheduled.current.has(notice)) continue;
+      autoDismissScheduled.current.add(notice);
+      setTimeout(() => {
+        setNotices((current) => current.filter((candidate) => candidate !== notice));
+      }, NOTICE_DISMISS_MS);
+    }
+  }, [notices]);
+
   const startEngine = useCallback(async () => {
     setEngineBusy(true);
     try {
@@ -239,6 +255,10 @@ export function App() {
       current ? { ...current, catalog: fresh.catalog, invalidFiles: fresh.invalidFiles, boards: fresh.boards } : current
     );
   }, []);
+
+  // Menu-driven imports (PAM-7 AC-14) change the catalog in the main process
+  // — it pushes a fresh snapshot; notices arrive via the normal event.
+  useEffect(() => window.pamOsc.onCatalogChanged(adoptEditorSnapshot), [adoptEditorSnapshot]);
 
   // "New mapping" for a board (PAM-11 AC-2/AC-7): create empty → refresh the
   // catalog → open the mapping editor. Activation stays a Setup decision.

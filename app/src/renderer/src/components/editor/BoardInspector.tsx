@@ -242,19 +242,20 @@ export function BoardInspector({
                 onChange={(number) => patchMidi({ number })}
               />
             )}
-            <Num
-              id="ctl-channel"
-              label="Channel (empty = default)"
-              value={midi?.channel}
-              max={16}
-              onChange={(channel) => patchMidi({ channel })}
-            />
+            {/* Learn fills the Number field — it belongs right next to it. */}
             <LearnButton
               learn={learn}
               target="midi"
               title="Move or press the physical control to capture its MIDI address"
               onLearnStart={onLearnStart}
               onLearnCancel={onLearnCancel}
+            />
+            <Num
+              id="ctl-channel"
+              label="Channel (empty = default)"
+              value={midi?.channel}
+              max={16}
+              onChange={(channel) => patchMidi({ channel })}
             />
           </div>
         </>
@@ -493,6 +494,14 @@ function EncoderCapabilities({
               max={127}
               onChange={(number) => push({ midi: { kind: "note", ...capabilities.push?.midi, number } })}
             />
+            {/* Learn fills the Number field — it belongs right next to it. */}
+            <LearnButton
+              learn={learn}
+              target="push"
+              title="Press the encoder knob to capture the push address"
+              onLearnStart={onLearnStart}
+              onLearnCancel={onLearnCancel}
+            />
             <Num
               id="push-channel"
               label="Channel (empty = default)"
@@ -512,13 +521,6 @@ function EncoderCapabilities({
                 <option value="velocity-colors">velocity-colors</option>
               </select>
             </div>
-            <LearnButton
-              learn={learn}
-              target="push"
-              title="Press the encoder knob to capture the push address"
-              onLearnStart={onLearnStart}
-              onLearnCancel={onLearnCancel}
-            />
           </div>
         </>
       )}

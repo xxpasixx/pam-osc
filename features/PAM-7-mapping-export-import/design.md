@@ -22,3 +22,9 @@
 - AC-7 caution only for `command` actions (not `quickKey`/`attribute`) — reasonable narrowing, flag if you want it broader
 - Support package contains bundled AND user files (split by origin) — "all … visible in the app", confident
 - Package restore stays manual per the spec decision — confident
+
+## Implementation notes — delta round (2026-07-17, AC-14 + polish)
+
+- **Native menu (AC-14):** `Menu.setApplicationMenu` with role-based defaults (appMenu on macOS, edit/view/window everywhere, quit in File on Win/Linux) plus the File sharing actions. The export submenus list the live catalog; `buildSnapshot()` calls `rebuildMenu()` — the one choke point every catalog mutation already passes. Menu imports run in the main process (dialogs live there anyway) and push the outcome as notices + a `catalogChanged` snapshot event; the renderer adopts it exactly like an editor save.
+- **Notices auto-dismiss (PAM-4 AC-7):** per-notice 15 s timer in the renderer, keyed by object identity (each notice object enters the list once); manual dismiss stays. Deliberately all severities — everything is in the session log.
+- **Editor polish (PAM-6):** the Learn button moved next to the Number field it actually fills (both the control row and the push row).
