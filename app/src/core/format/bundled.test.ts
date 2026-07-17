@@ -76,6 +76,25 @@ describe("bundled resources", () => {
     }
   });
 
+  it("no control is fully covered by a later-rendered sibling — every control stays clickable (PAM-6 AC-10)", async () => {
+    const result = await loadBundled();
+    for (const device of result.devices) {
+      const controls = device.controls;
+      for (let i = 0; i < controls.length; i += 1) {
+        const a = controls[i].position;
+        for (let j = i + 1; j < controls.length; j += 1) {
+          const b = controls[j].position;
+          const covered =
+            b.x <= a.x && b.y <= a.y && b.x + b.width >= a.x + a.width && b.y + b.height >= a.y + a.height;
+          expect(
+            covered,
+            `${device.id}: "${controls[i].id}" is fully covered by later sibling "${controls[j].id}"`
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
   it("every bundled mapping has an output port when it uses feedback", async () => {
     const result = await loadBundled();
     for (const mapping of result.mappings) {

@@ -446,7 +446,8 @@
       }
     },
     {
-      "controlId": "knob-9-push",
+      "controlId": "knob-9-rel",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 291
@@ -458,7 +459,8 @@
       }
     },
     {
-      "controlId": "knob-10-push",
+      "controlId": "knob-10-rel",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 292
@@ -470,7 +472,8 @@
       }
     },
     {
-      "controlId": "knob-11-push",
+      "controlId": "knob-11-rel",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 293
@@ -482,7 +485,8 @@
       }
     },
     {
-      "controlId": "knob-12-push",
+      "controlId": "knob-12-rel",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 294
@@ -494,7 +498,8 @@
       }
     },
     {
-      "controlId": "knob-13-push",
+      "controlId": "knob-13-rel",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 295
@@ -506,7 +511,8 @@
       }
     },
     {
-      "controlId": "knob-14-push",
+      "controlId": "knob-14-rel",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 296
@@ -518,7 +524,8 @@
       }
     },
     {
-      "controlId": "knob-15-push",
+      "controlId": "knob-15-rel",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 297
@@ -530,7 +537,8 @@
       }
     },
     {
-      "controlId": "knob-16-push",
+      "controlId": "knob-16-rel",
+      "part": "push",
       "action": {
         "type": "executor",
         "number": 298

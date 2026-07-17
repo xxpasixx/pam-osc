@@ -515,10 +515,10 @@
         "number": 18
       },
       "position": {
-        "x": 9.7,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 9.85,
+        "y": 0.25,
+        "width": 0.5,
+        "height": 0.5,
         "shape": "circle"
       },
       "capabilities": {
@@ -531,6 +531,13 @@
             "from": 121,
             "to": 127
           }
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 8
+          },
+          "led": "on-off"
         }
       }
     },
@@ -562,10 +569,10 @@
         "number": 19
       },
       "position": {
-        "x": 10.9,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 11.05,
+        "y": 0.25,
+        "width": 0.5,
+        "height": 0.5,
         "shape": "circle"
       },
       "capabilities": {
@@ -578,6 +585,13 @@
             "from": 121,
             "to": 127
           }
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 9
+          },
+          "led": "on-off"
         }
       }
     },
@@ -609,10 +623,10 @@
         "number": 20
       },
       "position": {
-        "x": 9.7,
-        "y": 1.2000000000000002,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 9.85,
+        "y": 1.35,
+        "width": 0.5,
+        "height": 0.5,
         "shape": "circle"
       },
       "capabilities": {
@@ -625,6 +639,13 @@
             "from": 121,
             "to": 127
           }
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 10
+          },
+          "led": "on-off"
         }
       }
     },
@@ -656,10 +677,10 @@
         "number": 21
       },
       "position": {
-        "x": 10.9,
-        "y": 1.2000000000000002,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 11.05,
+        "y": 1.35,
+        "width": 0.5,
+        "height": 0.5,
         "shape": "circle"
       },
       "capabilities": {
@@ -672,6 +693,13 @@
             "from": 121,
             "to": 127
           }
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 11
+          },
+          "led": "on-off"
         }
       }
     },
@@ -703,10 +731,10 @@
         "number": 22
       },
       "position": {
-        "x": 9.7,
-        "y": 2.3000000000000003,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 9.85,
+        "y": 2.45,
+        "width": 0.5,
+        "height": 0.5,
         "shape": "circle"
       },
       "capabilities": {
@@ -719,6 +747,13 @@
             "from": 121,
             "to": 127
           }
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 12
+          },
+          "led": "on-off"
         }
       }
     },
@@ -750,10 +785,10 @@
         "number": 23
       },
       "position": {
-        "x": 10.9,
-        "y": 2.3000000000000003,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 11.05,
+        "y": 2.45,
+        "width": 0.5,
+        "height": 0.5,
         "shape": "circle"
       },
       "capabilities": {
@@ -766,6 +801,13 @@
             "from": 121,
             "to": 127
           }
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 13
+          },
+          "led": "on-off"
         }
       }
     },
@@ -797,10 +839,10 @@
         "number": 24
       },
       "position": {
-        "x": 9.7,
-        "y": 3.4000000000000004,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 9.85,
+        "y": 3.55,
+        "width": 0.5,
+        "height": 0.5,
         "shape": "circle"
       },
       "capabilities": {
@@ -813,6 +855,13 @@
             "from": 121,
             "to": 127
           }
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 14
+          },
+          "led": "on-off"
         }
       }
     },
@@ -844,10 +893,10 @@
         "number": 25
       },
       "position": {
-        "x": 10.9,
-        "y": 3.4000000000000004,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 11.05,
+        "y": 3.55,
+        "width": 0.5,
+        "height": 0.5,
         "shape": "circle"
       },
       "capabilities": {
@@ -860,6 +909,13 @@
             "from": 121,
             "to": 127
           }
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 15
+          },
+          "led": "on-off"
         }
       }
     },
@@ -872,10 +928,10 @@
         "number": 0
       },
       "position": {
-        "x": 0.1,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 0.3,
+        "y": 0.3,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
@@ -891,10 +947,10 @@
         "number": 1
       },
       "position": {
-        "x": 1.1,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 1.3,
+        "y": 0.3,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
@@ -910,10 +966,10 @@
         "number": 2
       },
       "position": {
-        "x": 2.1,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 2.3,
+        "y": 0.3,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
@@ -929,10 +985,10 @@
         "number": 3
       },
       "position": {
-        "x": 3.1,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 3.3,
+        "y": 0.3,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
@@ -948,10 +1004,10 @@
         "number": 4
       },
       "position": {
-        "x": 4.1,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 4.3,
+        "y": 0.3,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
@@ -967,10 +1023,10 @@
         "number": 5
       },
       "position": {
-        "x": 5.1,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 5.3,
+        "y": 0.3,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
@@ -986,10 +1042,10 @@
         "number": 6
       },
       "position": {
-        "x": 6.1,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 6.3,
+        "y": 0.3,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
@@ -1005,162 +1061,10 @@
         "number": 7
       },
       "position": {
-        "x": 7.1,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "on-off"
-      }
-    },
-    {
-      "id": "knob-9-push",
-      "label": "Encoder 9 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 8
-      },
-      "position": {
-        "x": 9.7,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "on-off"
-      }
-    },
-    {
-      "id": "knob-10-push",
-      "label": "Encoder 10 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 9
-      },
-      "position": {
-        "x": 10.9,
-        "y": 0.1,
-        "width": 0.8,
-        "height": 0.8,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "on-off"
-      }
-    },
-    {
-      "id": "knob-11-push",
-      "label": "Encoder 11 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 10
-      },
-      "position": {
-        "x": 9.7,
-        "y": 1.2000000000000002,
-        "width": 0.8,
-        "height": 0.8,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "on-off"
-      }
-    },
-    {
-      "id": "knob-12-push",
-      "label": "Encoder 12 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 11
-      },
-      "position": {
-        "x": 10.9,
-        "y": 1.2000000000000002,
-        "width": 0.8,
-        "height": 0.8,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "on-off"
-      }
-    },
-    {
-      "id": "knob-13-push",
-      "label": "Encoder 13 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 12
-      },
-      "position": {
-        "x": 9.7,
-        "y": 2.3000000000000003,
-        "width": 0.8,
-        "height": 0.8,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "on-off"
-      }
-    },
-    {
-      "id": "knob-14-push",
-      "label": "Encoder 14 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 13
-      },
-      "position": {
-        "x": 10.9,
-        "y": 2.3000000000000003,
-        "width": 0.8,
-        "height": 0.8,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "on-off"
-      }
-    },
-    {
-      "id": "knob-15-push",
-      "label": "Encoder 15 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 14
-      },
-      "position": {
-        "x": 9.7,
-        "y": 3.4000000000000004,
-        "width": 0.8,
-        "height": 0.8,
-        "shape": "circle"
-      },
-      "capabilities": {
-        "led": "on-off"
-      }
-    },
-    {
-      "id": "knob-16-push",
-      "label": "Encoder 16 Push",
-      "type": "button",
-      "midi": {
-        "kind": "note",
-        "number": 15
-      },
-      "position": {
-        "x": 10.9,
-        "y": 3.4000000000000004,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 7.3,
+        "y": 0.3,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {

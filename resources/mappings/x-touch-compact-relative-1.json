@@ -940,7 +940,8 @@
       }
     },
     {
-      "controlId": "knob-9-push",
+      "controlId": "knob-9-rel",
+      "part": "push",
       "action": {
         "type": "modifier",
         "modifier": "encoderFine"
@@ -955,7 +956,8 @@
       }
     },
     {
-      "controlId": "knob-10-push",
+      "controlId": "knob-10-rel",
+      "part": "push",
       "action": {
         "type": "modifier",
         "modifier": "encoderRough"
