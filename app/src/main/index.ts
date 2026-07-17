@@ -10,9 +10,11 @@ import { applySettings } from "./apply-settings.js";
 import { Catalog } from "./catalog.js";
 import { EngineHost } from "./engine-host.js";
 import { MidiPortLister } from "./midi-ports.js";
+import { diagnoseUdpPort } from "./port-diagnosis.js";
 import { SettingsStore } from "./settings-store.js";
 import { draftFromPersisted } from "./snapshot.js";
-import { IPC, type Notice, type Snapshot } from "../shared/ipc.js";
+import { TrafficBuffer } from "./traffic-buffer.js";
+import { IPC, type Notice, type PortDiagnosis, type Snapshot } from "../shared/ipc.js";
 
 /**
  * Main-process bootstrap (design → Behaviors 1): single-instance lock,
@@ -67,14 +69,52 @@ async function main(): Promise<void> {
   await catalog.refresh();
   for (const notice of catalog.notices()) pushNotice(notice);
 
+  const trafficBuffer = new TrafficBuffer((batch) => send(IPC.evTraffic, batch));
+
+  // Port diagnosis (PAM-4 AC-2): runs once per engine run when the console
+  // is unreachable or the engine fails to start — the usual suspects are the
+  // console-side settings or another app holding our OSC receive port.
+  let portDiagnosis: PortDiagnosis | undefined;
+  let diagnosing = false;
+  const runPortDiagnosis = () => {
+    if (diagnosing) return;
+    diagnosing = true;
+    void diagnoseUdpPort(settingsStore.settings.console.receivePort)
+      .then((diagnosis) => {
+        portDiagnosis = diagnosis;
+        send(IPC.evPortDiagnosis, diagnosis);
+      })
+      .finally(() => {
+        diagnosing = false;
+      });
+  };
+  const resetPortDiagnosis = () => {
+    portDiagnosis = undefined;
+    send(IPC.evPortDiagnosis, undefined);
+  };
+
   const engineHost = new EngineHost(new Engine(easymidiTransport, udpOscTransport), {
-    onState: (state) => send(IPC.evEngineState, state),
-    onConnection: (status) => send(IPC.evConnection, status),
-    onDevices: (statuses) => send(IPC.evDevices, statuses),
-    onIssue: (issue) => pushNotice({ severity: issue.severity, source: issue.source, message: issue.message }),
-    onLog: () => {
-      // Engine logs stay out of the UI for now — PAM-4 adds diagnostics.
+    onState: (state) => {
+      if (state === "starting") resetPortDiagnosis(); // fresh run, fresh diagnosis
+      send(IPC.evEngineState, state);
     },
+    onConnection: (status) => {
+      if (status.state === "unreachable" && portDiagnosis === undefined) runPortDiagnosis();
+      send(IPC.evConnection, status);
+    },
+    onDevices: (statuses) => send(IPC.evDevices, statuses),
+    onIssue: (issue) => {
+      pushNotice({ severity: issue.severity, source: issue.source, message: issue.message });
+      trafficBuffer.push({
+        at: Date.now(),
+        category: "system",
+        source: issue.source,
+        text: `${issue.severity}: ${issue.message}`,
+      });
+    },
+    onLog: (line) => trafficBuffer.push({ at: Date.now(), category: "system", text: line }),
+    onTraffic: (event) =>
+      trafficBuffer.push({ at: Date.now(), category: event.direction, source: event.source, text: event.text }),
   });
 
   const engineConfigFrom = (console: SettingsDraft["console"], mappingIds: string[]): EngineConfig => ({
@@ -88,10 +128,11 @@ async function main(): Promise<void> {
   // AC-4: valid persisted settings → the engine starts before the window.
   if (!loaded.firstRun && loaded.settings.activeMappingIds.length > 0) {
     const error = await engineHost.autoStart(
-      engineConfigFrom(loaded.settings.console, loaded.settings.activeMappingIds),
+      engineConfigFrom(loaded.settings.console, loaded.settings.activeMappingIds)
     );
     if (error) {
       pushNotice({ severity: "error", message: `engine did not start with the saved settings: ${error}` });
+      runPortDiagnosis(); // a blocked receive port is the classic cause (AC-2)
     }
   }
 
@@ -106,6 +147,8 @@ async function main(): Promise<void> {
       midiPorts: midiPorts.current(),
       ...engineHost.snapshot(),
       notices: [...notices],
+      traffic: trafficBuffer.recent(),
+      portDiagnosis,
     };
   }
 
@@ -129,15 +172,33 @@ async function main(): Promise<void> {
       buildEngineConfig: (validated) =>
         engineConfigFrom(
           validated.console,
-          validated.activeMappings.map((mapping) => mapping.id),
+          validated.activeMappings.map((mapping) => mapping.id)
         ),
       buildSnapshot,
-    }),
+    })
   );
   handle(IPC.revealMappingsFolder, async () => {
     await shell.openPath(join(userData, "mappings"));
   });
   handle(IPC.duplicateMapping, (_event, id) => catalog.duplicate(String(id)));
+
+  // ---- diagnostics & engine control (PAM-4) ----
+  handle(IPC.startEngine, async () => {
+    if (engineHost.snapshot().engineState !== "stopped") return { ok: false, error: "engine is already running" };
+    const settings = settingsStore.settings;
+    if (settings.activeMappingIds.length === 0) {
+      return { ok: false, error: "no active mappings configured — add a device under Setup first" };
+    }
+    const error = await engineHost.autoStart(engineConfigFrom(settings.console, settings.activeMappingIds));
+    if (error) runPortDiagnosis();
+    return error ? { ok: false, error } : { ok: true };
+  });
+  handle(IPC.stopEngine, () => engineHost.stop());
+  handle(IPC.checkConnection, () => {
+    resetPortDiagnosis(); // a re-check earns a fresh diagnosis if it fails again
+    engineHost.checkConnection();
+  });
+  handle(IPC.runOutputTest, (_event, mappingId) => engineHost.outputTest(String(mappingId)));
 
   // ---- window ----
   // Saved bounds from a since-disconnected display would restore the window
@@ -204,6 +265,7 @@ async function main(): Promise<void> {
   // (a background/tray mode is a later feature — see docs/ideas.md).
   app.on("window-all-closed", () => app.quit());
   app.on("before-quit", () => {
+    trafficBuffer.stop();
     void engineHost.shutdown();
   });
 }

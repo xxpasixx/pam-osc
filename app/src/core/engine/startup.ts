@@ -1,6 +1,7 @@
+import type { MidiOutputMessage } from "../../transports/midi.js";
 import type { OscMessage } from "../../transports/osc.js";
 import { oscString } from "../../transports/osc.js";
-import { sendToUnit, type UnitRuntime } from "./device-manager.js";
+import type { UnitRuntime } from "./device-manager.js";
 import { buttonFeedbackValue } from "./feedback-out.js";
 import type { RoutingEntry } from "./routing-table.js";
 import type { EngineTiming } from "./types.js";
@@ -8,9 +9,20 @@ import type { EngineTiming } from "./types.js";
 /**
  * v1's MIDI output test: a wave travels across LEDs, motor faders and
  * encoder rings so the user sees on the hardware that MIDI output works.
- * Only value *changes* are sent. Runs at engine start only — never on a
- * mid-show rebind (design decision).
+ * Only value *changes* are sent. Runs at engine start and on demand from
+ * the diagnostics UI (PAM-4 AC-4) — never on a mid-show rebind.
+ *
+ * Animation frames bypass the feedback cache on purpose: they are transient,
+ * and caching them would corrupt the state restored afterwards (EC-1).
  */
+
+function sendDirect(unitRuntime: UnitRuntime, message: MidiOutputMessage): void {
+  try {
+    unitRuntime.connection?.send(message);
+  } catch {
+    // A device yanked mid-animation — the hot-plug poll will notice.
+  }
+}
 
 /** v1 waveLevel: crest at wavePos, both 0..1 wrapping around. */
 function waveLevel(phase: number, wavePos: number, width: number): number {
@@ -38,10 +50,14 @@ function collect(unitRuntime: UnitRuntime): AnimatedUnit {
   const entries = unitRuntime.unit.entries;
   return {
     unitRuntime,
-    pitchFaders: entries.filter((e) => e.control.type === "fader" && e.control.midi.kind === "pitchbend").sort(byNumber),
+    pitchFaders: entries
+      .filter((e) => e.control.type === "fader" && e.control.midi.kind === "pitchbend")
+      .sort(byNumber),
     ccFaders: entries.filter((e) => e.control.type === "fader" && e.control.midi.kind === "cc").sort(byNumber),
     buttons: entries.filter((e) => e.control.type === "button").sort(byNumber),
-    rings: entries.filter((e) => e.control.type === "encoder" && e.control.capabilities.ledRing !== undefined).sort(byNumber),
+    rings: entries
+      .filter((e) => e.control.type === "encoder" && e.control.capabilities.ledRing !== undefined)
+      .sort(byNumber),
     lastSent: new Map(),
   };
 }
@@ -58,7 +74,7 @@ export interface AnimationHandle {
 export function playStartupAnimation(
   unitRuntimes: UnitRuntime[],
   timing: EngineTiming,
-  onDone: () => void,
+  onDone: () => void
 ): AnimationHandle {
   const devices = unitRuntimes.map(collect);
   if (devices.length === 0) {
@@ -86,7 +102,7 @@ export function playStartupAnimation(
         const level = waveLevel(phaseOf(index, device.pitchFaders), wavePos, 0.3);
         const value = Math.round(level * 16380);
         sendChanged(`p${entry.channel}`, value, () =>
-          sendToUnit(device.unitRuntime, { kind: "pitchbend", channel: entry.channel, value }),
+          sendDirect(device.unitRuntime, { kind: "pitchbend", channel: entry.channel, value })
         );
       });
 
@@ -96,7 +112,7 @@ export function playStartupAnimation(
         const level = waveLevel(phaseOf(index, device.ccFaders), wavePos, 0.3);
         const value = Math.round(level * 127);
         sendChanged(`c${number}`, value, () =>
-          sendToUnit(device.unitRuntime, { kind: "cc", channel: entry.channel, controller: number, value }),
+          sendDirect(device.unitRuntime, { kind: "cc", channel: entry.channel, controller: number, value })
         );
       });
 
@@ -106,7 +122,7 @@ export function playStartupAnimation(
         const level = waveLevel(phaseOf(index, device.rings), wavePos, 0.3);
         const value = Math.round(ring.from + level * (ring.to - ring.from));
         sendChanged(`r${ring.controller}`, value, () =>
-          sendToUnit(device.unitRuntime, { kind: "cc", channel: entry.channel, controller: ring.controller, value }),
+          sendDirect(device.unitRuntime, { kind: "cc", channel: entry.channel, controller: ring.controller, value })
         );
       });
 
@@ -115,12 +131,12 @@ export function playStartupAnimation(
         const note = entry.control.midi.number;
         const on = waveLevel(phaseOf(index, device.buttons), wavePos, 0.15) > 0;
         sendChanged(`n${note}`, on, () =>
-          sendToUnit(device.unitRuntime, {
+          sendDirect(device.unitRuntime, {
             kind: "note",
             channel: entry.channel,
             note,
             velocity: on ? animationOnValue(entry) : 0,
-          }),
+          })
         );
       });
     }
@@ -153,19 +169,34 @@ function allOff(devices: AnimatedUnit[]): void {
   for (const device of devices) {
     for (const entry of device.buttons) {
       if (entry.control.type !== "button" || entry.control.midi.kind !== "note") continue;
-      sendToUnit(device.unitRuntime, { kind: "note", channel: entry.channel, note: entry.control.midi.number, velocity: 0 });
+      sendDirect(device.unitRuntime, {
+        kind: "note",
+        channel: entry.channel,
+        note: entry.control.midi.number,
+        velocity: 0,
+      });
     }
     for (const entry of device.ccFaders) {
       if (entry.control.type !== "fader" || entry.control.midi.kind !== "cc") continue;
-      sendToUnit(device.unitRuntime, { kind: "cc", channel: entry.channel, controller: entry.control.midi.number, value: 0 });
+      sendDirect(device.unitRuntime, {
+        kind: "cc",
+        channel: entry.channel,
+        controller: entry.control.midi.number,
+        value: 0,
+      });
     }
     for (const entry of device.pitchFaders) {
-      sendToUnit(device.unitRuntime, { kind: "pitchbend", channel: entry.channel, value: 0 });
+      sendDirect(device.unitRuntime, { kind: "pitchbend", channel: entry.channel, value: 0 });
     }
     for (const entry of device.rings) {
       if (entry.control.type !== "encoder" || !entry.control.capabilities.ledRing) continue;
       const ring = entry.control.capabilities.ledRing;
-      sendToUnit(device.unitRuntime, { kind: "cc", channel: entry.channel, controller: ring.controller, value: ring.from });
+      sendDirect(device.unitRuntime, {
+        kind: "cc",
+        channel: entry.channel,
+        controller: ring.controller,
+        value: ring.from,
+      });
     }
   }
 }

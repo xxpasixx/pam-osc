@@ -35,7 +35,7 @@ export class ConnectionChecker {
     private readonly sendOsc: (message: OscMessage) => void,
     private readonly timing: EngineTiming,
     private readonly emit: (status: ConnectionStatus) => void,
-    private readonly log: (line: string) => void,
+    private readonly log: (line: string) => void
   ) {}
 
   start(): void {
@@ -48,6 +48,20 @@ export class ConnectionChecker {
     if (this.retryTimer) clearTimeout(this.retryTimer);
     this.evaluateTimer = undefined;
     this.retryTimer = undefined;
+  }
+
+  /**
+   * Manual re-check (PAM-4 AC-3): drop any pending timers, reset the retry
+   * budget and ping right away — also revives a checker that gave up.
+   */
+  checkNow(): void {
+    if (this.evaluateTimer) clearTimeout(this.evaluateTimer);
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    this.evaluateTimer = undefined;
+    this.retryTimer = undefined;
+    this.stopped = false;
+    this.attempt = 0;
+    this.sendPing();
   }
 
   onConnectionPong(): void {
@@ -88,7 +102,7 @@ export class ConnectionChecker {
     this.log(
       state === "plugin-missing"
         ? "GrandMA3 is reachable, but the pam-osc plugin did not answer — start the 'pam-osc Start Stop' plugin on the console"
-        : "no response from GrandMA3 — check console IP/port, the MA3 OSC settings, and your firewall",
+        : "no response from GrandMA3 — check console IP/port, the MA3 OSC settings, and your firewall"
     );
 
     if (!gaveUp) {

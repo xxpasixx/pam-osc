@@ -28,6 +28,10 @@ class FakeEngine implements EngineLike {
     this.startedWith.push(config);
   }
   async stop(): Promise<void> {}
+  checkConnection(): void {}
+  outputTest(): { ok: true } {
+    return { ok: true };
+  }
   on(): unknown {
     return this;
   }
@@ -67,6 +71,7 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
       onDevices: () => {},
       onIssue: () => {},
       onLog: () => {},
+      onTraffic: () => {},
     });
     deps = {
       catalog,
@@ -89,6 +94,8 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
         connection: undefined,
         devices: [],
         notices: [],
+        traffic: [],
+        portDiagnosis: undefined,
       }),
     };
   });
@@ -96,7 +103,7 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
   it("validation failure returns field errors and changes nothing (AC-6)", async () => {
     const result = await applySettings(
       { console: { address: "", sendPort: 0, receivePort: 9004 }, activeMappings: [] },
-      deps,
+      deps
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.fieldErrors.length).toBeGreaterThan(0);
@@ -111,13 +118,18 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
     expect(engine.startedWith.length).toBe(1);
     expect(engine.startedWith[0]?.activeMappingIds).toEqual(["test-map"]);
 
-    const persisted = JSON.parse(await readFile(settingsFile, "utf8")) as { activeMappingIds: string[]; console: { address: string } };
+    const persisted = JSON.parse(await readFile(settingsFile, "utf8")) as {
+      activeMappingIds: string[];
+      console: { address: string };
+    };
     expect(persisted.activeMappingIds).toEqual(["test-map"]);
     expect(persisted.console.address).toBe("10.0.0.9");
 
     // the applied snapshot mirrors the materialized ports (copy-on-activate)
     if (result.ok) {
-      expect(result.snapshot.settings.activeMappings).toEqual([{ id: "test-map", input: "Unit In", output: "Unit Out" }]);
+      expect(result.snapshot.settings.activeMappings).toEqual([
+        { id: "test-map", input: "Unit In", output: "Unit Out" },
+      ]);
     }
     expect(states).toEqual(["starting", "running"]);
   });

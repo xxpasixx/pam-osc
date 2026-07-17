@@ -45,7 +45,12 @@ async function startEngine(overrides: Parameters<typeof testConfig>[1] = {}): Pr
 /** Startup is done when the plugin force-reload went out (AC-9 order). */
 async function startedEngine(overrides: Parameters<typeof testConfig>[1] = {}): Promise<Harness> {
   const harness = await startEngine(overrides);
-  await waitFor(() => harness.osc.socket().commands().some((command) => command.includes("forceReload")));
+  await waitFor(() =>
+    harness.osc
+      .socket()
+      .commands()
+      .some((command) => command.includes("forceReload"))
+  );
   harness.osc.socket().sent.length = 0; // drop startup traffic for clean assertions
   return harness;
 }
@@ -387,14 +392,18 @@ describe("hot plug (AC-10, EC-5)", () => {
     socket.inject({ address: "/masterEnabled/highlight", args: [{ type: "integer", value: 1 }] }); // cached: note20 = 127
 
     midi.ports = { inputs: ["Second Unit"], outputs: ["Second Unit"] }; // yank the device
-    await waitFor(() => harness.deviceEvents.some((statuses) => statuses.some((s) => s.mappingId === "test-map" && s.state === "missing")));
+    await waitFor(() =>
+      harness.deviceEvents.some((statuses) => statuses.some((s) => s.mappingId === "test-map" && s.state === "missing"))
+    );
 
     // engine keeps running: OSC feedback while missing is cached, not crashing
     socket.inject({ address: "/Page1/Fader201", args: [{ type: "float", value: 25 }] });
 
     harness.deviceEvents.length = 0; // startup events also said "bound" — only the rebind counts
     midi.ports = { inputs: [TEST_PORT, "Second Unit"], outputs: [TEST_PORT, "Second Unit"] }; // replug
-    await waitFor(() => harness.deviceEvents.some((statuses) => statuses.some((s) => s.mappingId === "test-map" && s.state === "bound")));
+    await waitFor(() =>
+      harness.deviceEvents.some((statuses) => statuses.some((s) => s.mappingId === "test-map" && s.state === "bound"))
+    );
 
     const rebound = midi.connection(TEST_PORT);
     await waitFor(() => rebound.sent.length > 0);
@@ -422,10 +431,17 @@ describe("hot plug (AC-10, EC-5)", () => {
     await engine.start(testConfig(sources));
     active = { ...harness, engine, osc };
 
-    await waitFor(() => osc.socket().commands().some((command) => command.includes("forceReload")));
+    await waitFor(() =>
+      osc
+        .socket()
+        .commands()
+        .some((command) => command.includes("forceReload"))
+    );
 
     midi.ports = { inputs: [TEST_PORT], outputs: [TEST_PORT] };
-    await waitFor(() => deviceEvents.some((statuses) => statuses.some((s) => s.mappingId === "test-map" && s.state === "bound")));
+    await waitFor(() =>
+      deviceEvents.some((statuses) => statuses.some((s) => s.mappingId === "test-map" && s.state === "bound"))
+    );
 
     const unit = midi.connection(TEST_PORT);
     await waitFor(() => unit.sent.length > 0);
@@ -467,7 +483,12 @@ describe("engine lifecycle (AC-11, EC-4)", () => {
     const firstSocket = harness.osc.socket();
 
     await harness.engine.reconfigure(testConfig(sources));
-    await waitFor(() => harness.osc.socket().commands().some((command) => command.includes("forceReload")));
+    await waitFor(() =>
+      harness.osc
+        .socket()
+        .commands()
+        .some((command) => command.includes("forceReload"))
+    );
     expect(firstConnection.closed).toBe(true);
     expect(firstSocket.closed).toBe(true);
 
@@ -480,7 +501,9 @@ describe("engine lifecycle (AC-11, EC-4)", () => {
 
   it("skips unknown active mappings with an error issue and runs the valid rest (EC-4)", async () => {
     const harness = await startedEngine({ activeMappingIds: ["test-map", "does-not-exist"] });
-    expect(harness.issues.some((issue) => issue.severity === "error" && issue.message.includes("does-not-exist"))).toBe(true);
+    expect(harness.issues.some((issue) => issue.severity === "error" && issue.message.includes("does-not-exist"))).toBe(
+      true
+    );
     harness.midi.connection(TEST_PORT).emit({ kind: "cc", channel: 1, controller: 7, value: 127 });
     expect(harness.osc.socket().sent.length).toBe(1);
   });
@@ -490,8 +513,78 @@ describe("engine lifecycle (AC-11, EC-4)", () => {
     const osc = new FakeOscTransport();
     const engine = new Engine(midi, osc);
     await expect(engine.start(testConfig(sources, { activeMappingIds: ["does-not-exist"] }))).rejects.toThrow(
-      /no valid active mapping/,
+      /no valid active mapping/
     );
     expect(engine.isRunning()).toBe(false);
+  });
+});
+
+describe("diagnostics (PAM-4)", () => {
+  it("emits traffic events for all four directions with readable text (AC-5)", async () => {
+    const harness = await startedEngine();
+    const traffic: import("./types.js").TrafficEvent[] = [];
+    harness.engine.on("traffic", (event) => traffic.push(event));
+
+    harness.midi.connection(TEST_PORT).emit({ kind: "cc", channel: 1, controller: 7, value: 127 });
+    harness.osc.socket().inject({ address: "/Page1/Fader201", args: [{ type: "float", value: 50 }] });
+
+    const byDirection = (direction: string) => traffic.filter((event) => event.direction === direction);
+    expect(byDirection("midi-in").map((event) => event.text)).toContain("cc 7 ch1 = 127");
+    expect(byDirection("osc-out").map((event) => event.text)).toContain("/Page1/Fader201 100");
+    expect(byDirection("osc-in").map((event) => event.text)).toContain("/Page1/Fader201 50");
+    expect(byDirection("midi-out").some((event) => event.text.startsWith("cc 7 ch1"))).toBe(true);
+    expect(byDirection("midi-in")[0]?.source).toBe(TEST_PORT);
+  });
+
+  it("replays the output test on demand and restores live state afterwards (AC-4, EC-1)", async () => {
+    const harness = await startedEngine();
+    const socket = harness.osc.socket();
+    const unit = harness.midi.connection(TEST_PORT);
+
+    socket.inject({ address: "/Page1/Fader201", args: [{ type: "float", value: 50 }] });
+    const liveFader = unit.sent.at(-1);
+    expect(liveFader).toEqual({ kind: "cc", channel: 1, controller: 7, value: 64 });
+    unit.sent.length = 0;
+
+    const result = harness.engine.outputTest("test-map");
+    expect(result).toEqual({ ok: true });
+    await waitFor(() => unit.sent.length > 0); // animation frames flow
+    await sleep(TEST_TIMING.animationMs + TEST_TIMING.animationFrameMs * 4);
+
+    // After the animation the cached live value is back on the motor fader.
+    const faderValues = unit.sent.filter((m) => m.kind === "cc" && m.controller === 7);
+    expect(faderValues.at(-1)).toEqual({ kind: "cc", channel: 1, controller: 7, value: 64 });
+  });
+
+  it("rejects the output test for missing devices and unknown mappings (AC-4)", async () => {
+    const harness = await startedEngine();
+    expect(harness.engine.outputTest("nope")).toEqual({ ok: false, error: 'mapping "nope" is not active' });
+
+    harness.midi.ports = { inputs: [], outputs: [] };
+    await waitFor(() => harness.deviceEvents.some((statuses) => statuses.some((s) => s.state === "missing")));
+    const result = harness.engine.outputTest("test-map");
+    expect(result.ok).toBe(false);
+  });
+
+  it("manual re-check pings again after the checker gave up (AC-3)", async () => {
+    const harness = await startedEngine();
+    await waitFor(() => harness.connections.some((status) => status.gaveUp));
+
+    const before = harness.connections.length;
+    harness.engine.checkConnection();
+    await waitFor(() => harness.connections.length > before);
+    expect(harness.connections[before]).toEqual({ state: "checking", attempt: 1, gaveUp: false });
+
+    // Console answers this time → connected.
+    harness.osc.socket().inject({ address: "/status/connectionPong", args: [] });
+    harness.osc.socket().inject({ address: "/status/pluginPong", args: [] });
+    await waitFor(() => harness.connections.some((status) => status.state === "connected"));
+  });
+
+  it("checkConnection on a stopped engine is a safe no-op", async () => {
+    const harness = await startedEngine();
+    await harness.engine.stop();
+    expect(() => harness.engine.checkConnection()).not.toThrow();
+    expect(harness.engine.outputTest("test-map").ok).toBe(false);
   });
 });

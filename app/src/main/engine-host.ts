@@ -1,4 +1,11 @@
-import type { ConnectionStatus, DeviceStatus, EngineConfig, EngineEvents, EngineIssue } from "../core/engine/index.js";
+import type {
+  ConnectionStatus,
+  DeviceStatus,
+  EngineConfig,
+  EngineEvents,
+  EngineIssue,
+  TrafficEvent,
+} from "../core/engine/index.js";
 import type { EngineState } from "../shared/ipc.js";
 
 /**
@@ -11,6 +18,8 @@ import type { EngineState } from "../shared/ipc.js";
 export interface EngineLike {
   start(config: EngineConfig): Promise<void>;
   stop(): Promise<void>;
+  checkConnection(): void;
+  outputTest(mappingId: string): { ok: true } | { ok: false; error: string };
   on<E extends keyof EngineEvents>(event: E, listener: EngineEvents[E]): unknown;
 }
 
@@ -20,6 +29,7 @@ export interface EngineHostEvents {
   onDevices(statuses: DeviceStatus[]): void;
   onIssue(issue: EngineIssue): void;
   onLog(line: string): void;
+  onTraffic(event: TrafficEvent): void;
 }
 
 export type ApplyOutcome = { ok: true } | { ok: false; error: string; rolledBack: boolean };
@@ -32,7 +42,7 @@ export class EngineHost {
 
   constructor(
     private readonly engine: EngineLike,
-    private readonly events: EngineHostEvents,
+    private readonly events: EngineHostEvents
   ) {
     engine.on("connection", (status) => {
       this.connection = status;
@@ -44,6 +54,7 @@ export class EngineHost {
     });
     engine.on("issue", (issue) => this.events.onIssue(issue));
     engine.on("log", (line) => this.events.onLog(line));
+    engine.on("traffic", (event) => this.events.onTraffic(event));
   }
 
   snapshot(): { engineState: EngineState; connection: ConnectionStatus | undefined; devices: DeviceStatus[] } {
@@ -91,6 +102,23 @@ export class EngineHost {
       }
       return { ok: false, error: message, rolledBack: false };
     }
+  }
+
+  /** Manual stop (PAM-4 AC-6) — lastGood stays, so Start can resume. */
+  async stop(): Promise<void> {
+    await this.stopEngine();
+  }
+
+  /** Manual re-check passthrough (PAM-4 AC-3) — no-op while stopped. */
+  checkConnection(): void {
+    if (this.state !== "running") return;
+    this.engine.checkConnection();
+  }
+
+  /** On-demand output test passthrough (PAM-4 AC-4). */
+  outputTest(mappingId: string): { ok: true } | { ok: false; error: string } {
+    if (this.state !== "running") return { ok: false, error: "engine is not running" };
+    return this.engine.outputTest(mappingId);
   }
 
   async shutdown(): Promise<void> {

@@ -5,6 +5,7 @@
      READ-ONLY during /build. Technical design lives in design.md, verification in review.md. -->
 
 ## Status: Spec'd
+
 **Created:** 2026-07-17 · **Last Updated:** 2026-07-17
 
 ## Why
@@ -12,6 +13,7 @@
 v1 buried its diagnostics (connection check, port diagnosis, MIDI test) in the Open Stage Control terminal — the #1 source of setup questions on Discord. PAM-4 surfaces the v1.4 diagnostics logic in a dedicated Status view and replaces the terminal entirely: connection state with actionable hints, port diagnosis, on-demand MIDI tests, a filterable traffic log, and manual engine control.
 
 ## Dependencies
+
 - PAM-2 (engine emits connection/device/issue/log events)
 - PAM-3 (app shell, settings, minimal status indicators)
 
@@ -25,23 +27,27 @@ v1 buried its diagnostics (connection check, port diagnosis, MIDI test) in the O
 - [ ] **AC-6** — **Engine start/stop.** Given the engine is running, when the user hits Stop, then the engine stops cleanly (MIDI and UDP ports released) and the UI shows a distinct "stopped" state; Start runs it again with the saved settings. Auto-start on launch (PAM-3 AC-4) stays the default.
 
 ## Out of Scope
+
 - Sending arbitrary/custom MIDI or OSC messages from the UI (test mode is the predefined animation only)
 - Persisting logs to disk / log files — copy-to-clipboard covers support cases
 - Colored button feedback diagnostics — PAM-10
 
 ## Edge Cases
+
 - **EC-1** — Output test during live operation: feedback state is fully restored after the animation; a test never leaves stale LED/fader state.
 - **EC-2** — Message flood (fast fader moves): the log stays responsive; entries may be capped/dropped oldest-first, the UI never freezes.
 - **EC-3** — Engine stopped: connection card and device list show "stopped" (not "unreachable"), test/re-check actions are disabled.
 - **EC-4** — Start pressed while the config is invalid or ports are taken: the engine error surfaces in the UI (consistent with PAM-3 EC-3), the app never crashes.
 
 ## Open Questions
+
 - None
 
 ## Decision Log
 
 ### Product Decisions
-| Decision | Rationale | Date |
-|----------|-----------|------|
-| Manual start/stop lands in PAM-4 (PAM-3 had deferred it) | Diagnostics view is its natural home; port-sharing with other tools needs it | 2026-07-17 |
+
+| Decision                                                        | Rationale                                                                       | Date       |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------- |
+| Manual start/stop lands in PAM-4 (PAM-3 had deferred it)        | Diagnostics view is its natural home; port-sharing with other tools needs it    | 2026-07-17 |
 | Test mode = output animation + traffic log (no input injection) | Input problems are visible in MIDI IN log; keeps scope at v1.4 parity + monitor | 2026-07-17 |

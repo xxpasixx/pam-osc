@@ -2,6 +2,7 @@ import { EventEmitter } from "node:events";
 import { loadFormat } from "../format/index.js";
 import type { MidiTransport } from "../../transports/midi.js";
 import type { OscMessage, OscSocket, OscTransport } from "../../transports/osc.js";
+import { formatMidiIn, formatMidiOut, formatOsc } from "./traffic.js";
 import { ConnectionChecker } from "./connection.js";
 import { DeviceManager, type UnitRuntime } from "./device-manager.js";
 import { handleOscMessage, type FeedbackContext } from "./feedback-router.js";
@@ -17,6 +18,7 @@ import {
   type EngineEvents,
   type EngineIssue,
   type EngineTiming,
+  type TrafficEvent,
 } from "./types.js";
 
 /**
@@ -37,6 +39,8 @@ export class Engine {
   private animation: AnimationHandle | undefined;
   private animationDone = false;
   private running = false;
+  /** On-demand output tests (PAM-4 AC-4), one per mapping at most. */
+  private readonly testAnimations = new Map<string, AnimationHandle>();
 
   constructor(midiTransport: MidiTransport, oscTransport: OscTransport) {
     this.midiTransport = midiTransport;
@@ -72,7 +76,9 @@ export class Engine {
     try {
       const units = await this.resolveUnits(config);
       if (units.length === 0) {
-        throw new Error("no valid active mapping — the engine has nothing to do (check activeMappingIds and the issue events)");
+        throw new Error(
+          "no valid active mapping — the engine has nothing to do (check activeMappingIds and the issue events)"
+        );
       }
 
       const socket = await this.oscTransport.open(
@@ -82,19 +88,25 @@ export class Engine {
           remotePort: config.sendPort,
         },
         (message) => this.onOsc(message),
-        (error) => this.issue({ severity: "warning", message: error.message }),
+        (error) => this.issue({ severity: "warning", message: error.message })
       );
       this.socket = socket;
 
+      // Every outgoing OSC message passes through here — one tap point (AC-5).
+      const sendOsc = (message: OscMessage) => {
+        this.traffic({ direction: "osc-out", text: formatOsc(message) });
+        socket.send(message);
+      };
+
       const inputContext: InputContext = {
         state: this.state,
-        sendOsc: (message) => socket.send(message),
+        sendOsc,
         allUnits: () => this.deviceManager?.units ?? [],
         timing: this.timing,
         log: (line) => this.log(line),
       };
 
-      this.deviceManager = new DeviceManager(this.midiTransport, this.timing, {
+      this.deviceManager = new DeviceManager(this.tappedMidiTransport(), this.timing, {
         onEvent: (unitRuntime, event) => handleMidiEvent(inputContext, unitRuntime, event),
         onBind: (unitRuntime) => this.onBind(unitRuntime),
         onStatusChange: (statuses) => this.emitter.emit("devices", statuses),
@@ -102,10 +114,10 @@ export class Engine {
       });
 
       this.connectionChecker = new ConnectionChecker(
-        (message) => socket.send(message),
+        sendOsc,
         this.timing,
         (status) => this.emitter.emit("connection", status),
-        (line) => this.log(line),
+        (line) => this.log(line)
       );
 
       this.animationDone = false;
@@ -120,7 +132,7 @@ export class Engine {
         for (const unitRuntime of bound) {
           this.initialUnitState(unitRuntime);
         }
-        socket.send(forceReloadMessage());
+        sendOsc(forceReloadMessage());
         this.connectionChecker?.start();
       });
     } catch (error) {
@@ -141,6 +153,37 @@ export class Engine {
   async reconfigure(config: EngineConfig): Promise<void> {
     await this.stop();
     await this.start(config);
+  }
+
+  /**
+   * Manual connection re-check (PAM-4 AC-3) — also after the checker gave
+   * up. Ignored while the startup animation still runs: the check starts
+   * right afterwards anyway.
+   */
+  checkConnection(): void {
+    if (!this.running || !this.animationDone) return;
+    this.connectionChecker?.checkNow();
+  }
+
+  /**
+   * On-demand MIDI output test for one bound device (PAM-4 AC-4). Restores
+   * the live feedback state from the cache afterwards (EC-1).
+   */
+  outputTest(mappingId: string): { ok: true } | { ok: false; error: string } {
+    if (!this.running || !this.deviceManager) return { ok: false, error: "engine is not running" };
+    if (!this.animationDone) return { ok: false, error: "startup is still in progress" };
+    const unitRuntime = this.deviceManager.units.find((unit) => unit.unit.mapping.id === mappingId);
+    if (!unitRuntime) return { ok: false, error: `mapping "${mappingId}" is not active` };
+    if (!unitRuntime.connection) return { ok: false, error: "device is not connected" };
+    if (this.testAnimations.has(mappingId)) return { ok: false, error: "output test already running" };
+
+    this.log(`MIDI output test on "${mappingId}" ...`);
+    const handle = playStartupAnimation([unitRuntime], this.timing, () => {
+      this.testAnimations.delete(mappingId);
+      restoreUnit(unitRuntime, this.state);
+    });
+    this.testAnimations.set(mappingId, handle);
+    return { ok: true };
   }
 
   // ---- internals ----
@@ -189,7 +232,29 @@ export class Engine {
     return units;
   }
 
+  /** MIDI tap (AC-5): every event and every send crosses this wrapper. */
+  private tappedMidiTransport(): MidiTransport {
+    const inner = this.midiTransport;
+    return {
+      listPorts: () => inner.listPorts(),
+      open: (inputPort, outputPort, onEvent) => {
+        const connection = inner.open(inputPort, outputPort, (event) => {
+          this.traffic({ direction: "midi-in", source: inputPort, text: formatMidiIn(event) });
+          onEvent(event);
+        });
+        return {
+          send: (message) => {
+            this.traffic({ direction: "midi-out", source: inputPort, text: formatMidiOut(message) });
+            connection.send(message);
+          },
+          close: () => connection.close(),
+        };
+      },
+    };
+  }
+
   private onOsc(message: OscMessage): void {
+    this.traffic({ direction: "osc-in", text: formatOsc(message) });
     const context: FeedbackContext = {
       state: this.state,
       allUnits: () => this.deviceManager?.units ?? [],
@@ -227,6 +292,8 @@ export class Engine {
   private async shutdown(): Promise<void> {
     this.animation?.cancel();
     this.animation = undefined;
+    for (const handle of this.testAnimations.values()) handle.cancel();
+    this.testAnimations.clear();
     this.connectionChecker?.stop();
     this.connectionChecker = undefined;
     cancelTimecodeTimers(this.state);
@@ -240,6 +307,10 @@ export class Engine {
 
   private issue(issue: EngineIssue): void {
     this.emitter.emit("issue", issue);
+  }
+
+  private traffic(event: TrafficEvent): void {
+    this.emitter.emit("traffic", event);
   }
 
   private log(line: string): void {

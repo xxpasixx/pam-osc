@@ -61,9 +61,20 @@ export interface EngineIssue {
   message: string;
 }
 
+/** One wire message crossing the engine boundary (PAM-4 AC-5). */
+export type TrafficDirection = "midi-in" | "midi-out" | "osc-in" | "osc-out";
+
+export interface TrafficEvent {
+  direction: TrafficDirection;
+  /** MIDI: the unit's input port name. OSC traffic has no per-unit source. */
+  source?: string;
+  text: string;
+}
+
 export interface EngineEvents {
   connection: (status: ConnectionStatus) => void;
   devices: (statuses: DeviceStatus[]) => void;
   issue: (issue: EngineIssue) => void;
   log: (line: string) => void;
+  traffic: (event: TrafficEvent) => void;
 }

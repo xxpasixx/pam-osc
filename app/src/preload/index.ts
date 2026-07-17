@@ -23,11 +23,17 @@ const api: PamOscApi = {
   applySettings: (draft) => ipcRenderer.invoke(IPC.applySettings, draft),
   revealMappingsFolder: () => ipcRenderer.invoke(IPC.revealMappingsFolder),
   duplicateMapping: (id) => ipcRenderer.invoke(IPC.duplicateMapping, id),
+  startEngine: () => ipcRenderer.invoke(IPC.startEngine),
+  stopEngine: () => ipcRenderer.invoke(IPC.stopEngine),
+  checkConnection: () => ipcRenderer.invoke(IPC.checkConnection),
+  runOutputTest: (mappingId) => ipcRenderer.invoke(IPC.runOutputTest, mappingId),
   onConnection: subscribe(IPC.evConnection),
   onDevices: subscribe(IPC.evDevices),
   onEngineState: subscribe(IPC.evEngineState),
   onMidiPorts: subscribe(IPC.evMidiPorts),
   onNotice: subscribe(IPC.evNotice),
+  onTraffic: subscribe(IPC.evTraffic),
+  onPortDiagnosis: subscribe(IPC.evPortDiagnosis),
 };
 
 contextBridge.exposeInMainWorld("pamOsc", api);

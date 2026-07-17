@@ -2,12 +2,25 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ConnectionStatus, DeviceStatus } from "../../core/engine/types.js";
 import type { SettingsDraft } from "../../core/settings/schema.js";
 import { validateDraft } from "../../core/settings/validate.js";
-import type { EngineState, FieldError, MidiPortList, Notice, Snapshot } from "../../shared/ipc.js";
+import type {
+  EngineState,
+  FieldError,
+  MidiPortList,
+  Notice,
+  PortDiagnosis,
+  Snapshot,
+  TrafficEntry,
+} from "../../shared/ipc.js";
 import { AddDeviceDialog } from "./components/AddDeviceDialog.js";
 import { ConsoleSection } from "./components/ConsoleSection.js";
 import { DevicesSection } from "./components/DevicesSection.js";
 import { NoticesArea } from "./components/NoticesArea.js";
 import { StatusBar } from "./components/StatusBar.js";
+import { StatusView } from "./components/StatusView.js";
+import { TrafficLog } from "./components/TrafficLog.js";
+
+/** Renderer-side cap for the traffic log (EC-2) — main sends batches. */
+const TRAFFIC_LIMIT = 1000;
 
 /**
  * The single settings page (design → Component Structure). Draft edits live
@@ -29,6 +42,11 @@ export function App() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | undefined>();
+  const [tab, setTab] = useState<"setup" | "status">("setup");
+  const [traffic, setTraffic] = useState<TrafficEntry[]>([]);
+  const [portDiagnosis, setPortDiagnosis] = useState<PortDiagnosis | undefined>();
+  const [engineBusy, setEngineBusy] = useState(false);
+  const [testing, setTesting] = useState<Set<string>>(new Set());
   const appliedRef = useRef<SettingsDraft | undefined>(undefined);
 
   // Notices deliberately stay out: adopting a post-save snapshot would
@@ -42,6 +60,8 @@ export function App() {
     setConnection(next.connection);
     setDevices(next.devices);
     setMidiPorts(next.midiPorts);
+    setTraffic(next.traffic);
+    setPortDiagnosis(next.portDiagnosis);
   }, []);
 
   useEffect(() => {
@@ -58,18 +78,17 @@ export function App() {
       window.pamOsc.onEngineState(setEngineState),
       window.pamOsc.onMidiPorts(setMidiPorts),
       window.pamOsc.onNotice((notice) => setNotices((current) => [...current, notice])),
+      window.pamOsc.onTraffic((batch) => setTraffic((current) => [...current, ...batch].slice(-TRAFFIC_LIMIT))),
+      window.pamOsc.onPortDiagnosis(setPortDiagnosis),
     ];
     return () => unsubscribe.forEach((off) => off());
   }, [adoptSnapshot]);
 
-  const validCatalogIds = useMemo(
-    () => new Set((snapshot?.catalog ?? []).map((entry) => entry.id)),
-    [snapshot],
-  );
+  const validCatalogIds = useMemo(() => new Set((snapshot?.catalog ?? []).map((entry) => entry.id)), [snapshot]);
 
   const liveErrors: FieldError[] = useMemo(
     () => (draft ? validateDraft(draft, validCatalogIds) : []),
-    [draft, validCatalogIds],
+    [draft, validCatalogIds]
   );
 
   const fieldErrors = useMemo(() => {
@@ -80,7 +99,7 @@ export function App() {
 
   const dirty = useMemo(
     () => draft !== undefined && JSON.stringify(draft) !== JSON.stringify(appliedRef.current),
-    [draft],
+    [draft]
   );
 
   const updateDraft = useCallback((mutate: (current: SettingsDraft) => SettingsDraft) => {
@@ -116,6 +135,50 @@ export function App() {
     setServerErrors([]);
   }, []);
 
+  const pushError = useCallback((message: string) => {
+    setNotices((current) => [...current, { severity: "error", message }]);
+  }, []);
+
+  const startEngine = useCallback(async () => {
+    setEngineBusy(true);
+    try {
+      const result = await window.pamOsc.startEngine();
+      if (!result.ok) pushError(`engine did not start: ${result.error ?? "unknown error"}`);
+    } catch (error) {
+      pushError(`engine did not start: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setEngineBusy(false);
+    }
+  }, [pushError]);
+
+  const stopEngine = useCallback(async () => {
+    setEngineBusy(true);
+    try {
+      await window.pamOsc.stopEngine();
+    } catch (error) {
+      pushError(`engine did not stop: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setEngineBusy(false);
+    }
+  }, [pushError]);
+
+  const runOutputTest = useCallback(
+    async (mappingId: string) => {
+      setTesting((current) => new Set(current).add(mappingId));
+      // The engine reports rejections; the animation itself takes ~3.5 s.
+      setTimeout(() => {
+        setTesting((current) => {
+          const next = new Set(current);
+          next.delete(mappingId);
+          return next;
+        });
+      }, 4000);
+      const result = await window.pamOsc.runOutputTest(mappingId);
+      if (!result.ok) pushError(`output test failed: ${result.error ?? "unknown error"}`);
+    },
+    [pushError]
+  );
+
   if (loadError) {
     return <div className="app-body">Failed to load: {loadError}</div>;
   }
@@ -126,47 +189,88 @@ export function App() {
   return (
     <div className="app">
       <StatusBar engineState={engineState} connection={connection} />
+      <nav className="tabs" aria-label="Views">
+        <button className={`tab ${tab === "setup" ? "active" : ""}`} onClick={() => setTab("setup")}>
+          Setup
+        </button>
+        <button className={`tab ${tab === "status" ? "active" : ""}`} onClick={() => setTab("status")}>
+          Status
+        </button>
+      </nav>
       <main className="app-body">
-        <NoticesArea notices={notices} onDismiss={(index) => setNotices((current) => current.filter((_, i) => i !== index))} />
-        <ConsoleSection console={draft.console} errors={fieldErrors} onChange={(console) => updateDraft((current) => ({ ...current, console }))} />
-        <DevicesSection
-          active={draft.activeMappings}
-          catalog={snapshot.catalog}
-          devices={devices}
-          midiPorts={midiPorts}
-          errors={fieldErrors}
-          onAdd={() => setDialogOpen(true)}
-          onChange={(activeMappings) => updateDraft((current) => ({ ...current, activeMappings }))}
-          onDuplicate={async (id) => {
-            const result = await window.pamOsc.duplicateMapping(id);
-            if ("error" in result) {
-              setNotices((current) => [...current, { severity: "error", message: result.error }]);
-              return;
-            }
-            const fresh = await window.pamOsc.getSnapshot();
-            setSnapshot((current) => (current ? { ...current, catalog: fresh.catalog, invalidFiles: fresh.invalidFiles } : current));
-            updateDraft((current) => ({
-              ...current,
-              activeMappings: [
-                ...current.activeMappings,
-                { id: result.id, input: result.midiPort.input, output: result.midiPort.output },
-              ],
-            }));
-          }}
+        <NoticesArea
+          notices={notices}
+          onDismiss={(index) => setNotices((current) => current.filter((_, i) => i !== index))}
         />
+        {tab === "status" && (
+          <>
+            <StatusView
+              engineState={engineState}
+              connection={connection}
+              devices={devices}
+              catalog={snapshot.catalog}
+              portDiagnosis={portDiagnosis}
+              busy={engineBusy}
+              testing={testing}
+              onStart={() => void startEngine()}
+              onStop={() => void stopEngine()}
+              onCheck={() => void window.pamOsc.checkConnection()}
+              onTest={(mappingId) => void runOutputTest(mappingId)}
+            />
+            <TrafficLog entries={traffic} />
+          </>
+        )}
+        {tab === "setup" && (
+          <>
+            <ConsoleSection
+              console={draft.console}
+              errors={fieldErrors}
+              onChange={(console) => updateDraft((current) => ({ ...current, console }))}
+            />
+            <DevicesSection
+              active={draft.activeMappings}
+              catalog={snapshot.catalog}
+              devices={devices}
+              midiPorts={midiPorts}
+              errors={fieldErrors}
+              onAdd={() => setDialogOpen(true)}
+              onChange={(activeMappings) => updateDraft((current) => ({ ...current, activeMappings }))}
+              onDuplicate={async (id) => {
+                const result = await window.pamOsc.duplicateMapping(id);
+                if ("error" in result) {
+                  setNotices((current) => [...current, { severity: "error", message: result.error }]);
+                  return;
+                }
+                const fresh = await window.pamOsc.getSnapshot();
+                setSnapshot((current) =>
+                  current ? { ...current, catalog: fresh.catalog, invalidFiles: fresh.invalidFiles } : current
+                );
+                updateDraft((current) => ({
+                  ...current,
+                  activeMappings: [
+                    ...current.activeMappings,
+                    { id: result.id, input: result.midiPort.input, output: result.midiPort.output },
+                  ],
+                }));
+              }}
+            />
+          </>
+        )}
       </main>
-      <footer className="footer">
-        <button className="subtle" onClick={() => void window.pamOsc.revealMappingsFolder()}>
-          Open mappings folder
-        </button>
-        <div className="grow" />
-        <button onClick={discard} disabled={!dirty || saving}>
-          Discard
-        </button>
-        <button className="primary" onClick={() => void save()} disabled={!dirty || saving || fieldErrors.length > 0}>
-          {saving ? "Applying …" : "Save & apply"}
-        </button>
-      </footer>
+      {tab === "setup" && (
+        <footer className="footer">
+          <button className="subtle" onClick={() => void window.pamOsc.revealMappingsFolder()}>
+            Open mappings folder
+          </button>
+          <div className="grow" />
+          <button onClick={discard} disabled={!dirty || saving}>
+            Discard
+          </button>
+          <button className="primary" onClick={() => void save()} disabled={!dirty || saving || fieldErrors.length > 0}>
+            {saving ? "Applying …" : "Save & apply"}
+          </button>
+        </footer>
+      )}
       <AddDeviceDialog
         open={dialogOpen}
         catalog={snapshot.catalog}

@@ -8,4 +8,6 @@ export {
   type EngineEvents,
   type EngineIssue,
   type EngineTiming,
+  type TrafficDirection,
+  type TrafficEvent,
 } from "./types.js";

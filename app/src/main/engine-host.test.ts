@@ -19,6 +19,7 @@ function makeHost(engine: EngineLike) {
     onDevices: () => {},
     onIssue: () => {},
     onLog: () => {},
+    onTraffic: () => {},
   });
   return { host, states };
 }
@@ -31,6 +32,8 @@ describe("EngineHost.autoStart (AC-4)", () => {
         started.push(cfg);
       },
       stop: async () => {},
+      checkConnection: () => {},
+      outputTest: () => ({ ok: true }) as const,
       on: () => undefined,
     };
     const { host, states } = makeHost(engine);
@@ -48,6 +51,8 @@ describe("EngineHost.autoStart (AC-4)", () => {
         throw new Error("UDP port already in use");
       },
       stop: async () => {},
+      checkConnection: () => {},
+      outputTest: () => ({ ok: true }) as const,
       on: () => undefined,
     };
     const { host, states } = makeHost(engine);
