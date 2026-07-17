@@ -5,13 +5,9 @@
      READ-ONLY during /build. Technical design lives in design.md, verification in review.md.
      Lite spec: Why + ACs + Out of Scope is enough. Full spec (risk work): all sections. -->
 
-## Status: DRAFT — pending maintainer approval
+## Status: Spec'd
 
-> Reworked 2026-07-17 after maintainer feedback: **no envelope format** — sharing uses the
-> raw mapping/device files themselves; a separate "support package" exports everything at
-> once (all devices, all mappings, the latest log). Open questions below.
-
-**Created:** 2026-07-17 · **Last Updated:** 2026-07-17 (maintainer direction: raw single-file sharing + full package)
+**Created:** 2026-07-17 · **Last Updated:** 2026-07-17 (finalized with the maintainer: raw single-file sharing + support package)
 
 ## Why
 
@@ -23,12 +19,12 @@ Sharing is the point of the mapping format (PRD P1), but today the only way to s
 - PAM-3 (setup & settings UI — catalog, copy-on-activate port rebinding)
 - PAM-6 (visual mapping editor — Boards tab is the natural home for the actions)
 
-## Open questions (block /build)
+## Decisions (maintainer, 2026-07-17)
 
-1. **Package import (restore)?** Recommendation: out of scope for this round — the package is an export for support/backup; restoring stays manual (copy files back). Say the word and it becomes an AC.
-2. **Session log file.** The app writes no log file today — AC-10 needs one. Recommendation: introduce a simple rotating session log (engine/OSC/MIDI events, errors) in the user data folder as part of this feature (AC-11); alternative: separate feature, package ships without a log until then.
-3. **settings.json in the package?** Recommendation: yes — console IP/ports help support and contain no secrets (local network values only).
-4. **Package format.** Recommendation: `.zip` with `devices/`, `mappings/`, `settings.json`, `log/`, and a small manifest (app version, date); alternative: one big JSON.
+1. **Package import (restore): out of scope** — the package is an export for support/backup; restoring stays manual (copy files back or import individually).
+2. **Session log: part of this feature** (AC-11) — a simple rotating session log in the user data folder.
+3. **settings.json ships in the package** — console IP/ports help support and contain no secrets (local network values only).
+4. **Package format: `.zip`** with `devices/`, `mappings/`, `settings.json`, `log/`, and a small manifest (app version, date).
 
 ## Acceptance Criteria
 
@@ -43,8 +39,8 @@ Sharing is the point of the mapping format (PRD P1), but today the only way to s
 - [ ] **AC-7** — Given an imported mapping that contains free-text MA3 commands, then the import summary shows a one-line caution that button commands run verbatim on the console (carries over the PAM-5 review's BUG-7 note to the sharing surface).
 - [ ] **AC-8** — Given any board in the Boards tab, when I choose "Export" on it, then a save dialog writes **the raw device definition file** to the location I pick.
 - [ ] **AC-9** — Given a device definition file, when I import it, then it is validated the same way (AC-3/AC-5 rules apply); bundled definitions are never overwritten or shadowed without the id-suffix rule.
-- [ ] **AC-10** — Given the app, when I choose "Export support package", then one archive is written containing **all** device definitions and mappings visible in the app (user files at minimum), the current settings, the latest session log, and the app version — enough for someone else (or future me) to reproduce the setup.
-- [ ] **AC-11** — Given a running session, then the app writes a session log file (engine/OSC/MIDI lifecycle events, errors) to the user data folder with a bounded size/rotation, so AC-10 always has a "latest log" to include. _(Pending open question 2.)_
+- [ ] **AC-10** — Given the app, when I choose "Export support package", then one **.zip** archive is written containing **all** device definitions and mappings visible in the app (user files at minimum), the current `settings.json`, the latest session log, and a manifest (app version, date) — enough for someone else (or future me) to reproduce the setup.
+- [ ] **AC-11** — Given a running session, then the app writes a session log file (engine/OSC/MIDI lifecycle events, errors) to the user data folder with a bounded size/rotation, so AC-10 always has a "latest log" to include.
 
 ## Security notes (same bar as PAM-5/PAM-6 reviews)
 
