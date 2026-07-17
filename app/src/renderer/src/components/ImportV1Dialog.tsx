@@ -66,6 +66,12 @@ export function ImportV1Dialog({
     <dialog
       ref={ref}
       aria-label="Import v1 mapping"
+      onCancel={(event) => {
+        // Escape must not tear the dialog out of the DOM mid-import — the
+        // native <dialog> would close while React state still holds the flow,
+        // making it vanish then reappear at the result phase (review BUG-3).
+        if (busy) event.preventDefault();
+      }}
       onClose={() => {
         if (!busy) onClose();
       }}

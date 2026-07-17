@@ -287,6 +287,27 @@ describe("convertV1 mechanics", () => {
     ]);
   });
 
+  it("rejects an over-long mapper without running the regex — ReDoS guard, fast (BUG-1)", () => {
+    // A megabyte-scale adversarial string that would trigger quadratic
+    // backtracking must fall back near-instantly, never feeding the regex.
+    const evil = "function(value){if(value=='On'){return 1" + " ".repeat(1_000_000) + "X";
+    const start = performance.now();
+    const { mapping, summary } = convertRaw({ buttonFeedbackMapper: evil, note: { 10: { exec: 201 } } });
+    const elapsed = performance.now() - start;
+    expect(elapsed).toBeLessThan(100); // pre-fix: seconds to minutes
+    expect(mapping.assignments[0]?.feedback).toEqual({ type: "on-off", onValue: 127, offValue: 0 });
+    expect(summary.warnings).toEqual([
+      expect.objectContaining({ kind: "unrecognized-feedback", text: expect.stringContaining("too long") }),
+    ]);
+  });
+
+  it("still matches a valid mapper padded with legitimate whitespace", () => {
+    const padded = "function ( value ) {  if ( value == 'On' ) { return 5 ; }  if ( value == 'Off' ) { return 0 ; } return 0 ; }";
+    const { mapping, summary } = convertRaw({ buttonFeedbackMapper: padded, note: { 10: { exec: 201 } } });
+    expect(summary.warnings).toEqual([]);
+    expect(mapping.assignments[0]?.feedback).toEqual({ type: "on-off", onValue: 5, offValue: 0 });
+  });
+
   it("buttons without a mapper default to on-off 127/0; LED-less buttons get none", () => {
     const { mapping } = convertRaw({ note: { 10: { exec: 201 }, 11: { exec: 202 } } });
     const byId = new Map(mapping.assignments.map((assignment) => [assignment.controlId, assignment]));

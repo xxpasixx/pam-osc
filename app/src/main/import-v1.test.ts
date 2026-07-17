@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it } from "vitest";
 import { Catalog } from "./catalog.js";
-import { analyzeV1File, importV1File } from "./import-v1.js";
+import { analyzeV1File, importV1File, ImportSerializer } from "./import-v1.js";
 
 /**
  * PAM-5 AC-2/AC-5/AC-6 at the main-process boundary: real bundled resources
@@ -84,6 +84,40 @@ describe("importV1File", () => {
     expect(first.ok && first.entry.id).toBe("compact");
     expect(second.ok && second.entry.id).toBe("compact-2");
     expect((await readdir(userMappingsDir)).sort()).toEqual(["compact-2.json", "compact.json"]);
+  });
+
+  it("serializes concurrent same-name imports into distinct files (BUG-2)", async () => {
+    const sourcePath = join(legacyDir, "xTouchCompact1.json");
+    const serializer = new ImportSerializer();
+    const [first, second] = await Promise.all([
+      serializer.run(() =>
+        importV1File({ filePath: sourcePath, deviceDefinitionId: "x-touch-compact", name: "Compact" }, catalog)
+      ),
+      serializer.run(() =>
+        importV1File({ filePath: sourcePath, deviceDefinitionId: "x-touch-compact", name: "Compact" }, catalog)
+      ),
+    ]);
+    expect(first.ok && second.ok).toBe(true);
+    const ids = [first.ok && first.entry.id, second.ok && second.entry.id].sort();
+    expect(ids).toEqual(["compact", "compact-2"]);
+    // Both files survive — neither clobbered the other.
+    expect((await readdir(userMappingsDir)).sort()).toEqual(["compact-2.json", "compact.json"]);
+  });
+
+  it("a rejected import does not wedge the serializer queue (BUG-2)", async () => {
+    const serializer = new ImportSerializer();
+    const results = await Promise.allSettled([
+      serializer.run(() => Promise.reject(new Error("boom"))),
+      serializer.run(() =>
+        importV1File(
+          { filePath: join(legacyDir, "mpx16-1.json"), deviceDefinitionId: "mpx16", name: "After Failure" },
+          catalog
+        )
+      ),
+    ]);
+    expect(results[0]!.status).toBe("rejected");
+    expect(results[1]!.status).toBe("fulfilled");
+    expect(catalog.entries().some((entry) => entry.id === "after-failure")).toBe(true);
   });
 
   it("skips ids whose file name is already occupied by a stray file", async () => {

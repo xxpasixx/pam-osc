@@ -9,7 +9,7 @@ import { udpOscTransport } from "../transports/osc-udp.js";
 import { applySettings } from "./apply-settings.js";
 import { Catalog } from "./catalog.js";
 import { EngineHost } from "./engine-host.js";
-import { analyzeV1File, importV1File } from "./import-v1.js";
+import { analyzeV1File, importV1File, ImportSerializer } from "./import-v1.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
 import { SettingsStore } from "./settings-store.js";
@@ -201,7 +201,9 @@ async function main(): Promise<void> {
     if (result.status === "ok") pickedV1Files.add(result.filePath);
     return result;
   });
-  handle(IPC.importV1Mapping, async (_event, rawRequest) => {
+  // Imports run one at a time (review BUG-2) — see ImportSerializer.
+  const importSerializer = new ImportSerializer();
+  handle(IPC.importV1Mapping, (_event, rawRequest) => {
     const request = rawRequest as { filePath?: unknown; deviceDefinitionId?: unknown; name?: unknown };
     if (
       typeof request?.filePath !== "string" ||
@@ -213,10 +215,8 @@ async function main(): Promise<void> {
     if (!pickedV1Files.has(request.filePath)) {
       return { ok: false, error: "pick the v1 file via the import dialog first" };
     }
-    return importV1File(
-      { filePath: request.filePath, deviceDefinitionId: request.deviceDefinitionId, name: request.name },
-      catalog
-    );
+    const { filePath, deviceDefinitionId, name } = request;
+    return importSerializer.run(() => importV1File({ filePath, deviceDefinitionId, name }, catalog));
   });
 
   // ---- diagnostics & engine control (PAM-4) ----

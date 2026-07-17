@@ -43,6 +43,15 @@ export interface ConvertV1Input {
 const V1_MAPPER_PATTERN =
   /^\s*function\s*\(\s*value\s*\)\s*\{\s*if\s*\(\s*value\s*==\s*['"]On['"]\s*\)\s*\{\s*return\s+(\d+)\s*;?\s*\}\s*if\s*\(\s*value\s*==\s*['"]Off['"]\s*\)\s*\{\s*return\s+(\d+)\s*;?\s*\}\s*return\s+\d+\s*;?\s*\}\s*$/;
 
+/**
+ * The known v1 mapper is ~90 chars; even with generous whitespace it stays
+ * well under this. Anything longer cannot be the pattern, so we reject it
+ * before `.exec()` — the pattern's adjacent `\s*;?\s*` groups backtrack
+ * quadratically, and mapper strings come from untrusted shared files, so a
+ * megabyte-long value would otherwise freeze the main process (ReDoS).
+ */
+const MAX_MAPPER_LENGTH = 300;
+
 /** Per-entry keys that are hardware facts in v2 — dropped without a warning. */
 const HARDWARE_ENTRY_KEYS = new Set([
   "posFrom",
@@ -453,6 +462,15 @@ function mapperToOnOff(
   if (mapper === undefined) return fallback; // v1's default
   if (typeof mapper !== "string") {
     warn("unrecognized-feedback", `${source}: buttonFeedbackMapper is not text — default on/off (127/0) used`);
+    return fallback;
+  }
+  // Reject over-long strings before the regex — the pattern backtracks
+  // quadratically and the input is untrusted (ReDoS guard, review BUG-1).
+  if (mapper.length > MAX_MAPPER_LENGTH) {
+    warn(
+      "unrecognized-feedback",
+      `${source}: buttonFeedbackMapper is too long to be the known v1 pattern — default on/off (127/0) used (the function was NOT executed)`
+    );
     return fallback;
   }
   const match = V1_MAPPER_PATTERN.exec(mapper);

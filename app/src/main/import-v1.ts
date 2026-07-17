@@ -104,6 +104,23 @@ export async function importV1File(request: ImportV1Request, catalog: Catalog): 
   return { ok: true, entry, summary };
 }
 
+/**
+ * Serializes imports (review BUG-2): the id-uniqueness check, write, and
+ * catalog refresh inside importV1File are not atomic, so two overlapping
+ * imports could pick the same id and clobber each other. Chaining them on one
+ * promise makes each import see the previous one's written file. A rejected
+ * task doesn't wedge the queue — the chain continues from a settled state.
+ */
+export class ImportSerializer {
+  private chain: Promise<unknown> = Promise.resolve();
+
+  run<T>(task: () => Promise<T>): Promise<T> {
+    const result = this.chain.then(task);
+    this.chain = result.catch(() => undefined);
+    return result;
+  }
+}
+
 async function fileExists(path: string): Promise<boolean> {
   try {
     await access(path);
