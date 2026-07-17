@@ -32,16 +32,16 @@ The import produces a **standard v2 mapping file** — after the import is done,
 
 A file is accepted as a v1 mapping when it is valid JSON, is an object, contains **at least one** of the section keys `control`, `note`, `pitch`, `rltvControl`, `display`, and has **no** `formatVersion` field (a `formatVersion` means it's already a v2 file — rejected with a message saying exactly that). Recognized v1 content:
 
-| v1 element | Meaning | Values |
-|---|---|---|
-| `mode` (top-level) | "mc" or absent — board protocol fact | dropped (lives in the v2 device definition) |
-| `buttonFeedbackMapper` (top-level) | JS feedback function, file-wide default | pattern-matched, never executed (see Feedback) |
-| `enableTimecodeSend` | timecode to 7-segment display | copied as-is (boolean) |
-| `control.<cc>` | absolute CC (fader/knob) → executor | number **or numeric string** (e.g. `"201"`) |
-| `pitch.<channel>` | pitchbend fader → executor | number |
-| `note.<note>` | button entry | object, see Actions below |
-| `rltvControl.<cc>` | relative encoder entry | object: `exec` or `attribute`, `amount`, plus hardware fields |
-| `display.<index>` | scribble strip → executor to mirror | number |
+| v1 element                         | Meaning                                 | Values                                                        |
+| ---------------------------------- | --------------------------------------- | ------------------------------------------------------------- |
+| `mode` (top-level)                 | "mc" or absent — board protocol fact    | dropped (lives in the v2 device definition)                   |
+| `buttonFeedbackMapper` (top-level) | JS feedback function, file-wide default | pattern-matched, never executed (see Feedback)                |
+| `enableTimecodeSend`               | timecode to 7-segment display           | copied as-is (boolean)                                        |
+| `control.<cc>`                     | absolute CC (fader/knob) → executor     | number **or numeric string** (e.g. `"201"`)                   |
+| `pitch.<channel>`                  | pitchbend fader → executor              | number                                                        |
+| `note.<note>`                      | button entry                            | object, see Actions below                                     |
+| `rltvControl.<cc>`                 | relative encoder entry                  | object: `exec` or `attribute`, `amount`, plus hardware fields |
+| `display.<index>`                  | scribble strip → executor to mirror     | number                                                        |
 
 Per-entry keys inside `note`/`rltvControl`:
 
@@ -63,29 +63,29 @@ Per-entry keys inside `note`/`rltvControl`:
 
 Control matching — every v1 entry is addressed by MIDI facts; the converter finds the control in the chosen device definition:
 
-| v1 section | Matches the control with |
-|---|---|
-| `control.<cc>` | `midi.kind` "cc" and `midi.number` = cc |
-| `pitch.<channel>` | `midi.kind` "pitchbend" and `midi.channel` = channel |
-| `note.<note>` | `midi.kind` "note" and `midi.number` = note |
+| v1 section         | Matches the control with                                           |
+| ------------------ | ------------------------------------------------------------------ |
+| `control.<cc>`     | `midi.kind` "cc" and `midi.number` = cc                            |
+| `pitch.<channel>`  | `midi.kind` "pitchbend" and `midi.channel` = channel               |
+| `note.<note>`      | `midi.kind` "note" and `midi.number` = note                        |
 | `rltvControl.<cc>` | `midi.kind` "cc" and `midi.number` = cc and control type "encoder" |
-| `display.<index>` | control type "display" and `index` = index |
+| `display.<index>`  | control type "display" and `index` = index                         |
 
 No match → the entry is **skipped with a warning** naming section, number, and the board (e.g. `note 91: no button with note 91 on "Launchpad Mk2"`). If two v1 entries resolve to the same control (e.g. the same CC in both `control` and `rltvControl`), the **first wins** (section order: control, pitch, note, rltvControl, display) and the loser is skipped with a warning — the v2 schema forbids duplicate assignments.
 
 Action conversion:
 
-| v1 | v2 action |
-|---|---|
+| v1                                                     | v2 action                                                                                                                                                 |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `exec` / numeric `control` / `pitch` / `display` value | `executor` (or `display` for the display section) with that number; numeric strings are converted; a value that is not an integer 1–9999 → skip + warning |
-| `cmd` | `command` |
-| `quicKey` | `quickKey` |
-| `attribute` (no `local`) | `attribute` |
-| `local`: "encoderFine" / "encoderRough" | `modifier` with that modifier |
-| `local`: "attribute" + `attribute` | `modifier` "attributeSelect" with the attribute |
-| `timecodeSelect`: `true` | `timecodeSelect` without slot (cycles 0–8, v1 behavior) |
-| `timecodeSelect`: number 1–8 | `timecodeSelect` with that slot |
-| `timecodePlayPause`: `true` | `timecodePlayPause` |
+| `cmd`                                                  | `command`                                                                                                                                                 |
+| `quicKey`                                              | `quickKey`                                                                                                                                                |
+| `attribute` (no `local`)                               | `attribute`                                                                                                                                               |
+| `local`: "encoderFine" / "encoderRough"                | `modifier` with that modifier                                                                                                                             |
+| `local`: "attribute" + `attribute`                     | `modifier` "attributeSelect" with the attribute                                                                                                           |
+| `timecodeSelect`: `true`                               | `timecodeSelect` without slot (cycles 0–8, v1 behavior)                                                                                                   |
+| `timecodeSelect`: number 1–8                           | `timecodeSelect` with that slot                                                                                                                           |
+| `timecodePlayPause`: `true`                            | `timecodePlayPause`                                                                                                                                       |
 
 `minValue` → `options.minValue` (must be 0–127, else skip + warning); `amount` → `options.amount` (must be a positive number ≤ 1000, else skip + warning). An entry with no recognizable action, or with several conflicting ones, is skipped with a warning naming the entry and the reason.
 
@@ -115,8 +115,8 @@ Zero silent drops: every v1 entry either becomes an assignment or produces exact
 
 Everything is local and single-user (consistent with `docs/data-model.md`); "access" is the process boundary — file dialog and file writes live in the main process, the renderer only talks through the preload bridge. Two new IPC calls (extending `PamOscApi`), plus one snapshot extension:
 
-1. **Pick v1 file** — opens the native open-file dialog (filter: `.json`), reads and shape-checks the chosen file. Returns one of: *canceled* (user closed the dialog — no error shown); *ok* with file path, file name, and per-section entry counts (the preview numbers for step 2); *error* with a plain-language message (not JSON / already a v2 file / no v1 sections found — AC-6). Nothing is written in this step.
-2. **Import** — input: file path (from step 1), chosen device definition id, chosen name. The main process **re-reads the file from disk** (the renderer round-trip is not trusted), validates the same way, converts, validates the result against the PAM-1 mapping schema (belt and braces — a converter bug must not produce an unloadable file), writes it to the user mappings folder, refreshes the catalog, and returns the new catalog entry + import summary. Any failure → *error* with message, nothing written (a failed schema check names the converter as the culprit, asking the user to report it).
+1. **Pick v1 file** — opens the native open-file dialog (filter: `.json`), reads and shape-checks the chosen file. Returns one of: _canceled_ (user closed the dialog — no error shown); _ok_ with file path, file name, and per-section entry counts (the preview numbers for step 2); _error_ with a plain-language message (not JSON / already a v2 file / no v1 sections found — AC-6). Nothing is written in this step.
+2. **Import** — input: file path (from step 1), chosen device definition id, chosen name. The main process **re-reads the file from disk** (the renderer round-trip is not trusted), validates the same way, converts, validates the result against the PAM-1 mapping schema (belt and braces — a converter bug must not produce an unloadable file), writes it to the user mappings folder, refreshes the catalog, and returns the new catalog entry + import summary. Any failure → _error_ with message, nothing written (a failed schema check names the converter as the culprit, asking the user to report it).
 3. **Snapshot extension** — the snapshot gains the list of loaded device definitions (id + display name, bundled and user, alphabetical) so the dropdown never needs an extra round trip.
 
 UI flow (`ImportV1Dialog`, reachable via the "Import v1 mapping" button in the Devices section):
@@ -157,15 +157,22 @@ Level 3 — Renderer:  T3      ImportV1Dialog + DevicesSection button + styles
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| --- | --- | --- | --- | --- |
-| Pure converter in `core/import/`, fixtures = the 10 legacy files | Full v1 feature coverage is provable in unit tests (AC-3); golden test against PAM-1's hand conversion | Convert inside the main process handlers | One more module boundary | 2026-07-17 |
-| Mapper JS matched by regex against the single v1-generated shape | No code execution on untrusted input (spec); covers 100% of real v1 files | Sandboxed evaluation (vm, worker) | Hand-written mappers fall back to 127/0 + warning — accepted, v2 doesn't support code anyway | 2026-07-17 |
-| Two-step IPC (pick → import), file re-read at import | Renderer stays untrusted; no v1 blobs shuttled over IPC; dialog UX needs the counts before board choice | Single call doing dialog + import | Second disk read — irrelevant at these file sizes | 2026-07-17 |
-| Generated mapping is a plain user mapping (placeholder ports, no auto-activation) | Reuses PAM-3's activate/bind/save path unchanged; import stays side-effect-free for the engine | Auto-activate after import | One extra user step (Add device) — deliberate, keeps Save the only engine-touching action | 2026-07-17 |
-| Final schema validation before write, converter blamed on failure | A converter bug must never produce a file the loader rejects (AC-2) | Trust the converter | Tiny extra work per import | 2026-07-17 |
-| Warnings appended to the file's `notes` | Approximations survive the dialog; same convention as PAM-1's documented approximations | Summary only in the dialog | Slightly longer notes field | 2026-07-17 |
+| Decision                                                                          | Rationale                                                                                               | Alternative considered                   | Trade-off                                                                                    | Date       |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------- | ---------- |
+| Pure converter in `core/import/`, fixtures = the 10 legacy files                  | Full v1 feature coverage is provable in unit tests (AC-3); golden test against PAM-1's hand conversion  | Convert inside the main process handlers | One more module boundary                                                                     | 2026-07-17 |
+| Mapper JS matched by regex against the single v1-generated shape                  | No code execution on untrusted input (spec); covers 100% of real v1 files                               | Sandboxed evaluation (vm, worker)        | Hand-written mappers fall back to 127/0 + warning — accepted, v2 doesn't support code anyway | 2026-07-17 |
+| Two-step IPC (pick → import), file re-read at import                              | Renderer stays untrusted; no v1 blobs shuttled over IPC; dialog UX needs the counts before board choice | Single call doing dialog + import        | Second disk read — irrelevant at these file sizes                                            | 2026-07-17 |
+| Generated mapping is a plain user mapping (placeholder ports, no auto-activation) | Reuses PAM-3's activate/bind/save path unchanged; import stays side-effect-free for the engine          | Auto-activate after import               | One extra user step (Add device) — deliberate, keeps Save the only engine-touching action    | 2026-07-17 |
+| Final schema validation before write, converter blamed on failure                 | A converter bug must never produce a file the loader rejects (AC-2)                                     | Trust the converter                      | Tiny extra work per import                                                                   | 2026-07-17 |
+| Warnings appended to the file's `notes`                                           | Approximations survive the dialog; same convention as PAM-1's documented approximations                 | Summary only in the dialog               | Slightly longer notes field                                                                  | 2026-07-17 |
 
 ## Open Questions
 
 - None
+
+## Implementation Notes (added during /build)
+
+- **Button feedback is derived per action statefulness, not blanket per LED.** PAM-1's hand conversion (the golden fixture) encodes what v1 actually did: LED buttons get `on-off` only for actions the engine mirrors state for — **executor, command, modifier**. Stateless triggers (**quickKey, timecodeSelect, timecodePlayPause**) get `none`; v1 never sent feedback for them. The design's feedback step 4 is refined accordingly.
+- **Two v1 files carry documented defects; the importer warns instead of fixing.** `akiApcMini1.json` addresses note 72, which doesn't exist on the hardware (PAM-1 manually moved it to the shift button, note 98); `akaiApcMini2-Controller.json` has an empty `quicKey` on the shift button. Both convert with exactly one warning each — an importer must not guess (spec decision: no silent repairs). All other eight files convert 100% warning-free; the golden test matches PAM-1's conversion exactly (124/124 assignments).
+- **Import paths are allow-listed in the main process.** `importV1Mapping` only accepts a `filePath` that `pickV1MappingFile`'s own dialog returned earlier in the session — a compromised renderer can't point the main process at arbitrary files.
+- **Unique ids also dodge stray files.** Besides loaded mapping ids, the id search skips file names already present in the user mappings folder (an invalid file owns its name without having a loadable id).

@@ -89,6 +89,7 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
         firstRun: false,
         catalog: catalog.entries(),
         invalidFiles: catalog.invalidFiles(),
+        boards: catalog.boards(),
         midiPorts: { inputs: [], outputs: [] },
         engineState: "running",
         connection: undefined,

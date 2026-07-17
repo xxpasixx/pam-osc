@@ -14,6 +14,7 @@ import type {
 import { AddDeviceDialog } from "./components/AddDeviceDialog.js";
 import { ConsoleSection } from "./components/ConsoleSection.js";
 import { DevicesSection } from "./components/DevicesSection.js";
+import { ImportV1Dialog, type ImportFlow } from "./components/ImportV1Dialog.js";
 import { NoticesArea } from "./components/NoticesArea.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { StatusView } from "./components/StatusView.js";
@@ -47,6 +48,8 @@ export function App() {
   const [portDiagnosis, setPortDiagnosis] = useState<PortDiagnosis | undefined>();
   const [engineBusy, setEngineBusy] = useState(false);
   const [testing, setTesting] = useState<Set<string>>(new Set());
+  const [importFlow, setImportFlow] = useState<ImportFlow | undefined>();
+  const [importBusy, setImportBusy] = useState(false);
   const appliedRef = useRef<SettingsDraft | undefined>(undefined);
 
   // Notices deliberately stay out: adopting a post-save snapshot would
@@ -162,6 +165,53 @@ export function App() {
     }
   }, [pushError]);
 
+  // ---- v1 mapping import (PAM-5): pick → configure → import → summary ----
+  const startImportV1 = useCallback(async () => {
+    try {
+      const picked = await window.pamOsc.pickV1MappingFile();
+      if (picked.status === "canceled") return;
+      if (picked.status === "error") {
+        setImportFlow({ phase: "error", error: picked.error });
+        return;
+      }
+      setImportFlow({ phase: "configure", file: picked });
+    } catch (error) {
+      setImportFlow({ phase: "error", error: error instanceof Error ? error.message : String(error) });
+    }
+  }, []);
+
+  const runImportV1 = useCallback(
+    async (deviceDefinitionId: string, name: string) => {
+      if (importFlow?.phase !== "configure") return;
+      setImportBusy(true);
+      try {
+        const result = await window.pamOsc.importV1Mapping({
+          filePath: importFlow.file.filePath,
+          deviceDefinitionId,
+          name,
+        });
+        if (!result.ok) {
+          setImportFlow({ phase: "error", error: result.error });
+          return;
+        }
+        // The catalog gained a mapping — refresh the lists (same pattern as
+        // Duplicate); settings stay untouched, activation is the user's step.
+        const fresh = await window.pamOsc.getSnapshot();
+        setSnapshot((current) =>
+          current
+            ? { ...current, catalog: fresh.catalog, invalidFiles: fresh.invalidFiles, boards: fresh.boards }
+            : current
+        );
+        setImportFlow({ phase: "result", entryName: result.entry.name, summary: result.summary });
+      } catch (error) {
+        setImportFlow({ phase: "error", error: error instanceof Error ? error.message : String(error) });
+      } finally {
+        setImportBusy(false);
+      }
+    },
+    [importFlow]
+  );
+
   const runOutputTest = useCallback(
     async (mappingId: string) => {
       setTesting((current) => new Set(current).add(mappingId));
@@ -234,6 +284,7 @@ export function App() {
               midiPorts={midiPorts}
               errors={fieldErrors}
               onAdd={() => setDialogOpen(true)}
+              onImportV1={() => void startImportV1()}
               onChange={(activeMappings) => updateDraft((current) => ({ ...current, activeMappings }))}
               onDuplicate={async (id) => {
                 const result = await window.pamOsc.duplicateMapping(id);
@@ -271,6 +322,13 @@ export function App() {
           </button>
         </footer>
       )}
+      <ImportV1Dialog
+        flow={importFlow}
+        boards={snapshot.boards}
+        busy={importBusy}
+        onImport={(deviceDefinitionId, name) => void runImportV1(deviceDefinitionId, name)}
+        onClose={() => setImportFlow(undefined)}
+      />
       <AddDeviceDialog
         open={dialogOpen}
         catalog={snapshot.catalog}

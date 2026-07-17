@@ -1,8 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { loadFormat, type FormatSource, type LoadResult } from "../core/format/index.js";
+import { loadFormat, type DeviceDefinition, type FormatSource, type LoadResult } from "../core/format/index.js";
 import type { ActiveMappingDraft } from "../core/settings/schema.js";
-import type { CatalogEntry, InvalidCatalogEntry, Notice } from "../shared/ipc.js";
+import type { BoardInfo, CatalogEntry, InvalidCatalogEntry, Notice } from "../shared/ipc.js";
 
 /**
  * The mapping catalog (design → Mapping catalog): every mapping the user
@@ -46,6 +46,21 @@ export class Catalog {
 
   validIds(): Set<string> {
     return new Set(this.loaded.mappings.map((mapping) => mapping.id));
+  }
+
+  /** All loaded device definitions for the import dropdown, alphabetical (PAM-5). */
+  boards(): BoardInfo[] {
+    return this.loaded.devices
+      .map((device) => ({ id: device.id, name: device.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  device(id: string): DeviceDefinition | undefined {
+    return this.loaded.devices.find((device) => device.id === id);
+  }
+
+  get userMappingsDirPath(): string {
+    return this.paths.userMappingsDir;
   }
 
   entries(): CatalogEntry[] {
@@ -99,7 +114,8 @@ export class Catalog {
       raw.midiPort = active.output ? { input: active.input, output: active.output } : { input: active.input };
       // Bundled activations materialize as <id>.json in the user folder
       // (shadowing makes the copy win); user files are rewritten in place.
-      const targetFile = source.origin === "bundled" ? join(this.paths.userMappingsDir, `${active.id}.json`) : source.file;
+      const targetFile =
+        source.origin === "bundled" ? join(this.paths.userMappingsDir, `${active.id}.json`) : source.file;
       await writeFile(targetFile, JSON.stringify(raw, null, 2) + "\n", "utf8");
       changed = true;
     }

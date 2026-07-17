@@ -5,13 +5,15 @@
      READ-ONLY during /build. Technical design lives in design.md, verification in review.md. -->
 
 ## Status: Spec'd
+
 **Created:** 2026-07-17 · **Last Updated:** 2026-07-17
 
 ## Why
 
-Existing v1 users (Discord community) have customized mapping JSONs they must not lose when moving to v2 — a PRD success metric. PAM-1 already re-expressed the *bundled* v1 mappings; PAM-5 converts a user's *own* v1 file into a valid v2 mapping via the UI, with every approximation made visible instead of silent.
+Existing v1 users (Discord community) have customized mapping JSONs they must not lose when moving to v2 — a PRD success metric. PAM-1 already re-expressed the _bundled_ v1 mappings; PAM-5 converts a user's _own_ v1 file into a valid v2 mapping via the UI, with every approximation made visible instead of silent.
 
 ## Dependencies
+
 - PAM-1 (v2 file format & loader)
 - PAM-3 (settings UI hosting the import entry point)
 
@@ -25,20 +27,23 @@ Existing v1 users (Discord community) have customized mapping JSONs they must no
 - [ ] **AC-6** — Given a file that is not valid JSON or not shaped like a v1 mapping, when import is attempted, then a clear error names the file and the problem, nothing is written, and the app keeps running.
 
 ## Out of Scope
+
 - Automatic board detection from file shape — the user picks the device definition manually (dropdown)
 - Import of v1 port assignments / Open Stage Control config — MIDI ports are bound in the settings UI (PAM-3)
 - Batch import of multiple files in one go — one file per import
 - Export/sharing of mappings — PAM-7
 
 ## Open Questions
+
 - None
 
 ## Decision Log
 
 ### Product Decisions
-| Decision | Rationale | Date |
-|----------|-----------|------|
-| Import via UI only, no CLI | PRD goal: migration without touching a terminal | 2026-07-17 |
-| Device definition picked manually from a dropdown | v1 files don't identify their board; explicit choice beats guessing | 2026-07-17 |
-| Feedback-mapper JS is pattern-matched, never executed | Untrusted input; v2 bans executable code in mapping files (PAM-1 decision) | 2026-07-17 |
-| Original v1 file stays untouched; result is a new v2 file + visible summary | Safe migration, no data loss, approximations transparent | 2026-07-17 |
+
+| Decision                                                                    | Rationale                                                                  | Date       |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------- |
+| Import via UI only, no CLI                                                  | PRD goal: migration without touching a terminal                            | 2026-07-17 |
+| Device definition picked manually from a dropdown                           | v1 files don't identify their board; explicit choice beats guessing        | 2026-07-17 |
+| Feedback-mapper JS is pattern-matched, never executed                       | Untrusted input; v2 bans executable code in mapping files (PAM-1 decision) | 2026-07-17 |
+| Original v1 file stays untouched; result is a new v2 file + visible summary | Safe migration, no data loss, approximations transparent                   | 2026-07-17 |

@@ -57,6 +57,7 @@ export function DevicesSection({
   onAdd,
   onChange,
   onDuplicate,
+  onImportV1,
 }: {
   active: ActiveMappingDraft[];
   catalog: CatalogEntry[];
@@ -66,6 +67,7 @@ export function DevicesSection({
   onAdd: () => void;
   onChange: (active: ActiveMappingDraft[]) => void;
   onDuplicate: (id: string) => void;
+  onImportV1: () => void;
 }) {
   const entryById = new Map(catalog.map((entry) => [entry.id, entry]));
   const statusById = new Map(devices.map((status) => [status.mappingId, status]));
@@ -79,9 +81,7 @@ export function DevicesSection({
     <section className="card" aria-label="Devices">
       <h2>Devices</h2>
       {active.length === 0 && (
-        <p className="empty-state">
-          No device active yet — add one to bridge a MIDI controller to the console.
-        </p>
+        <p className="empty-state">No device active yet — add one to bridge a MIDI controller to the console.</p>
       )}
       {active.map((mapping, index) => {
         const entry = entryById.get(mapping.id);
@@ -93,7 +93,9 @@ export function DevicesSection({
             <span className={`led ${led}`} title={statusText} aria-label={statusText} />
             <div className="device-name">
               {entry?.name ?? mapping.id}
-              <span className="board">{entry?.boardName ?? "unknown board"} · {entry?.origin ?? "?"}</span>
+              <span className="board">
+                {entry?.boardName ?? "unknown board"} · {entry?.origin ?? "?"}
+              </span>
             </div>
             <PortPicker
               id={`input-${index}`}
@@ -113,7 +115,11 @@ export function DevicesSection({
               onChange={(output) => update(index, { output: output === "" ? undefined : output })}
             />
             <div className="spacer" />
-            <button className="subtle" onClick={() => onDuplicate(mapping.id)} title="Create a copy for a second unit of this board">
+            <button
+              className="subtle"
+              onClick={() => onDuplicate(mapping.id)}
+              title="Create a copy for a second unit of this board"
+            >
               Duplicate
             </button>
             <button className="subtle" onClick={() => onChange(active.filter((_, i) => i !== index))}>
@@ -122,7 +128,12 @@ export function DevicesSection({
           </div>
         );
       })}
-      <button onClick={onAdd}>+ Add device</button>
+      <div className="section-actions">
+        <button onClick={onAdd}>+ Add device</button>
+        <button className="subtle" onClick={onImportV1} title="Convert a pam-osc v1 mapping (.json) into a v2 mapping">
+          Import v1 mapping
+        </button>
+      </div>
     </section>
   );
 }

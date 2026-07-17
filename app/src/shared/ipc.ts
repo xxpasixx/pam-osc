@@ -5,6 +5,7 @@
  */
 
 import type { ConnectionStatus, DeviceStatus, TrafficDirection } from "../core/engine/types.js";
+import type { ImportSummary, V1SectionCounts } from "../core/import/index.js";
 import type { SettingsDraft } from "../core/settings/schema.js";
 
 export type EngineState = "stopped" | "starting" | "running";
@@ -53,6 +54,27 @@ export interface MidiPortList {
   outputs: string[];
 }
 
+/** A loaded device definition, as the import dialog's dropdown needs it (PAM-5). */
+export interface BoardInfo {
+  id: string;
+  name: string;
+}
+
+/** Result of the native "pick a v1 mapping file" dialog + shape check (PAM-5 AC-1/AC-6). */
+export type PickV1FileResult =
+  | { status: "canceled" }
+  | { status: "ok"; filePath: string; fileName: string; counts: V1SectionCounts }
+  | { status: "error"; error: string };
+
+export interface ImportV1Request {
+  /** Must be a path previously returned by pickV1MappingFile in this session. */
+  filePath: string;
+  deviceDefinitionId: string;
+  name: string;
+}
+
+export type ImportV1Result = { ok: true; entry: CatalogEntry; summary: ImportSummary } | { ok: false; error: string };
+
 export interface Notice {
   severity: "error" | "warning" | "info";
   source?: string;
@@ -66,6 +88,8 @@ export interface Snapshot {
   firstRun: boolean;
   catalog: CatalogEntry[];
   invalidFiles: InvalidCatalogEntry[];
+  /** All loaded device definitions — the import dialog's board dropdown (PAM-5). */
+  boards: BoardInfo[];
   midiPorts: MidiPortList;
   engineState: EngineState;
   connection: ConnectionStatus | undefined;
@@ -94,6 +118,8 @@ export interface PamOscApi {
   applySettings(draft: SettingsDraft): Promise<ApplyResult>;
   revealMappingsFolder(): Promise<void>;
   duplicateMapping(id: string): Promise<CatalogEntry | { error: string }>;
+  pickV1MappingFile(): Promise<PickV1FileResult>;
+  importV1Mapping(request: ImportV1Request): Promise<ImportV1Result>;
   startEngine(): Promise<{ ok: boolean; error?: string }>;
   stopEngine(): Promise<void>;
   checkConnection(): Promise<void>;
@@ -115,6 +141,8 @@ export const IPC = {
   applySettings: "pam:applySettings",
   revealMappingsFolder: "pam:revealMappingsFolder",
   duplicateMapping: "pam:duplicateMapping",
+  pickV1MappingFile: "pam:pickV1MappingFile",
+  importV1Mapping: "pam:importV1Mapping",
   startEngine: "pam:startEngine",
   stopEngine: "pam:stopEngine",
   checkConnection: "pam:checkConnection",

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, screen, shell } from "electron";
 import type { IpcMainInvokeEvent } from "electron";
 import { join, resolve } from "node:path";
 import { Engine } from "../core/engine/index.js";
@@ -9,6 +9,7 @@ import { udpOscTransport } from "../transports/osc-udp.js";
 import { applySettings } from "./apply-settings.js";
 import { Catalog } from "./catalog.js";
 import { EngineHost } from "./engine-host.js";
+import { analyzeV1File, importV1File } from "./import-v1.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
 import { SettingsStore } from "./settings-store.js";
@@ -144,6 +145,7 @@ async function main(): Promise<void> {
       firstRun: !settingsStore.hasPersisted,
       catalog: catalog.entries(),
       invalidFiles: catalog.invalidFiles(),
+      boards: catalog.boards(),
       midiPorts: midiPorts.current(),
       ...engineHost.snapshot(),
       notices: [...notices],
@@ -181,6 +183,41 @@ async function main(): Promise<void> {
     await shell.openPath(join(userData, "mappings"));
   });
   handle(IPC.duplicateMapping, (_event, id) => catalog.duplicate(String(id)));
+
+  // ---- v1 mapping import (PAM-5) ----
+  // Import only accepts paths this dialog handed out — the renderer never
+  // gets to point the main process at an arbitrary file.
+  const pickedV1Files = new Set<string>();
+  handle(IPC.pickV1MappingFile, async () => {
+    if (!window) return { status: "canceled" };
+    const picked = await dialog.showOpenDialog(window, {
+      title: "Import v1 mapping",
+      filters: [{ name: "v1 mapping (JSON)", extensions: ["json"] }],
+      properties: ["openFile"],
+    });
+    const filePath = picked.filePaths[0];
+    if (picked.canceled || !filePath) return { status: "canceled" };
+    const result = await analyzeV1File(filePath);
+    if (result.status === "ok") pickedV1Files.add(result.filePath);
+    return result;
+  });
+  handle(IPC.importV1Mapping, async (_event, rawRequest) => {
+    const request = rawRequest as { filePath?: unknown; deviceDefinitionId?: unknown; name?: unknown };
+    if (
+      typeof request?.filePath !== "string" ||
+      typeof request.deviceDefinitionId !== "string" ||
+      typeof request.name !== "string"
+    ) {
+      return { ok: false, error: "invalid import request" };
+    }
+    if (!pickedV1Files.has(request.filePath)) {
+      return { ok: false, error: "pick the v1 file via the import dialog first" };
+    }
+    return importV1File(
+      { filePath: request.filePath, deviceDefinitionId: request.deviceDefinitionId, name: request.name },
+      catalog
+    );
+  });
 
   // ---- diagnostics & engine control (PAM-4) ----
   handle(IPC.startEngine, async () => {
