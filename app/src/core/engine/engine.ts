@@ -240,6 +240,8 @@ export class Engine {
       open: (inputPort, outputPort, onEvent) => {
         const connection = inner.open(inputPort, outputPort, (event) => {
           this.traffic({ direction: "midi-in", source: inputPort, text: formatMidiIn(event) });
+          // Learn tap (PAM-6 AC-4): pass-through, the engine keeps the event.
+          this.emitter.emit("midiInput", inputPort, event);
           onEvent(event);
         });
         return {

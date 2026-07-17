@@ -18,4 +18,15 @@ export {
   type Assignment,
 } from "./mapping.js";
 export { loadFormat, type FormatSource, type LoadResult } from "./loader.js";
+export { checkCompatibility } from "./compatibility.js";
 export type { FormatIssue } from "./issues.js";
+export {
+  validateDeviceDraft,
+  validateMappingDraft,
+  controlUsage,
+  orphanedAssignments,
+  suffixedCopy,
+  type EditorIssue,
+  type DraftResult,
+  type MappingRef,
+} from "./editor-rules.js";

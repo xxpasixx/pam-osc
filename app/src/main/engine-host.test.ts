@@ -20,6 +20,7 @@ function makeHost(engine: EngineLike) {
     onIssue: () => {},
     onLog: () => {},
     onTraffic: () => {},
+    onMidiInput: () => {},
   });
   return { host, states };
 }

@@ -58,6 +58,8 @@ export function DevicesSection({
   onChange,
   onDuplicate,
   onImportV1,
+  onEdit,
+  onManageBoards,
 }: {
   active: ActiveMappingDraft[];
   catalog: CatalogEntry[];
@@ -68,6 +70,8 @@ export function DevicesSection({
   onChange: (active: ActiveMappingDraft[]) => void;
   onDuplicate: (id: string) => void;
   onImportV1: () => void;
+  onEdit: (id: string) => void;
+  onManageBoards: () => void;
 }) {
   const entryById = new Map(catalog.map((entry) => [entry.id, entry]));
   const statusById = new Map(devices.map((status) => [status.mappingId, status]));
@@ -117,6 +121,14 @@ export function DevicesSection({
             <div className="spacer" />
             <button
               className="subtle"
+              onClick={() => onEdit(mapping.id)}
+              disabled={!entry}
+              title="Open the visual editor for this mapping"
+            >
+              Edit
+            </button>
+            <button
+              className="subtle"
               onClick={() => onDuplicate(mapping.id)}
               title="Create a copy for a second unit of this board"
             >
@@ -132,6 +144,9 @@ export function DevicesSection({
         <button onClick={onAdd}>+ Add device</button>
         <button className="subtle" onClick={onImportV1} title="Convert a pam-osc v1 mapping (.json) into a v2 mapping">
           Import v1 mapping
+        </button>
+        <button className="subtle" onClick={onManageBoards} title="Edit board layouts or create a new board type">
+          Manage boards
         </button>
       </div>
     </section>

@@ -5,6 +5,7 @@
  */
 
 import type { ConnectionStatus, DeviceStatus, TrafficDirection } from "../core/engine/types.js";
+import type { DeviceDefinition, EditorIssue, Mapping } from "../core/format/index.js";
 import type { ImportSummary, V1SectionCounts } from "../core/import/index.js";
 import type { SettingsDraft } from "../core/settings/schema.js";
 
@@ -54,11 +55,63 @@ export interface MidiPortList {
   outputs: string[];
 }
 
-/** A loaded device definition, as the import dialog's dropdown needs it (PAM-5). */
+/** A loaded device definition, as dropdowns and the boards manager need it (PAM-5/PAM-6). */
 export interface BoardInfo {
   id: string;
   name: string;
+  origin: "bundled" | "user";
 }
+
+// ---- PAM-6 visual mapping editor ----
+
+/** A mapping that references a definition/control — warnings & retarget (AC-7, AC-5). */
+export interface UsageRef {
+  id: string;
+  name: string;
+  origin: "bundled" | "user";
+  active: boolean;
+}
+
+export interface ControlUsageEntry {
+  controlId: string;
+  mappings: UsageRef[];
+}
+
+/** Everything the editor needs to open a mapping (design → IPC contract). */
+export interface MappingEditData {
+  mapping: Mapping;
+  device: DeviceDefinition;
+  origin: "bundled" | "user";
+}
+
+/** Everything the editor needs to open a board (incl. the delete-warning data). */
+export interface DeviceEditData {
+  device: DeviceDefinition;
+  origin: "bundled" | "user";
+  usage: ControlUsageEntry[];
+}
+
+export type EditorSaveResult =
+  /** `id` is the saved file's final id — differs from the draft on copy-on-edit. */
+  | { ok: true; id: string; snapshot: Snapshot; notices: Notice[] }
+  | { ok: false; errors: EditorIssue[] };
+
+export interface SaveDeviceRequest {
+  draft: unknown;
+  /** User mappings to point at the saved definition (copy-on-edit retarget, AC-5). */
+  retargetMappingIds: string[];
+  /** New board from scratch (AC-6) — a colliding id gets auto-suffixed. */
+  createNew?: boolean;
+}
+
+/** Captured by MIDI learn — mirrors the device-definition address shape (AC-4). */
+export type LearnedAddress =
+  | { kind: "cc" | "note"; channel: number; number: number }
+  | { kind: "pitchbend"; channel: number };
+
+export type MidiLearnEvent =
+  | { status: "captured"; port: string; address: LearnedAddress }
+  | { status: "ended"; reason: "canceled" | "port-lost" | "replaced" };
 
 /** Result of the native "pick a v1 mapping file" dialog + shape check (PAM-5 AC-1/AC-6). */
 export type PickV1FileResult =
@@ -120,6 +173,13 @@ export interface PamOscApi {
   duplicateMapping(id: string): Promise<CatalogEntry | { error: string }>;
   pickV1MappingFile(): Promise<PickV1FileResult>;
   importV1Mapping(request: ImportV1Request): Promise<ImportV1Result>;
+  getMappingForEdit(id: string): Promise<MappingEditData | { error: string }>;
+  getDeviceDefinitionForEdit(id: string): Promise<DeviceEditData | { error: string }>;
+  getDefinitionUsage(id: string): Promise<UsageRef[]>;
+  saveMapping(draft: unknown): Promise<EditorSaveResult>;
+  saveDeviceDefinition(request: SaveDeviceRequest): Promise<EditorSaveResult>;
+  startMidiLearn(inputPort: string): Promise<{ ok: boolean; error?: string }>;
+  cancelMidiLearn(): Promise<void>;
   startEngine(): Promise<{ ok: boolean; error?: string }>;
   stopEngine(): Promise<void>;
   checkConnection(): Promise<void>;
@@ -132,6 +192,7 @@ export interface PamOscApi {
   /** Batched — one call delivers up to ~100 ms of entries (EC-2). */
   onTraffic(listener: (entries: TrafficEntry[]) => void): () => void;
   onPortDiagnosis(listener: (diagnosis: PortDiagnosis | undefined) => void): () => void;
+  onMidiLearn(listener: (event: MidiLearnEvent) => void): () => void;
 }
 
 /** Channel names — single source for preload and main. */
@@ -143,6 +204,13 @@ export const IPC = {
   duplicateMapping: "pam:duplicateMapping",
   pickV1MappingFile: "pam:pickV1MappingFile",
   importV1Mapping: "pam:importV1Mapping",
+  getMappingForEdit: "pam:getMappingForEdit",
+  getDeviceDefinitionForEdit: "pam:getDeviceDefinitionForEdit",
+  getDefinitionUsage: "pam:getDefinitionUsage",
+  saveMapping: "pam:saveMapping",
+  saveDeviceDefinition: "pam:saveDeviceDefinition",
+  startMidiLearn: "pam:startMidiLearn",
+  cancelMidiLearn: "pam:cancelMidiLearn",
   startEngine: "pam:startEngine",
   stopEngine: "pam:stopEngine",
   checkConnection: "pam:checkConnection",
@@ -154,4 +222,5 @@ export const IPC = {
   evNotice: "pam:ev:notice",
   evTraffic: "pam:ev:traffic",
   evPortDiagnosis: "pam:ev:portDiagnosis",
+  evMidiLearn: "pam:ev:midiLearn",
 } as const;

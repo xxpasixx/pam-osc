@@ -6,6 +6,7 @@ import type {
   EngineIssue,
   TrafficEvent,
 } from "../core/engine/index.js";
+import type { MidiInputEvent } from "../transports/midi.js";
 import type { EngineState } from "../shared/ipc.js";
 
 /**
@@ -30,6 +31,8 @@ export interface EngineHostEvents {
   onIssue(issue: EngineIssue): void;
   onLog(line: string): void;
   onTraffic(event: TrafficEvent): void;
+  /** Raw MIDI input pass-through — feeds the PAM-6 learn session (AC-4). */
+  onMidiInput(port: string, event: MidiInputEvent): void;
 }
 
 export type ApplyOutcome = { ok: true } | { ok: false; error: string; rolledBack: boolean };
@@ -55,6 +58,13 @@ export class EngineHost {
     engine.on("issue", (issue) => this.events.onIssue(issue));
     engine.on("log", (line) => this.events.onLog(line));
     engine.on("traffic", (event) => this.events.onTraffic(event));
+    engine.on("midiInput", (port, event) => this.events.onMidiInput(port, event));
+  }
+
+  /** Input ports the running engine currently holds open (learn tap decision). */
+  boundInputPorts(): Set<string> {
+    if (this.state !== "running") return new Set();
+    return new Set(this.devices.filter((device) => device.state === "bound").map((device) => device.inputPort));
   }
 
   snapshot(): { engineState: EngineState; connection: ConnectionStatus | undefined; devices: DeviceStatus[] } {

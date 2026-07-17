@@ -1,4 +1,5 @@
 import type { FormatSource } from "../format/index.js";
+import type { MidiInputEvent } from "../../transports/midi.js";
 
 /** Input to start()/reconfigure(). PAM-3 will persist this as App Settings. */
 export interface EngineConfig {
@@ -77,4 +78,6 @@ export interface EngineEvents {
   issue: (issue: EngineIssue) => void;
   log: (line: string) => void;
   traffic: (event: TrafficEvent) => void;
+  /** Raw pass-through of every MIDI input event — the PAM-6 learn tap (AC-4). */
+  midiInput: (port: string, event: MidiInputEvent) => void;
 }

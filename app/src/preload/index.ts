@@ -25,6 +25,13 @@ const api: PamOscApi = {
   duplicateMapping: (id) => ipcRenderer.invoke(IPC.duplicateMapping, id),
   pickV1MappingFile: () => ipcRenderer.invoke(IPC.pickV1MappingFile),
   importV1Mapping: (request) => ipcRenderer.invoke(IPC.importV1Mapping, request),
+  getMappingForEdit: (id) => ipcRenderer.invoke(IPC.getMappingForEdit, id),
+  getDeviceDefinitionForEdit: (id) => ipcRenderer.invoke(IPC.getDeviceDefinitionForEdit, id),
+  getDefinitionUsage: (id) => ipcRenderer.invoke(IPC.getDefinitionUsage, id),
+  saveMapping: (draft) => ipcRenderer.invoke(IPC.saveMapping, draft),
+  saveDeviceDefinition: (request) => ipcRenderer.invoke(IPC.saveDeviceDefinition, request),
+  startMidiLearn: (inputPort) => ipcRenderer.invoke(IPC.startMidiLearn, inputPort),
+  cancelMidiLearn: () => ipcRenderer.invoke(IPC.cancelMidiLearn),
   startEngine: () => ipcRenderer.invoke(IPC.startEngine),
   stopEngine: () => ipcRenderer.invoke(IPC.stopEngine),
   checkConnection: () => ipcRenderer.invoke(IPC.checkConnection),
@@ -36,6 +43,7 @@ const api: PamOscApi = {
   onNotice: subscribe(IPC.evNotice),
   onTraffic: subscribe(IPC.evTraffic),
   onPortDiagnosis: subscribe(IPC.evPortDiagnosis),
+  onMidiLearn: subscribe(IPC.evMidiLearn),
 };
 
 contextBridge.exposeInMainWorld("pamOsc", api);

@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type { ZodType } from "zod";
 import { CURRENT_FORMAT_VERSION } from "./envelope.js";
+import { checkCompatibility } from "./compatibility.js";
 import { deviceDefinitionSchema, type Control, type DeviceDefinition } from "./device-definition.js";
 import { mappingSchema, type Assignment, type Mapping } from "./mapping.js";
 import type { FormatIssue } from "./issues.js";
@@ -23,6 +24,8 @@ export interface LoadResult {
   issues: FormatIssue[];
   /** Where each surviving mapping came from (origin + actual file path). */
   mappingSources: MappingSource[];
+  /** Same for device definitions — the PAM-6 editor writes them back. */
+  deviceSources: MappingSource[];
 }
 
 export interface MappingSource {
@@ -59,6 +62,11 @@ export async function loadFormat(sources: FormatSource[]): Promise<LoadResult> {
       origin: entry.origin,
       file: entry.file,
     })),
+    deviceSources: [...devices.values()].map((entry) => ({
+      id: entry.value.id,
+      origin: entry.origin,
+      file: entry.file,
+    })),
   };
 }
 
@@ -67,7 +75,7 @@ async function loadEntities<T extends { id: string }>(
   dirKey: "devicesDir" | "mappingsDir",
   kind: string,
   schema: ZodType<T>,
-  issues: FormatIssue[],
+  issues: FormatIssue[]
 ): Promise<Map<string, Entry<T>>> {
   const byId = new Map<string, Entry<T>>();
 
@@ -119,7 +127,7 @@ async function loadEntities<T extends { id: string }>(
 function crossValidateMapping(
   entry: Entry<Mapping>,
   devices: Map<string, Entry<DeviceDefinition>>,
-  issues: FormatIssue[],
+  issues: FormatIssue[]
 ): boolean {
   const mapping = entry.value;
   const device = devices.get(mapping.deviceDefinitionId);
@@ -154,38 +162,6 @@ function crossValidateMapping(
       path: `assignments[${index}]${field ? `.${field}` : ""}`,
       message: `${message} — the mapping is skipped`,
     });
-  }
-}
-
-/** Action/feedback rules a control's capabilities must support. */
-function checkCompatibility(assignment: Assignment, control: Control): string | undefined {
-  if (assignment.action.type === "display" && control.type !== "display") {
-    return `action "display" is only valid on display controls, "${control.id}" is a ${control.type}`;
-  }
-  if (control.type === "display" && assignment.action.type !== "display") {
-    return `display control "${control.id}" only supports the "display" action`;
-  }
-
-  const feedback = assignment.feedback;
-  switch (feedback.type) {
-    case "fader-position":
-      if (control.type !== "fader" || !control.capabilities.motorized) {
-        return `feedback "fader-position" needs a motorized fader, "${control.id}" is not one`;
-      }
-      return undefined;
-    case "encoder-ring":
-      if (control.type !== "encoder" || !control.capabilities.ledRing) {
-        return `feedback "encoder-ring" needs an encoder with an LED ring, "${control.id}" has none`;
-      }
-      return undefined;
-    case "on-off":
-    case "always-on":
-      if (control.type !== "button" || control.capabilities.led === "none") {
-        return `feedback "${feedback.type}" needs a button with an LED, "${control.id}" has none`;
-      }
-      return undefined;
-    case "none":
-      return undefined;
   }
 }
 
@@ -249,8 +225,9 @@ async function listJsonFiles(dir: string): Promise<string[]> {
 function formatPath(path: ReadonlyArray<PropertyKey>): string | undefined {
   if (path.length === 0) return undefined;
   return path.reduce<string>(
-    (acc, segment) => (typeof segment === "number" ? `${acc}[${segment}]` : acc ? `${acc}.${String(segment)}` : String(segment)),
-    "",
+    (acc, segment) =>
+      typeof segment === "number" ? `${acc}[${segment}]` : acc ? `${acc}.${String(segment)}` : String(segment),
+    ""
   );
 }
 

@@ -1,8 +1,29 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { loadFormat, type DeviceDefinition, type FormatSource, type LoadResult } from "../core/format/index.js";
+import {
+  loadFormat,
+  orphanedAssignments,
+  suffixedCopy,
+  validateDeviceDraft,
+  validateMappingDraft,
+  type DeviceDefinition,
+  type EditorIssue,
+  type FormatSource,
+  type LoadResult,
+  type MappingRef,
+} from "../core/format/index.js";
 import type { ActiveMappingDraft } from "../core/settings/schema.js";
-import type { BoardInfo, CatalogEntry, InvalidCatalogEntry, Notice } from "../shared/ipc.js";
+import type {
+  BoardInfo,
+  CatalogEntry,
+  ControlUsageEntry,
+  DeviceEditData,
+  InvalidCatalogEntry,
+  MappingEditData,
+  Notice,
+  SaveDeviceRequest,
+  UsageRef,
+} from "../shared/ipc.js";
 
 /**
  * The mapping catalog (design → Mapping catalog): every mapping the user
@@ -19,8 +40,9 @@ export interface CatalogPaths {
 }
 
 export class Catalog {
-  private loaded: LoadResult = { devices: [], mappings: [], issues: [], mappingSources: [] };
+  private loaded: LoadResult = { devices: [], mappings: [], issues: [], mappingSources: [], deviceSources: [] };
   private sourceById = new Map<string, { origin: "bundled" | "user"; file: string }>();
+  private deviceSourceById = new Map<string, { origin: "bundled" | "user"; file: string }>();
 
   constructor(private readonly paths: CatalogPaths) {}
 
@@ -42,16 +64,24 @@ export class Catalog {
     for (const source of this.loaded.mappingSources) {
       this.sourceById.set(source.id, { origin: source.origin, file: source.file });
     }
+    this.deviceSourceById.clear();
+    for (const source of this.loaded.deviceSources) {
+      this.deviceSourceById.set(source.id, { origin: source.origin, file: source.file });
+    }
   }
 
   validIds(): Set<string> {
     return new Set(this.loaded.mappings.map((mapping) => mapping.id));
   }
 
-  /** All loaded device definitions for the import dropdown, alphabetical (PAM-5). */
+  /** All loaded device definitions for dropdowns and the boards manager, alphabetical. */
   boards(): BoardInfo[] {
     return this.loaded.devices
-      .map((device) => ({ id: device.id, name: device.name }))
+      .map((device) => ({
+        id: device.id,
+        name: device.name,
+        origin: this.deviceSourceById.get(device.id)?.origin ?? "bundled",
+      }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -153,4 +183,171 @@ export class Catalog {
     const entry = this.entries().find((candidate) => candidate.id === raw.id);
     return entry ?? { error: `duplicate of "${id}" was written but failed validation — check the file` };
   }
+
+  // ---- PAM-6 editor surface ----
+
+  /** Everything the editor needs to open a mapping (design → IPC contract). */
+  mappingForEdit(id: string): MappingEditData | { error: string } {
+    const mapping = this.loaded.mappings.find((candidate) => candidate.id === id);
+    const source = this.sourceById.get(id);
+    if (!mapping || !source) return { error: `mapping "${id}" not found` };
+    const device = this.device(mapping.deviceDefinitionId);
+    if (!device) return { error: `device definition "${mapping.deviceDefinitionId}" not found` };
+    return { mapping, device, origin: source.origin };
+  }
+
+  /** Board content plus per-control usage — the AC-7 delete-warning data. */
+  deviceForEdit(id: string, activeIds: ReadonlySet<string>): DeviceEditData | { error: string } {
+    const device = this.device(id);
+    const source = this.deviceSourceById.get(id);
+    if (!device || !source) return { error: `device definition "${id}" not found` };
+    const byControl = new Map<string, UsageRef[]>();
+    for (const mapping of this.loaded.mappings) {
+      if (mapping.deviceDefinitionId !== id) continue;
+      const ref = this.usageRef(mapping.id, mapping.name, activeIds);
+      for (const assignment of mapping.assignments) {
+        const list = byControl.get(assignment.controlId) ?? [];
+        if (!list.some((existing) => existing.id === ref.id)) list.push(ref);
+        byControl.set(assignment.controlId, list);
+      }
+    }
+    const usage: ControlUsageEntry[] = [...byControl.entries()].map(([controlId, mappings]) => ({
+      controlId,
+      mappings,
+    }));
+    return { device, origin: source.origin, usage };
+  }
+
+  /** Mappings referencing a definition — the retarget prompt's list (AC-5). */
+  definitionUsage(id: string, activeIds: ReadonlySet<string>): UsageRef[] {
+    return this.loaded.mappings
+      .filter((mapping) => mapping.deviceDefinitionId === id)
+      .map((mapping) => this.usageRef(mapping.id, mapping.name, activeIds));
+  }
+
+  /**
+   * Editor save for a mapping (design → Save → validate → reload steps 1+2):
+   * validate main-side, resolve copy-on-edit from the file's origin, write
+   * atomically. The engine-reload decision stays with the caller.
+   */
+  async saveMapping(draft: unknown): Promise<{ ok: true; id: string } | { ok: false; errors: EditorIssue[] }> {
+    const deviceId = (draft as { deviceDefinitionId?: unknown })?.deviceDefinitionId;
+    const device = typeof deviceId === "string" ? this.device(deviceId) : undefined;
+    if (!device) {
+      return { ok: false, errors: [{ path: "deviceDefinitionId", message: "unknown device definition" }] };
+    }
+    const result = validateMappingDraft(draft, device);
+    if (!result.ok) return { ok: false, errors: result.issues };
+    const mapping = result.value;
+
+    const source = this.sourceById.get(mapping.id);
+    if (!source) {
+      return { ok: false, errors: [{ path: "id", message: `mapping "${mapping.id}" not found — save what exists` }] };
+    }
+    let file = source.file;
+    if (source.origin === "bundled") {
+      // Copy-on-edit (AC-5): bundled files stay untouched; the copy gets a
+      // new id — deliberately no same-id shadowing (see design).
+      const copy = suffixedCopy(mapping.id, mapping.name, this.validIds());
+      mapping.id = copy.id;
+      mapping.name = copy.name;
+      file = join(this.paths.userMappingsDir, `${copy.id}.json`);
+    }
+    await atomicWrite(file, mapping);
+    await this.refresh();
+    return { ok: true, id: mapping.id };
+  }
+
+  /**
+   * Editor save for a device definition: validate, resolve copy-on-edit /
+   * new-board, retarget the chosen user mappings, and clean up assignments
+   * orphaned by deleted controls — the PAM-1 loader would otherwise skip
+   * those files entirely (design → Deleting an assigned control).
+   */
+  async saveDeviceDefinition(
+    request: SaveDeviceRequest
+  ): Promise<{ ok: true; id: string; rewrittenMappings: string[] } | { ok: false; errors: EditorIssue[] }> {
+    const result = validateDeviceDraft(request.draft);
+    if (!result.ok) return { ok: false, errors: result.issues };
+    const device = result.value;
+    const existingIds = new Set(this.loaded.devices.map((existing) => existing.id));
+
+    const source = this.deviceSourceById.get(device.id);
+    let file: string;
+    if (request.createNew) {
+      if (existingIds.has(device.id)) {
+        const copy = suffixedCopy(device.id, device.name, existingIds);
+        device.id = copy.id;
+        device.name = copy.name;
+      }
+      file = join(this.paths.userDevicesDir, `${device.id}.json`);
+    } else if (!source) {
+      return { ok: false, errors: [{ path: "id", message: `device definition "${device.id}" not found` }] };
+    } else if (source.origin === "bundled") {
+      const copy = suffixedCopy(device.id, device.name, existingIds);
+      device.id = copy.id;
+      device.name = copy.name;
+      file = join(this.paths.userDevicesDir, `${device.id}.json`);
+    } else {
+      file = source.file;
+    }
+    await atomicWrite(file, device);
+
+    // Retarget (AC-5): rewrite the chosen USER mappings to the saved id.
+    const rewritten: string[] = [];
+    const retargeted = new Set<string>();
+    for (const mappingId of request.retargetMappingIds) {
+      const mappingSource = this.sourceById.get(mappingId);
+      if (!mappingSource || mappingSource.origin !== "user") continue; // bundled stays a template
+      const raw = JSON.parse(await readFile(mappingSource.file, "utf8")) as { deviceDefinitionId?: string };
+      raw.deviceDefinitionId = device.id;
+      await atomicWrite(mappingSource.file, raw);
+      rewritten.push(mappingId);
+      retargeted.add(mappingId);
+    }
+
+    // Orphan cleanup: every user mapping that now references the saved
+    // definition loses assignments to controls that no longer exist.
+    const referencing: MappingRef[] = this.loaded.mappings
+      .filter((mapping) => mapping.deviceDefinitionId === device.id || retargeted.has(mapping.id))
+      .map((mapping) => ({
+        id: mapping.id,
+        name: mapping.name,
+        origin: this.sourceById.get(mapping.id)?.origin ?? "bundled",
+        deviceDefinitionId: device.id,
+        assignments: mapping.assignments,
+      }));
+    for (const orphan of orphanedAssignments(device, referencing)) {
+      const mappingSource = this.sourceById.get(orphan.mapping.id);
+      if (!mappingSource || mappingSource.origin !== "user") continue; // reported by the caller
+      const gone = new Set(orphan.controlIds);
+      const raw = JSON.parse(await readFile(mappingSource.file, "utf8")) as {
+        assignments?: Array<{ controlId?: string }>;
+      };
+      raw.assignments = (raw.assignments ?? []).filter(
+        (assignment) => !gone.has(assignment.controlId ?? "")
+      );
+      await atomicWrite(mappingSource.file, raw);
+      if (!rewritten.includes(orphan.mapping.id)) rewritten.push(orphan.mapping.id);
+    }
+
+    await this.refresh();
+    return { ok: true, id: device.id, rewrittenMappings: rewritten };
+  }
+
+  private usageRef(id: string, name: string, activeIds: ReadonlySet<string>): UsageRef {
+    return {
+      id,
+      name,
+      origin: this.sourceById.get(id)?.origin ?? "bundled",
+      active: activeIds.has(id),
+    };
+  }
+}
+
+/** Editor writes are atomic (design → Where files land): temp file + rename. */
+async function atomicWrite(file: string, content: unknown): Promise<void> {
+  const temp = `${file}.tmp`;
+  await writeFile(temp, JSON.stringify(content, null, 2) + "\n", "utf8");
+  await rename(temp, file);
 }

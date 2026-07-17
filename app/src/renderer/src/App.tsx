@@ -14,6 +14,8 @@ import type {
 import { AddDeviceDialog } from "./components/AddDeviceDialog.js";
 import { ConsoleSection } from "./components/ConsoleSection.js";
 import { DevicesSection } from "./components/DevicesSection.js";
+import { BoardsManagerDialog } from "./components/editor/BoardsManagerDialog.js";
+import { EditorView, type EditorTarget } from "./components/editor/EditorView.js";
 import { ImportV1Dialog, type ImportFlow } from "./components/ImportV1Dialog.js";
 import { NoticesArea } from "./components/NoticesArea.js";
 import { StatusBar } from "./components/StatusBar.js";
@@ -50,6 +52,8 @@ export function App() {
   const [testing, setTesting] = useState<Set<string>>(new Set());
   const [importFlow, setImportFlow] = useState<ImportFlow | undefined>();
   const [importBusy, setImportBusy] = useState(false);
+  const [editorTarget, setEditorTarget] = useState<EditorTarget | undefined>();
+  const [boardsOpen, setBoardsOpen] = useState(false);
   const appliedRef = useRef<SettingsDraft | undefined>(undefined);
 
   // Notices deliberately stay out: adopting a post-save snapshot would
@@ -229,11 +233,36 @@ export function App() {
     [pushError]
   );
 
+  // Post-save refresh from the editor: catalog/boards only — never the
+  // settings draft (same reasoning as the import flow).
+  const adoptEditorSnapshot = useCallback((fresh: Snapshot) => {
+    setSnapshot((current) =>
+      current
+        ? { ...current, catalog: fresh.catalog, invalidFiles: fresh.invalidFiles, boards: fresh.boards }
+        : current
+    );
+  }, []);
+
   if (loadError) {
     return <div className="app-body">Failed to load: {loadError}</div>;
   }
   if (!snapshot || !draft) {
     return <div className="app-body">Loading …</div>;
+  }
+
+  if (editorTarget) {
+    return (
+      <div className="app">
+        <StatusBar engineState={engineState} connection={connection} />
+        <EditorView
+          target={editorTarget}
+          midiPorts={midiPorts}
+          onClose={() => setEditorTarget(undefined)}
+          onSaved={adoptEditorSnapshot}
+          pushNotices={(fresh) => setNotices((current) => [...current, ...fresh])}
+        />
+      </div>
+    );
   }
 
   return (
@@ -285,6 +314,8 @@ export function App() {
               errors={fieldErrors}
               onAdd={() => setDialogOpen(true)}
               onImportV1={() => void startImportV1()}
+              onEdit={(id) => setEditorTarget({ kind: "mapping", id })}
+              onManageBoards={() => setBoardsOpen(true)}
               onChange={(activeMappings) => updateDraft((current) => ({ ...current, activeMappings }))}
               onDuplicate={async (id) => {
                 const result = await window.pamOsc.duplicateMapping(id);
@@ -328,6 +359,19 @@ export function App() {
         busy={importBusy}
         onImport={(deviceDefinitionId, name) => void runImportV1(deviceDefinitionId, name)}
         onClose={() => setImportFlow(undefined)}
+      />
+      <BoardsManagerDialog
+        open={boardsOpen}
+        boards={snapshot.boards}
+        onClose={() => setBoardsOpen(false)}
+        onEdit={(id) => {
+          setBoardsOpen(false);
+          setEditorTarget({ kind: "device", id });
+        }}
+        onCreate={(name, width, height) => {
+          setBoardsOpen(false);
+          setEditorTarget({ kind: "new-device", name, width, height });
+        }}
       />
       <AddDeviceDialog
         open={dialogOpen}

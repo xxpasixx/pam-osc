@@ -72,6 +72,7 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
       onIssue: () => {},
       onLog: () => {},
       onTraffic: () => {},
+      onMidiInput: () => {},
     });
     deps = {
       catalog,

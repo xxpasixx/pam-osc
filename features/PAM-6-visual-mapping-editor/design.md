@@ -177,6 +177,15 @@ Level 5 — Tests:    T7      integration: save→reload against the engine test
 
 - None
 
-## Implementation Notes (added during /build)
+## Implementation Notes (added during /build, 2026-07-17)
 
-_(empty — filled by /build)_
+- **Built sequentially inline, no worktree fan-out.** The working tree carried an unrelated repo-wide Prettier reformat; parallel worktree agents would have forked from HEAD and collided on merge-back.
+- **`checkCompatibility` moved out of the loader into `core/format/compatibility.ts`.** The renderer validates live with the same rules, and the format barrel re-exports the Node loader — importing it from the browser broke the renderer build. Runtime imports in the editor go straight to `editor-rules.js`/`compatibility.js`; the loader re-uses the shared module (behavior unchanged).
+- **Loader gained `deviceSources`** (origin + file path per surviving definition) — additive, mirroring PAM-3's `mappingSources`; the editor needs real file paths for in-place device saves.
+- **Learn tap = new `midiInput` engine event** emitted at the existing traffic tap point (`tappedMidiTransport`); `EngineHost` forwards it and exposes `boundInputPorts()` for the tap-vs-temporary-open decision.
+- **Editor IPC handlers live in `main/index.ts`;** the reload decision calls `engineHost.apply()` with the current persisted settings — literally the PAM-3 transaction, incl. last-known-good rollback surfaced as an error notice.
+- **Grid snapping (0.5) is enforced in the UI only** (canvas drag + numeric fields round); save-validation checks only bounds/addresses — hand-edited files with finer positions stay editable (deliberate softening of the design's snap wording).
+- **Orphan cleanup also covers retargeted mappings.** The design argued retargeting is safe because the copy starts control-id-identical — but the user can delete controls before saving; `saveDeviceDefinition` therefore cleans orphans across every user mapping that ends up referencing the saved id.
+- **`BoardInfo` gained `origin`** (additive) — shared by the boards manager and the PAM-5 import dropdown.
+- **New encoders start with empty detent ranges** (per design, save blocks until filled); an empty new board (AC-6) is blocked from saving by the schema's min-1-control rule with a toolbar hint.
+- **Verified:** 235 checks total — 217/217 Vitest (35 new: 17 editor-rules, 11 catalog editor surface incl. copy-on-edit/retarget/orphan/createNew, 7 MIDI-learn session), typecheck clean, production build green, dev-mode boot smoke on macOS (main/preload/renderer build, app starts without errors). onPC/hardware verification is the user's release gate per AGENTS.md.

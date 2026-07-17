@@ -10,12 +10,13 @@ import { applySettings } from "./apply-settings.js";
 import { Catalog } from "./catalog.js";
 import { EngineHost } from "./engine-host.js";
 import { analyzeV1File, importV1File, ImportSerializer } from "./import-v1.js";
+import { MidiLearn } from "./midi-learn.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
 import { SettingsStore } from "./settings-store.js";
 import { draftFromPersisted } from "./snapshot.js";
 import { TrafficBuffer } from "./traffic-buffer.js";
-import { IPC, type Notice, type PortDiagnosis, type Snapshot } from "../shared/ipc.js";
+import { IPC, type EditorSaveResult, type Notice, type PortDiagnosis, type SaveDeviceRequest, type Snapshot } from "../shared/ipc.js";
 
 /**
  * Main-process bootstrap (design → Behaviors 1): single-instance lock,
@@ -116,7 +117,16 @@ async function main(): Promise<void> {
     onLog: (line) => trafficBuffer.push({ at: Date.now(), category: "system", text: line }),
     onTraffic: (event) =>
       trafficBuffer.push({ at: Date.now(), category: event.direction, source: event.source, text: event.text }),
+    onMidiInput: (port, event) => midiLearn.onEngineInput(port, event),
   });
+
+  // MIDI learn (PAM-6 AC-4): taps the engine when it holds the port,
+  // otherwise opens the port temporarily for the session.
+  const midiLearn = new MidiLearn(
+    easymidiTransport,
+    () => engineHost.boundInputPorts(),
+    (event) => send(IPC.evMidiLearn, event)
+  );
 
   const engineConfigFrom = (console: SettingsDraft["console"], mappingIds: string[]): EngineConfig => ({
     consoleAddress: console.address,
@@ -137,7 +147,10 @@ async function main(): Promise<void> {
     }
   }
 
-  const midiPorts = new MidiPortLister(easymidiTransport, (ports) => send(IPC.evMidiPorts, ports));
+  const midiPorts = new MidiPortLister(easymidiTransport, (ports) => {
+    midiLearn.onPortsChanged(ports); // a vanished port ends a learn session
+    send(IPC.evMidiPorts, ports);
+  });
 
   async function buildSnapshot(): Promise<Snapshot> {
     return {
@@ -219,6 +232,71 @@ async function main(): Promise<void> {
     return importSerializer.run(() => importV1File({ filePath, deviceDefinitionId, name }, catalog));
   });
 
+  // ---- visual mapping editor (PAM-6) ----
+  const activeIds = () => new Set(settingsStore.settings.activeMappingIds);
+  handle(IPC.getMappingForEdit, (_event, id) => catalog.mappingForEdit(String(id)));
+  handle(IPC.getDeviceDefinitionForEdit, (_event, id) => catalog.deviceForEdit(String(id), activeIds()));
+  handle(IPC.getDefinitionUsage, (_event, id) => catalog.definitionUsage(String(id), activeIds()));
+
+  // Editor saves reuse the PAM-3 apply transaction for the engine reload
+  // (design → Save → validate → reload): same stop→start, same rollback.
+  const reloadEngineIfNeeded = async (needed: boolean): Promise<Notice[]> => {
+    if (!needed || engineHost.snapshot().engineState === "stopped") return [];
+    const settings = settingsStore.settings;
+    const outcome = await engineHost.apply(engineConfigFrom(settings.console, settings.activeMappingIds));
+    if (outcome.ok) return [];
+    return [
+      {
+        severity: "error",
+        message: outcome.rolledBack
+          ? `the saved files did not apply — the engine keeps running with the previous state: ${outcome.error}`
+          : `engine restart failed after saving: ${outcome.error}`,
+      },
+    ];
+  };
+
+  handle(IPC.saveMapping, async (_event, draft): Promise<EditorSaveResult> => {
+    const result = await catalog.saveMapping(draft);
+    if (!result.ok) return result;
+    const notices = await reloadEngineIfNeeded(settingsStore.settings.activeMappingIds.includes(result.id));
+    for (const notice of notices) pushNotice(notice);
+    return { ok: true, id: result.id, snapshot: await buildSnapshot(), notices };
+  });
+
+  handle(IPC.saveDeviceDefinition, async (_event, rawRequest): Promise<EditorSaveResult> => {
+    const request = rawRequest as SaveDeviceRequest;
+    if (typeof request !== "object" || request === null || !Array.isArray(request.retargetMappingIds)) {
+      return { ok: false, errors: [{ path: "", message: "invalid save request" }] };
+    }
+    const result = await catalog.saveDeviceDefinition({
+      draft: request.draft,
+      retargetMappingIds: request.retargetMappingIds.map(String),
+      createNew: request.createNew === true,
+    });
+    if (!result.ok) return result;
+
+    const notices: Notice[] = [];
+    if (result.rewrittenMappings.length > 0) {
+      notices.push({
+        severity: "info",
+        message: `updated mapping file(s) along with the board: ${result.rewrittenMappings.join(", ")}`,
+      });
+    }
+    const active = activeIds();
+    const affectsEngine =
+      catalog.definitionUsage(result.id, active).some((ref) => ref.active) ||
+      result.rewrittenMappings.some((id) => active.has(id));
+    notices.push(...(await reloadEngineIfNeeded(affectsEngine)));
+    for (const notice of notices) pushNotice(notice);
+    return { ok: true, id: result.id, snapshot: await buildSnapshot(), notices };
+  });
+
+  handle(IPC.startMidiLearn, (_event, port) => {
+    if (typeof port !== "string" || port.length === 0) return { ok: false, error: "no MIDI input port given" };
+    return midiLearn.start(port);
+  });
+  handle(IPC.cancelMidiLearn, () => midiLearn.cancel());
+
   // ---- diagnostics & engine control (PAM-4) ----
   handle(IPC.startEngine, async () => {
     if (engineHost.snapshot().engineState !== "stopped") return { ok: false, error: "engine is already running" };
@@ -287,6 +365,7 @@ async function main(): Promise<void> {
   });
   window.on("closed", () => {
     midiPorts.stop();
+    midiLearn.shutdown();
     window = undefined;
   });
 
