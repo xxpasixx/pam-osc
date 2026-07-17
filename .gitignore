@@ -21,3 +21,6 @@ app/node_modules/
 # pam-osc share-file test exports (PAM-7)
 *.mapping
 *.device
+
+# macOS noise
+.DS_Store
