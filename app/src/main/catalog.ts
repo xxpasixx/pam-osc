@@ -12,6 +12,7 @@ import {
   type EditorIssue,
   type FormatSource,
   type LoadResult,
+  type Mapping,
   type MappingRef,
 } from "../core/format/index.js";
 import { makeUniqueId } from "../core/import/index.js";
@@ -388,6 +389,98 @@ export class Catalog {
     return { ok: true, id: device.id, rewrittenMappings: rewritten };
   }
 
+  // ---- PAM-7 sharing surface ----
+
+  /** Real file behind a loaded mapping — export copies these bytes (AC-1). */
+  mappingFile(id: string): { origin: "bundled" | "user"; file: string } | undefined {
+    return this.sourceById.get(id);
+  }
+
+  /** Real file behind a loaded device definition — export copies these bytes (AC-8). */
+  deviceFile(id: string): { origin: "bundled" | "user"; file: string } | undefined {
+    return this.deviceSourceById.get(id);
+  }
+
+  /** Every loaded file with its origin — the support package's inventory (AC-10). */
+  allFiles(): {
+    devices: Array<{ id: string; origin: "bundled" | "user"; file: string }>;
+    mappings: Array<{ id: string; origin: "bundled" | "user"; file: string }>;
+  } {
+    return { devices: [...this.loaded.deviceSources], mappings: [...this.loaded.mappingSources] };
+  }
+
+  /**
+   * Import of a validated share mapping (AC-2/AC-3/AC-4): the referenced
+   * board must exist, collisions get a suffix (never overwrite), the file
+   * lands in the user folder and is NOT activated.
+   */
+  async importMapping(mapping: Mapping): Promise<{ entry: CatalogEntry; renamed: boolean } | { error: string }> {
+    const device = this.device(mapping.deviceDefinitionId);
+    if (!device) {
+      return {
+        error: `this mapping needs the board "${mapping.deviceDefinitionId}", which is not installed — import its device file first`,
+      };
+    }
+    // Same bar as an editor save: cross-references (control ids, feedback
+    // capabilities) must fit the board — otherwise the loader would skip the
+    // written file and the import would strand an invalid file (AC-2/AC-5).
+    const check = validateMappingDraft(mapping, device);
+    if (!check.ok) {
+      const issue = check.issues[0];
+      return {
+        error: `this mapping doesn't fit the board "${device.id}"${issue?.path ? ` (${issue.path})` : ""}: ${issue?.message ?? "unknown"}`,
+      };
+    }
+    const renamed = await this.claimImportSlot(mapping, new Set(this.validIds()), this.paths.userMappingsDir);
+    try {
+      await atomicWrite(join(this.paths.userMappingsDir, `${mapping.id}.json`), mapping);
+    } catch (error) {
+      return { error: writeErrorMessage(error) };
+    }
+    await this.refresh();
+    const entry = this.entries().find((candidate) => candidate.id === mapping.id);
+    if (!entry) return { error: `mapping "${mapping.id}" was written but did not load — check the mappings folder` };
+    return { entry, renamed };
+  }
+
+  /**
+   * Import of a validated device definition (AC-9): collisions against ALL
+   * known board ids (bundled + user) get a suffix — an import never shadows
+   * a bundled definition.
+   */
+  async importDevice(device: DeviceDefinition): Promise<{ board: BoardInfo; renamed: boolean } | { error: string }> {
+    const taken = new Set(this.loaded.devices.map((existing) => existing.id));
+    const renamed = await this.claimImportSlot(device, taken, this.paths.userDevicesDir);
+    try {
+      await atomicWrite(join(this.paths.userDevicesDir, `${device.id}.json`), device);
+    } catch (error) {
+      return { error: writeErrorMessage(error) };
+    }
+    await this.refresh();
+    const board = this.boards().find((candidate) => candidate.id === device.id);
+    if (!board) return { error: `device "${device.id}" was written but did not load — check the devices folder` };
+    return { board, renamed };
+  }
+
+  /** AC-3: suffix until both the loaded ids and the files on disk are free. */
+  private async claimImportSlot(
+    entity: { id: string; name: string },
+    taken: Set<string>,
+    dir: string
+  ): Promise<boolean> {
+    const originalId = entity.id;
+    const originalName = entity.name;
+    let candidate = { id: originalId, name: originalName };
+    if (taken.has(candidate.id)) candidate = suffixedCopy(originalId, originalName, taken);
+    while (await fileExists(join(dir, `${candidate.id}.json`))) {
+      taken.add(candidate.id);
+      candidate = suffixedCopy(originalId, originalName, taken);
+    }
+    entity.id = candidate.id;
+    entity.name = candidate.name;
+    return candidate.id !== originalId;
+  }
+
   private usageRef(id: string, name: string, activeIds: ReadonlySet<string>): UsageRef {
     return {
       id,
@@ -396,6 +489,12 @@ export class Catalog {
       active: activeIds.has(id),
     };
   }
+}
+
+/** Friendly write-failure text — the fs error code without the absolute path. */
+function writeErrorMessage(error: unknown): string {
+  const code = error instanceof Error && "code" in error ? ` (${String((error as NodeJS.ErrnoException).code)})` : "";
+  return `could not write the imported file${code} — check that the app data folder is writable`;
 }
 
 /** Editor writes are atomic (design → Where files land): temp file + rename. */

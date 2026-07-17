@@ -689,8 +689,7 @@ dialog .error {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 24px 24px;
   background-position: -1px -1px;

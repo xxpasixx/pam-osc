@@ -173,6 +173,7 @@ export function StatusView(props: {
   onStop: () => void;
   onCheck: () => void;
   onTest: (mappingId: string) => void;
+  onExportSupportPackage: () => void;
 }) {
   return (
     <>
@@ -192,6 +193,16 @@ export function StatusView(props: {
         testing={props.testing}
         onTest={props.onTest}
       />
+      <section className="card" aria-label="Support">
+        <h2>Support</h2>
+        <p className="inspector-meta">
+          One .zip with all boards, mappings, the settings, and the latest session log — attach it when reporting a
+          problem, or keep it as a backup of your setup (PAM-7 AC-10).
+        </p>
+        <div className="section-actions">
+          <button onClick={props.onExportSupportPackage}>Export support package …</button>
+        </div>
+      </section>
     </>
   );
 }

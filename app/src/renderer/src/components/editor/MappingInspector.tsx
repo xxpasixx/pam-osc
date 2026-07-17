@@ -334,7 +334,13 @@ export function MappingInspector({
                 label="On value"
                 value={assignment.feedback.onValue}
                 onChange={(onValue) =>
-                  update({ feedback: { type: "on-off", onValue: onValue ?? 127, offValue: assignment.feedback.type === "on-off" ? assignment.feedback.offValue : 0 } })
+                  update({
+                    feedback: {
+                      type: "on-off",
+                      onValue: onValue ?? 127,
+                      offValue: assignment.feedback.type === "on-off" ? assignment.feedback.offValue : 0,
+                    },
+                  })
                 }
               />
               <MidiValueField
@@ -342,7 +348,13 @@ export function MappingInspector({
                 label="Off value"
                 value={assignment.feedback.offValue}
                 onChange={(offValue) =>
-                  update({ feedback: { type: "on-off", onValue: assignment.feedback.type === "on-off" ? assignment.feedback.onValue : 127, offValue: offValue ?? 0 } })
+                  update({
+                    feedback: {
+                      type: "on-off",
+                      onValue: assignment.feedback.type === "on-off" ? assignment.feedback.onValue : 127,
+                      offValue: offValue ?? 0,
+                    },
+                  })
                 }
               />
             </div>

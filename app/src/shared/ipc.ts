@@ -101,8 +101,7 @@ export interface DeviceEditData {
 
 export type EditorSaveResult =
   /** `id` is the saved file's final id — differs from the draft on copy-on-edit. */
-  | { ok: true; id: string; snapshot: Snapshot; notices: Notice[] }
-  | { ok: false; errors: EditorIssue[] };
+  { ok: true; id: string; snapshot: Snapshot; notices: Notice[] } | { ok: false; errors: EditorIssue[] };
 
 export interface SaveDeviceRequest {
   draft: unknown;
@@ -141,6 +140,29 @@ export interface ImportV1Request {
 }
 
 export type ImportV1Result = { ok: true; entry: CatalogEntry; summary: ImportSummary } | { ok: false; error: string };
+
+// ---- PAM-7 sharing: single-file export/import + support package ----
+
+/** Import outcome for a picked .mapping/.device file (AC-2/AC-9/AC-13). */
+export type ImportShareResult =
+  | {
+      ok: true;
+      kind: "mapping" | "device";
+      /** Final id — differs from the file's id when a collision forced a suffix (AC-3). */
+      id: string;
+      name: string;
+      renamed: boolean;
+      /** AC-7: set when the mapping carries free-text console commands. */
+      caution?: string;
+    }
+  | { ok: false; error: string };
+
+export type ImportShareOutcome = { canceled: true } | ImportShareResult;
+
+export type ExportFileResult =
+  | { status: "saved"; file: string }
+  | { status: "canceled" }
+  | { status: "error"; error: string };
 
 export interface Notice {
   severity: "error" | "warning" | "info";
@@ -197,6 +219,11 @@ export interface PamOscApi {
   cancelMidiLearn(): Promise<void>;
   startMidiIndicate(inputPort: string): Promise<{ ok: boolean; error?: string }>;
   stopMidiIndicate(): Promise<void>;
+  exportMapping(id: string): Promise<ExportFileResult>;
+  exportDevice(id: string): Promise<ExportFileResult>;
+  importMappingFile(): Promise<ImportShareOutcome>;
+  importDeviceFile(): Promise<ImportShareOutcome>;
+  exportSupportPackage(): Promise<ExportFileResult>;
   startEngine(): Promise<{ ok: boolean; error?: string }>;
   stopEngine(): Promise<void>;
   checkConnection(): Promise<void>;
@@ -232,6 +259,11 @@ export const IPC = {
   cancelMidiLearn: "pam:cancelMidiLearn",
   startMidiIndicate: "pam:startMidiIndicate",
   stopMidiIndicate: "pam:stopMidiIndicate",
+  exportMapping: "pam:exportMapping",
+  exportDevice: "pam:exportDevice",
+  importMappingFile: "pam:importMappingFile",
+  importDeviceFile: "pam:importDeviceFile",
+  exportSupportPackage: "pam:exportSupportPackage",
   startEngine: "pam:startEngine",
   stopEngine: "pam:stopEngine",
   checkConnection: "pam:checkConnection",

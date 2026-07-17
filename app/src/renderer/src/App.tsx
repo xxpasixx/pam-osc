@@ -263,6 +263,52 @@ export function App() {
     [pushError, adoptEditorSnapshot]
   );
 
+  // ---- PAM-7 sharing: export/import single files + support package ----
+  const exportShare = useCallback(
+    async (kind: "mapping" | "device", id: string) => {
+      const result = kind === "mapping" ? await window.pamOsc.exportMapping(id) : await window.pamOsc.exportDevice(id);
+      if (result.status === "error") pushError(result.error);
+      else if (result.status === "saved") {
+        setNotices((current) => [...current, { severity: "info", message: `exported to ${result.file}` }]);
+      }
+    },
+    [pushError]
+  );
+
+  const importShare = useCallback(
+    async (kind: "mapping" | "device") => {
+      const result =
+        kind === "mapping" ? await window.pamOsc.importMappingFile() : await window.pamOsc.importDeviceFile();
+      if ("canceled" in result) return;
+      if (!result.ok) {
+        pushError(result.error);
+        return;
+      }
+      const fresh = await window.pamOsc.getSnapshot();
+      adoptEditorSnapshot(fresh);
+      const summary: Notice[] = [
+        {
+          severity: "info",
+          message: `imported ${result.kind === "mapping" ? "mapping" : "board"} "${result.name}" as ${result.id}${
+            result.renamed ? " (id was taken — renamed)" : ""
+          }`,
+        },
+      ];
+      // AC-7: free-text console commands run verbatim — surface the caution.
+      if (result.caution) summary.push({ severity: "warning", message: result.caution });
+      setNotices((current) => [...current, ...summary]);
+    },
+    [pushError, adoptEditorSnapshot]
+  );
+
+  const exportSupportPackage = useCallback(async () => {
+    const result = await window.pamOsc.exportSupportPackage();
+    if (result.status === "error") pushError(result.error);
+    else if (result.status === "saved") {
+      setNotices((current) => [...current, { severity: "info", message: `support package saved to ${result.file}` }]);
+    }
+  }, [pushError]);
+
   if (loadError) {
     return <div className="app-body">Failed to load: {loadError}</div>;
   }
@@ -318,6 +364,7 @@ export function App() {
               onStop={() => void stopEngine()}
               onCheck={() => void window.pamOsc.checkConnection()}
               onTest={(mappingId) => void runOutputTest(mappingId)}
+              onExportSupportPackage={() => void exportSupportPackage()}
             />
             <TrafficLog entries={traffic} />
           </>
@@ -369,6 +416,10 @@ export function App() {
             onCreate={(name, width, height) => setEditorTarget({ kind: "new-device", name, width, height })}
             onEditMapping={(id) => setEditorTarget({ kind: "mapping", id })}
             onCreateMapping={(deviceDefinitionId, name) => void createMappingAndEdit(deviceDefinitionId, name)}
+            onExportBoard={(id) => void exportShare("device", id)}
+            onExportMapping={(id) => void exportShare("mapping", id)}
+            onImportBoard={() => void importShare("device")}
+            onImportMapping={() => void importShare("mapping")}
           />
         )}
       </main>

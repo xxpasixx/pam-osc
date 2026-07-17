@@ -42,10 +42,10 @@ The foundation of v2: v1 conflates board description, MIDI port, and user mappin
 
 ### Product Decisions
 
-| Decision                                                   | Rationale                                                                                                     | Date       |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------- |
-| Bundle all five v1 board types                             | No existing user left behind at migration                                                                     | 2026-07-16 |
-| Pure-data files, no executable code / no eval              | Shared mapping files are untrusted input (Discord sharing); the P1 visual editor can only edit data, not code | 2026-07-16 |
-| MIDI port binds per **mapping**, not per device definition | Two units of the same board type must run side by side with different mappings                                | 2026-07-16 |
-| Composite push-encoders: one control, two functions (delta, scheduled by PAM-6) | One physical knob = one control in the editor (user decision); separate button controls hid the encoder in the 2D view | 2026-07-17 |
-| Schema evolves in place, formatVersion stays 1 (delta)     | v2 is pre-release — no shipped build reads these files yet; a version bump would cost migration machinery with zero users to protect | 2026-07-17 |
+| Decision                                                                        | Rationale                                                                                                                            | Date       |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| Bundle all five v1 board types                                                  | No existing user left behind at migration                                                                                            | 2026-07-16 |
+| Pure-data files, no executable code / no eval                                   | Shared mapping files are untrusted input (Discord sharing); the P1 visual editor can only edit data, not code                        | 2026-07-16 |
+| MIDI port binds per **mapping**, not per device definition                      | Two units of the same board type must run side by side with different mappings                                                       | 2026-07-16 |
+| Composite push-encoders: one control, two functions (delta, scheduled by PAM-6) | One physical knob = one control in the editor (user decision); separate button controls hid the encoder in the 2D view               | 2026-07-17 |
+| Schema evolves in place, formatVersion stays 1 (delta)                          | v2 is pre-release — no shipped build reads these files yet; a version bump would cost migration machinery with zero users to protect | 2026-07-17 |

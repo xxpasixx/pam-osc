@@ -51,9 +51,9 @@ The Setup and Boards views hide the core data-model relationship (one board → 
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
-| Hierarchy shown in Setup (dropdown per device) **and** Boards tab (list per board), not in the editor | User interview — both recommended options chosen | 2026-07-17 |
-| New mapping starts empty; Duplicate remains the template path | Empty canvas is honest; copying stays one click away | 2026-07-17 |
-| Own ticket instead of PAM-6 delta | Touches Setup (PAM-3) *and* editor entry (PAM-6) plus a new create-flow | 2026-07-17 |
-| "+ New mapping" shortcut also in the Add-device dialog (AC-7) | One less tab switch on the happy path from "board built" to "device active" | 2026-07-17 |
+| Decision                                                                                              | Rationale                                                                   | Date       |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------- |
+| Hierarchy shown in Setup (dropdown per device) **and** Boards tab (list per board), not in the editor | User interview — both recommended options chosen                            | 2026-07-17 |
+| New mapping starts empty; Duplicate remains the template path                                         | Empty canvas is honest; copying stays one click away                        | 2026-07-17 |
+| Own ticket instead of PAM-6 delta                                                                     | Touches Setup (PAM-3) _and_ editor entry (PAM-6) plus a new create-flow     | 2026-07-17 |
+| "+ New mapping" shortcut also in the Add-device dialog (AC-7)                                         | One less tab switch on the happy path from "board built" to "device active" | 2026-07-17 |

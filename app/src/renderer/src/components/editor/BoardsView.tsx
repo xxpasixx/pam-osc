@@ -53,6 +53,10 @@ export function BoardsView({
   onCreate,
   onEditMapping,
   onCreateMapping,
+  onExportBoard,
+  onExportMapping,
+  onImportBoard,
+  onImportMapping,
 }: {
   boards: BoardInfo[];
   catalog: CatalogEntry[];
@@ -61,6 +65,11 @@ export function BoardsView({
   onCreate: (name: string, width: number, height: number) => void;
   onEditMapping: (id: string) => void;
   onCreateMapping: (deviceDefinitionId: string, name: string) => void;
+  /** PAM-7: single-file sharing — export the raw file / import a picked one. */
+  onExportBoard: (id: string) => void;
+  onExportMapping: (id: string) => void;
+  onImportBoard: () => void;
+  onImportMapping: () => void;
 }) {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -109,6 +118,9 @@ export function BoardsView({
               <span className="board mono">{board.id}</span>
               <span className="badge">{board.origin}</span>
               <div className="spacer" />
+              <button className="subtle" onClick={() => onExportBoard(board.id)}>
+                Export
+              </button>
               <button className="subtle" onClick={() => onEdit(board.id)}>
                 {board.origin === "bundled" ? "Edit board (a copy)" : "Edit board"}
               </button>
@@ -119,6 +131,9 @@ export function BoardsView({
                   <span>{entry.name}</span>
                   <span className="badge">{entry.origin}</span>
                   <div className="spacer" />
+                  <button className="subtle" onClick={() => onExportMapping(entry.id)}>
+                    Export
+                  </button>
                   <button className="subtle" onClick={() => onEditMapping(entry.id)}>
                     Edit mapping
                   </button>
@@ -163,6 +178,8 @@ export function BoardsView({
           >
             + New board
           </button>
+          <button onClick={onImportBoard}>Import board …</button>
+          <button onClick={onImportMapping}>Import mapping …</button>
         </div>
       )}
       {creating && (

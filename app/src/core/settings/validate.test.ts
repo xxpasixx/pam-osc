@@ -67,9 +67,9 @@ describe("validateDraft (AC-6)", () => {
     expect(errors.some((error) => error.field === "mapping:map-b.output")).toBe(true);
     expect(errors.some((error) => error.field === "mapping:ghost")).toBe(true);
     // PAM-11 AC-5: the same mapping cannot be active twice.
-    expect(
-      errors.some((error) => error.field === "mapping:map-a" && error.message.includes("more than once"))
-    ).toBe(true);
+    expect(errors.some((error) => error.field === "mapping:map-a" && error.message.includes("more than once"))).toBe(
+      true
+    );
   });
 
   it("rejects a missing input port", () => {

@@ -49,7 +49,7 @@ Sharing is the point of the mapping format (PRD P1), but today the only way to s
 - Imported ids pass the kebab-case `idSchema` before becoming filenames — no path traversal (import AND package paths).
 - Strict schemas (`strictObject`) — unknown keys rejected; prototype-pollution surface closed.
 - Size cap enforced on read **and** write; imports never touch bundled files.
-- The log never records mapping *content* beyond ids/names — no surprise data in a shared package.
+- The log never records mapping _content_ beyond ids/names — no surprise data in a shared package.
 
 ## Out of Scope
 

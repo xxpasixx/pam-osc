@@ -49,11 +49,11 @@
 - **Steps to reproduce:** 1. Edit a user board; delete/rename its file on disk (or any condition where main-side save rejects while client validation passes). 2. Close the editor with unsaved changes. 3. Choose "Save & close".
 - **Expected / Actual:** Editor stays open showing the error / editor closes, draft lost (EC-1's "never a silent loss"). Cause: the board branch of `save()` returns `true` unconditionally (`EditorView.tsx`), unlike the mapping branch.
 
-**BUG-2: In-place edit of a user device that a *bundled* mapping references can break that mapping without cleanup**
+**BUG-2: In-place edit of a user device that a _bundled_ mapping references can break that mapping without cleanup**
 
 - **Severity:** Medium
 - **Steps to reproduce:** 1. Have a user device shadowing an id that a bundled mapping references (hand-edited shadow file). 2. In the editor, delete a control that bundled mapping assigns; confirm; save.
-- **Expected / Actual:** Warning says bundled mappings break "if retargeted later" / the bundled mapping breaks immediately (loader skips it on refresh; visible only in the invalid-files list, or as an engine issue if active). Orphan cleanup correctly skips bundled files — the *warning text* must state the immediate consequence.
+- **Expected / Actual:** Warning says bundled mappings break "if retargeted later" / the bundled mapping breaks immediately (loader skips it on refresh; visible only in the invalid-files list, or as an engine issue if active). Orphan cleanup correctly skips bundled files — the _warning text_ must state the immediate consequence.
 
 **BUG-3: Delete warning overstates the consequence when editing a bundled board**
 
@@ -73,7 +73,7 @@
 - **Steps to reproduce:** Craft a draft just over 1 MB (renderer-trusted today; real risk arrives with PAM-7 shared files). Save succeeds, `refresh()` drops the file (loader max 1 MB), post-save reload error is silently ignored.
 - **Expected / Actual:** Reject oversized drafts at save / silent disappearance.
 
-**BUG-6: `createNew` can overwrite an existing *invalid* user file with the same id**
+**BUG-6: `createNew` can overwrite an existing _invalid_ user file with the same id**
 
 - **Severity:** Low
 - **Steps to reproduce:** Have a broken `my-board.json` in the user devices folder (fails validation, so its id isn't loaded). Create a new board that slugs to `my-board`. Save.

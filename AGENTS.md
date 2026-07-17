@@ -23,7 +23,7 @@ Ship-fast path: `/build` (it writes a lite spec inline) → `/review` → `/ship
 **pam-osc v2** — cross-platform desktop app (macOS, Windows, Linux) bridging MIDI controllers and GrandMA3 over OSC. Replaces the Open Stage Control dependency of v1.
 
 - **Shell:** Electron; packaging with `electron-builder` (dmg / exe / AppImage), unsigned for the MVP
-- **Main process (Node.js):** `easymidi` (MIDI I/O), `osc-min` + `node:dgram` (UDP/OSC — replaced the planned `osc` package: it drags a vulnerable `ws` and native `serialport` for transports we don't use); ported v1 core (`midiUtils`, `oscUtils`, `routingUtils`, `colorUtils`, `portUtils`, module logic)
+- **Main process (Node.js):** `easymidi` (MIDI I/O), `osc-min` + `node:dgram` (UDP/OSC — replaced the planned `osc` package: it drags a vulnerable `ws` and native `serialport` for transports we don't use), `yazl` (support-package zip, PAM-7; `yauzl` dev-only for tests); ported v1 core (`midiUtils`, `oscUtils`, `routingUtils`, `colorUtils`, `portUtils`, module logic)
 - **Live docs:** Context7 connected — verify dependency versions via the npm registry before pinning
 - **Renderer (UI):** React + TypeScript + Vite
 - **Console side:** GrandMA3 Lua plugin (`pam-OSC.lua`) — unchanged from v1, lives in this repo

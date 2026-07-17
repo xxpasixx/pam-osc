@@ -34,7 +34,12 @@ function Num({
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
-      <input id={id} inputMode="numeric" value={value ?? ""} onChange={(e) => onChange(intField(e.target.value, max))} />
+      <input
+        id={id}
+        inputMode="numeric"
+        value={value ?? ""}
+        onChange={(e) => onChange(intField(e.target.value, max))}
+      />
     </div>
   );
 }
@@ -229,7 +234,13 @@ export function BoardInspector({
               </select>
             </div>
             {midi?.kind !== "pitchbend" && (
-              <Num id="ctl-number" label="Number (0–127)" value={midi?.number} max={127} onChange={(number) => patchMidi({ number })} />
+              <Num
+                id="ctl-number"
+                label="Number (0–127)"
+                value={midi?.number}
+                max={127}
+                onChange={(number) => patchMidi({ number })}
+              />
             )}
             <Num
               id="ctl-channel"
@@ -260,10 +271,30 @@ export function BoardInspector({
       )}
 
       <div className="form-row">
-        <GridNum id="pos-x" label="X" value={selected.position.x} onChange={(x) => patch({ position: { ...selected.position, x } })} />
-        <GridNum id="pos-y" label="Y" value={selected.position.y} onChange={(y) => patch({ position: { ...selected.position, y } })} />
-        <GridNum id="pos-w" label="W" value={selected.position.width} onChange={(width) => patch({ position: { ...selected.position, width } })} />
-        <GridNum id="pos-h" label="H" value={selected.position.height} onChange={(height) => patch({ position: { ...selected.position, height } })} />
+        <GridNum
+          id="pos-x"
+          label="X"
+          value={selected.position.x}
+          onChange={(x) => patch({ position: { ...selected.position, x } })}
+        />
+        <GridNum
+          id="pos-y"
+          label="Y"
+          value={selected.position.y}
+          onChange={(y) => patch({ position: { ...selected.position, y } })}
+        />
+        <GridNum
+          id="pos-w"
+          label="W"
+          value={selected.position.width}
+          onChange={(width) => patch({ position: { ...selected.position, width } })}
+        />
+        <GridNum
+          id="pos-h"
+          label="H"
+          value={selected.position.height}
+          onChange={(height) => patch({ position: { ...selected.position, height } })}
+        />
         <div className="field">
           <label htmlFor="pos-shape">Shape</label>
           <select
@@ -370,10 +401,34 @@ function EncoderCapabilities({
     <>
       <p className="inspector-meta">Raw CC values per detent (hardware fact):</p>
       <div className="form-row">
-        <Num id="enc-inc-from" label="Increment from" value={capabilities.encoding?.increment?.from} max={127} onChange={(v) => range("increment", "from", v)} />
-        <Num id="enc-inc-to" label="to" value={capabilities.encoding?.increment?.to} max={127} onChange={(v) => range("increment", "to", v)} />
-        <Num id="enc-dec-from" label="Decrement from" value={capabilities.encoding?.decrement?.from} max={127} onChange={(v) => range("decrement", "from", v)} />
-        <Num id="enc-dec-to" label="to" value={capabilities.encoding?.decrement?.to} max={127} onChange={(v) => range("decrement", "to", v)} />
+        <Num
+          id="enc-inc-from"
+          label="Increment from"
+          value={capabilities.encoding?.increment?.from}
+          max={127}
+          onChange={(v) => range("increment", "from", v)}
+        />
+        <Num
+          id="enc-inc-to"
+          label="to"
+          value={capabilities.encoding?.increment?.to}
+          max={127}
+          onChange={(v) => range("increment", "to", v)}
+        />
+        <Num
+          id="enc-dec-from"
+          label="Decrement from"
+          value={capabilities.encoding?.decrement?.from}
+          max={127}
+          onChange={(v) => range("decrement", "from", v)}
+        />
+        <Num
+          id="enc-dec-to"
+          label="to"
+          value={capabilities.encoding?.decrement?.to}
+          max={127}
+          onChange={(v) => range("decrement", "to", v)}
+        />
       </div>
       <label className="check">
         <input
@@ -387,8 +442,20 @@ function EncoderCapabilities({
       </label>
       {capabilities.ledRing && (
         <div className="form-row">
-          <Num id="ring-cc" label="Ring CC number" value={capabilities.ledRing.controller} max={127} onChange={(controller) => ring({ controller })} />
-          <Num id="ring-from" label="From" value={capabilities.ledRing.from} max={127} onChange={(from) => ring({ from })} />
+          <Num
+            id="ring-cc"
+            label="Ring CC number"
+            value={capabilities.ledRing.controller}
+            max={127}
+            onChange={(controller) => ring({ controller })}
+          />
+          <Num
+            id="ring-from"
+            label="From"
+            value={capabilities.ledRing.from}
+            max={127}
+            onChange={(from) => ring({ from })}
+          />
           <Num id="ring-to" label="To" value={capabilities.ledRing.to} max={127} onChange={(to) => ring({ to })} />
         </div>
       )}
@@ -413,9 +480,7 @@ function EncoderCapabilities({
               <select
                 id="push-kind"
                 value={capabilities.push.midi?.kind ?? "note"}
-                onChange={(e) =>
-                  push({ midi: { ...capabilities.push?.midi, kind: e.target.value as "cc" | "note" } })
-                }
+                onChange={(e) => push({ midi: { ...capabilities.push?.midi, kind: e.target.value as "cc" | "note" } })}
               >
                 <option value="note">note</option>
                 <option value="cc">cc</option>

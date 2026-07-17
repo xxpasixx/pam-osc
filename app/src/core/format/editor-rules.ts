@@ -26,7 +26,10 @@ export type DraftResult<T> = { ok: true; value: T } | { ok: false; issues: Edito
 export function validateDeviceDraft(raw: unknown): DraftResult<DeviceDefinition> {
   const parsed = deviceDefinitionSchema.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false, issues: parsed.error.issues.map((issue) => ({ path: joinPath(issue.path), message: issue.message })) };
+    return {
+      ok: false,
+      issues: parsed.error.issues.map((issue) => ({ path: joinPath(issue.path), message: issue.message })),
+    };
   }
   const device = parsed.data;
   const issues = [...duplicateAddressIssues(device), ...geometryIssues(device)];
@@ -37,7 +40,10 @@ export function validateDeviceDraft(raw: unknown): DraftResult<DeviceDefinition>
 export function validateMappingDraft(raw: unknown, device: DeviceDefinition): DraftResult<Mapping> {
   const parsed = mappingSchema.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false, issues: parsed.error.issues.map((issue) => ({ path: joinPath(issue.path), message: issue.message })) };
+    return {
+      ok: false,
+      issues: parsed.error.issues.map((issue) => ({ path: joinPath(issue.path), message: issue.message })),
+    };
   }
   const mapping = parsed.data;
   const issues: EditorIssue[] = [];

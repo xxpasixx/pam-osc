@@ -50,13 +50,13 @@ Until now, mappings and device definitions can only be changed by hand-editing J
 
 ### Product Decisions
 
-| Decision                                                     | Rationale                                                                     | Date       |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------- |
-| Mapping editor and device-definition editor together in PAM-6 | Shared UI foundation (board rendering); matches the PRD roadmap entry         | 2026-07-17 |
-| MIDI learn plus manual entry                                 | Usability win; manual entry as fallback when no board is connected             | 2026-07-17 |
-| Bundled files are read-only, copy-on-edit                    | App updates never overwrite user customizations; clean reset stays possible   | 2026-07-17 |
-| Save → engine reload instead of hot-apply                    | Simple and predictable; live editing would add significant engine complexity  | 2026-07-17 |
-| Boards management moves to its own tab (delta)               | User feedback: separate managing board types from activating devices          | 2026-07-17 |
+| Decision                                                                | Rationale                                                                                                                            | Date       |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| Mapping editor and device-definition editor together in PAM-6           | Shared UI foundation (board rendering); matches the PRD roadmap entry                                                                | 2026-07-17 |
+| MIDI learn plus manual entry                                            | Usability win; manual entry as fallback when no board is connected                                                                   | 2026-07-17 |
+| Bundled files are read-only, copy-on-edit                               | App updates never overwrite user customizations; clean reset stays possible                                                          | 2026-07-17 |
+| Save → engine reload instead of hot-apply                               | Simple and predictable; live editing would add significant engine complexity                                                         | 2026-07-17 |
+| Boards management moves to its own tab (delta)                          | User feedback: separate managing board types from activating devices                                                                 | 2026-07-17 |
 | Push-encoder combos live in the file format, not rendering-only (delta) | One physical knob = one control (user decision); pre-release window makes schema evolution cheap — format change owned by PAM-1 AC-7 | 2026-07-17 |
-| X-Touch Compact layer B offset in bundled data (delta)       | Fastest fix for the full occlusion; a layer toggle in the view is parked in ideas | 2026-07-17 |
-| Indicate mode = view-only MIDI tap in the editor (delta)     | Verify mappings by pressing hardware, zero side effects                        | 2026-07-17 |
+| X-Touch Compact layer B offset in bundled data (delta)                  | Fastest fix for the full occlusion; a layer toggle in the view is parked in ideas                                                    | 2026-07-17 |
+| Indicate mode = view-only MIDI tap in the editor (delta)                | Verify mappings by pressing hardware, zero side effects                                                                              | 2026-07-17 |

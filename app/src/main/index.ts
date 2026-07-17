@@ -1,6 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain, screen, shell } from "electron";
 import type { IpcMainInvokeEvent } from "electron";
+import { copyFile, stat } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
+import { MAX_SHARE_BYTES, type ShareKind } from "../core/sharing/share.js";
 import { Engine } from "../core/engine/index.js";
 import type { EngineConfig } from "../core/engine/index.js";
 import type { SettingsDraft } from "../core/settings/schema.js";
@@ -13,10 +15,22 @@ import { analyzeV1File, importV1File, ImportSerializer } from "./import-v1.js";
 import { MidiLearn } from "./midi-learn.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
+import { SessionLog } from "./session-log.js";
 import { SettingsStore } from "./settings-store.js";
+import { importShareFile } from "./share-files.js";
+import { writeSupportPackage } from "./support-package.js";
 import { draftFromPersisted } from "./snapshot.js";
 import { TrafficBuffer } from "./traffic-buffer.js";
-import { IPC, type EditorSaveResult, type Notice, type PortDiagnosis, type SaveDeviceRequest, type Snapshot } from "../shared/ipc.js";
+import {
+  IPC,
+  type EditorSaveResult,
+  type ExportFileResult,
+  type ImportShareOutcome,
+  type Notice,
+  type PortDiagnosis,
+  type SaveDeviceRequest,
+  type Snapshot,
+} from "../shared/ipc.js";
 
 /**
  * Main-process bootstrap (design → Behaviors 1): single-instance lock,
@@ -48,6 +62,11 @@ async function main(): Promise<void> {
     ? join(process.resourcesPath, "resources")
     : resolve(app.getAppPath(), "../resources");
 
+  // Session log (PAM-7 AC-11): lifecycle + errors, never per-message traffic.
+  const sessionLog = new SessionLog(join(userData, "logs"));
+  await sessionLog.start();
+  sessionLog.log(`pam-osc ${app.getVersion()} starting (${process.platform})`);
+
   const settingsStore = new SettingsStore(userData);
   const catalog = new Catalog({
     bundledDevicesDir: join(bundledRoot, "devices"),
@@ -69,6 +88,7 @@ async function main(): Promise<void> {
     if (repeat) return;
     notices.push(notice);
     if (notices.length > 100) notices.shift();
+    sessionLog.log(`notice ${notice.severity}${notice.source ? ` [${notice.source}]` : ""}: ${notice.message}`);
     send(IPC.evNotice, notice);
   };
   const send = (channel: string, payload: unknown) => {
@@ -107,10 +127,12 @@ async function main(): Promise<void> {
   const engineHost = new EngineHost(new Engine(easymidiTransport, udpOscTransport), {
     onState: (state) => {
       if (state === "starting") resetPortDiagnosis(); // fresh run, fresh diagnosis
+      sessionLog.log(`engine ${state}`);
       send(IPC.evEngineState, state);
     },
     onConnection: (status) => {
       if (status.state === "unreachable" && portDiagnosis === undefined) runPortDiagnosis();
+      sessionLog.log(`console ${status.state}`);
       send(IPC.evConnection, status);
     },
     onDevices: (statuses) => send(IPC.evDevices, statuses),
@@ -122,6 +144,9 @@ async function main(): Promise<void> {
         const source = issue.source?.includes("/") ? basename(issue.source) : issue.source;
         pushNotice({ severity: issue.severity, source, message: issue.message });
       }
+      sessionLog.log(
+        `${issue.severity}${issue.source ? ` [${issue.source.includes("/") ? basename(issue.source) : issue.source}]` : ""}: ${issue.message}`
+      );
       trafficBuffer.push({
         at: Date.now(),
         category: "system",
@@ -129,7 +154,10 @@ async function main(): Promise<void> {
         text: `${issue.severity}: ${issue.message}`,
       });
     },
-    onLog: (line) => trafficBuffer.push({ at: Date.now(), category: "system", text: line }),
+    onLog: (line) => {
+      sessionLog.log(line);
+      trafficBuffer.push({ at: Date.now(), category: "system", text: line });
+    },
     onTraffic: (event) =>
       trafficBuffer.push({ at: Date.now(), category: event.direction, source: event.source, text: event.text }),
     onMidiInput: (port, event) => midiLearn.onEngineInput(port, event),
@@ -195,8 +223,8 @@ async function main(): Promise<void> {
   };
   handle(IPC.getSnapshot, () => buildSnapshot());
   handle(IPC.listMidiPorts, () => midiPorts.current());
-  handle(IPC.applySettings, (_event, draft) =>
-    applySettings(draft as SettingsDraft, {
+  handle(IPC.applySettings, async (_event, draft) => {
+    const result = await applySettings(draft as SettingsDraft, {
       catalog,
       settingsStore,
       engineHost,
@@ -206,8 +234,10 @@ async function main(): Promise<void> {
           validated.activeMappings.map((mapping) => mapping.id)
         ),
       buildSnapshot,
-    })
-  );
+    });
+    sessionLog.log(result.ok ? "settings applied" : "settings apply rejected (validation)");
+    return result;
+  });
   handle(IPC.revealMappingsFolder, async () => {
     await shell.openPath(join(userData, "mappings"));
   });
@@ -255,6 +285,91 @@ async function main(): Promise<void> {
     return importSerializer.run(() => importV1File({ filePath, deviceDefinitionId, name }, catalog));
   });
 
+  // ---- sharing: single-file export/import + support package (PAM-7) ----
+  // Export copies the real loaded file's bytes (AC-1/AC-8); the extension
+  // filters pickers only — imports detect the kind from content (AC-12/13).
+  const exportShare = async (kind: ShareKind, id: string): Promise<ExportFileResult> => {
+    if (!window) return { status: "canceled" };
+    const source = kind === "mapping" ? catalog.mappingFile(id) : catalog.deviceFile(id);
+    if (!source) return { status: "error", error: `${kind} "${id}" not found` };
+    const extension = kind === "mapping" ? "mapping" : "device";
+    const picked = await dialog.showSaveDialog(window, {
+      title: kind === "mapping" ? "Export mapping" : "Export board",
+      defaultPath: `${id}.${extension}`,
+      filters: [{ name: `pam-osc ${extension} file`, extensions: [extension] }],
+    });
+    if (picked.canceled || !picked.filePath) return { status: "canceled" };
+    try {
+      const info = await stat(source.file);
+      // AC-5 export side: never produce a file the loader would refuse.
+      if (info.size > MAX_SHARE_BYTES) {
+        return { status: "error", error: "refusing to export — the file exceeds the 1 MB share cap" };
+      }
+      await copyFile(source.file, picked.filePath);
+    } catch {
+      return { status: "error", error: "could not write the export file" };
+    }
+    sessionLog.log(`exported ${kind} "${id}"`);
+    return { status: "saved", file: picked.filePath };
+  };
+  handle(IPC.exportMapping, (_event, id) => exportShare("mapping", String(id)));
+  handle(IPC.exportDevice, (_event, id) => exportShare("device", String(id)));
+
+  const importShare = async (kind: ShareKind): Promise<ImportShareOutcome> => {
+    if (!window) return { canceled: true };
+    const extension = kind === "mapping" ? "mapping" : "device";
+    const picked = await dialog.showOpenDialog(window, {
+      title: kind === "mapping" ? "Import mapping" : "Import board",
+      // AC-12: the custom extension filters the picker; .json stays accepted
+      // for hand-copied files. The content check decides what it really is.
+      filters: [{ name: `pam-osc ${extension} file (.${extension}, .json)`, extensions: [extension, "json"] }],
+      properties: ["openFile"],
+    });
+    const filePath = picked.filePaths[0];
+    if (picked.canceled || !filePath) return { canceled: true };
+    const result = await importSerializer.run(() => importShareFile(kind, filePath, catalog));
+    sessionLog.log(
+      result.ok
+        ? `imported ${result.kind} "${result.id}"${result.renamed ? " (renamed — id was taken)" : ""}`
+        : `${kind} import failed: ${result.error}`
+    );
+    return result;
+  };
+  handle(IPC.importMappingFile, () => importShare("mapping"));
+  handle(IPC.importDeviceFile, () => importShare("device"));
+
+  handle(IPC.exportSupportPackage, async (): Promise<ExportFileResult> => {
+    if (!window) return { status: "canceled" };
+    const picked = await dialog.showSaveDialog(window, {
+      title: "Export support package",
+      defaultPath: `pam-osc-support-${new Date().toISOString().slice(0, 10)}.zip`,
+      filters: [{ name: "zip archive", extensions: ["zip"] }],
+    });
+    if (picked.canceled || !picked.filePath) return { status: "canceled" };
+    await sessionLog.flush();
+    const files = catalog.allFiles();
+    try {
+      await writeSupportPackage(picked.filePath, {
+        devices: files.devices,
+        mappings: files.mappings,
+        settingsFile: join(userData, "settings.json"),
+        logFiles: [sessionLog.filePath, sessionLog.previousPath],
+        manifest: {
+          app: "pam-osc",
+          version: app.getVersion(),
+          exportedAt: new Date().toISOString(),
+          platform: process.platform,
+          devices: files.devices.length,
+          mappings: files.mappings.length,
+        },
+      });
+    } catch {
+      return { status: "error", error: "could not write the support package" };
+    }
+    sessionLog.log("exported support package");
+    return { status: "saved", file: picked.filePath };
+  });
+
   // ---- visual mapping editor (PAM-6) ----
   const activeIds = () => new Set(settingsStore.settings.activeMappingIds);
   handle(IPC.getMappingForEdit, (_event, id) => catalog.mappingForEdit(String(id)));
@@ -281,6 +396,7 @@ async function main(): Promise<void> {
   handle(IPC.saveMapping, async (_event, draft): Promise<EditorSaveResult> => {
     const result = await catalog.saveMapping(draft);
     if (!result.ok) return result;
+    sessionLog.log(`saved mapping "${result.id}"`);
     const notices = await reloadEngineIfNeeded(settingsStore.settings.activeMappingIds.includes(result.id));
     for (const notice of notices) pushNotice(notice);
     return { ok: true, id: result.id, snapshot: await buildSnapshot(), notices };
@@ -297,6 +413,7 @@ async function main(): Promise<void> {
       createNew: request.createNew === true,
     });
     if (!result.ok) return result;
+    sessionLog.log(`saved board "${result.id}"`);
 
     const notices: Notice[] = [];
     if (result.rewrittenMappings.length > 0) {
@@ -409,6 +526,7 @@ async function main(): Promise<void> {
   // (a background/tray mode is a later feature — see docs/ideas.md).
   app.on("window-all-closed", () => app.quit());
   app.on("before-quit", () => {
+    sessionLog.log("session ending");
     trafficBuffer.stop();
     void engineHost.shutdown();
   });
