@@ -80,10 +80,31 @@
 - **Severity:** Low
 - **Detail:** port fields accept `"9003x"` → silently 9003 (`Number.parseInt`, `ConsoleSection.tsx:34-37`); duplicating a duplicate names it "X (2) (2)" (`catalog.ts:125`); renderer `save()` has no catch — a rejected invoke (only reachable with a malformed draft) would surface nowhere (`App.tsx:86-102`).
 
-## Verdict: **NOT READY** — 1 High (BUG-1)
+## First-pass verdict (2026-07-17, commit 846cf74): **NOT READY** — 1 High (BUG-1)
 
 12/12 AC/EC verified; 11 pass, EC-2 fails on its overwrite clause. Security: no Critical/High/Medium. Regression green.
 
-Fix order: **BUG-1** (the gate), then BUG-2 in the same round (cheap, user-facing). BUG-3–8 are polish — batch them or park them consciously.
+---
 
-Run `/build` to fix, then `/review` again. Before `/ship`, the AGENTS.md release gate still requires a real onPC + hardware verification (AC-4 auto-start end-to-end).
+# Re-review — fix round `6031f1d` (2026-07-17)
+
+**Where tested:** local (macOS) — Vitest 127/127 (11 new tests, one per fix claim), typecheck clean, production build green, dev-mode boot smoke rerun with the fixed code. Scope: the full fix diff (15 files) read line by line, adversarially probed for newly introduced defects; the first-pass architecture findings were not re-litigated.
+
+### Fix verification
+- **BUG-1 (High) — fixed.** `SettingsStore.hasPersisted` gates `saveWindowBounds`; the first-pass repro is now a permanent test ("corrupt file: window-bounds save is a no-op until a real Save") and passes, plus a first-run-leaves-no-file test. The load notice's "stays untouched until you save" is now true. **EC-2 → pass.**
+- **BUG-2 — fixed.** Save transaction step 0 trims the address main-side before validate/apply/persist; test proves engine and disk both get the trimmed value. A non-string address from a hostile renderer throws into a rejected invoke (renderer now surfaces it) — the main process survives.
+- **BUG-3 — fixed.** Notices adopted only at mount; post-save snapshots no longer resurrect dismissed ones. Residual (accepted): a millisecond-window race where an event-notice arriving between subscribe and snapshot adoption could be dropped — informational only, pre-existing class.
+- **BUG-4 — fixed.** Poll survives throwing enumeration, serves last-known list, retries; three tests incl. fake-timer tick.
+- **BUG-5 — fixed.** Saved position reused only when it intersects a connected display's work area (size survives either way).
+- **BUG-6 — fixed.** `firstRun` derived live from `hasPersisted`.
+- **BUG-7 — fixed.** `setWindowOpenHandler` denies popups; `will-navigate` blocks non-dev/non-file targets; all five IPC handlers reject foreign senders; 1 MB ingest ceiling in loader + settings store (tested both). Note (accepted): `file://` navigation remains broadly allowed — only reachable with script execution the CSP already prevents; sandbox holds.
+- **BUG-8 — fixed.** Digits-only port fields; duplicate-of-duplicate counts up from the original with a base-exists guard for legit trailing-number ids; renderer `save()` catches rejected invokes into an error notice.
+
+### Regression (re-run)
+Full suite 127/127 (all PAM-1 format + PAM-2 engine/E2E suites included); loader change remains additive (new error path only for >1 MB files); typecheck and production build green; boot smoke on macOS rerun after the fixes.
+
+### Still open (unchanged, non-blocking)
+- E2E critical journey ("first run → add device → save → engine starts") not locked in yet — recommended as Playwright-Electron setup in a later round.
+- AGENTS.md release gate before `/ship`: real onPC + hardware verification of AC-4 end-to-end.
+
+## Verdict: **READY** — 12/12 AC/EC pass, no Critical/High. **Approved.**
