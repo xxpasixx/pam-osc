@@ -72,9 +72,17 @@ describe("bundled MA3 plugin XML (PAM-12)", () => {
   it("ships the v2 protocol and CMD-mode pieces in the embedded Lua", () => {
     const lua = components[0]?.content.toString("utf8") ?? "";
     expect(lua).toContain("PLUGIN_PROTOCOL = 2");
-    expect(lua).toContain('"/status/cmdFlags,i,');
-    expect(lua).toContain('"/status/cmdKeyDone,i,');
-    expect(lua).toContain('pamCmdKey');
+    expect(lua).toContain("/status/cmdFlags,i,");
+    expect(lua).toContain("/status/cmdKeyDone,i,");
+    expect(lua).toContain("pamCmdKey");
     expect(lua).toContain("/NoOops");
+  });
+
+  it("addresses the feedback entry by name, not by resolved index (PAM-12 AC-8)", () => {
+    const lua = components[0]?.content.toString("utf8") ?? "";
+    expect(lua).toContain('SendOSC "');
+    expect(lua).toContain('OSC_ENTRY_NAME = "pam-osc"');
+    // the old index-lookup is gone — no more OSCData child walk to find the entry
+    expect(lua).not.toContain("resolveOscEntry");
   });
 });

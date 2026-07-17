@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Ma3InstallResult, Ma3SetupInfo } from "../../../shared/ipc.js";
+import type { Ma3Asset, Ma3Install, Ma3InstallResult, Ma3SetupInfo } from "../../../shared/ipc.js";
 
 /**
- * PAM-9: the MA3 setup assistant — one-click plugin install into detected
- * local onPC installations (AC-1/2/3), the USB route for real consoles
- * (AC-4), and the step-by-step console guide with the user's live values
- * (AC-5). Values come from the current settings draft — editing Setup
- * updates the guide immediately.
+ * PAM-9: the MA3 setup assistant — one-click install of the plugin and the
+ * OSC config into detected local onPC installations (AC-1/2/3), the USB route
+ * for real consoles (AC-4), and the step-by-step console guide with the
+ * user's live values (AC-5). Values come from the current settings draft —
+ * editing Setup updates the guide immediately.
  */
 
 interface ConsoleValues {
@@ -15,43 +15,90 @@ interface ConsoleValues {
   receivePort: number;
 }
 
-function InstallCard({
-  info,
-  onRefresh,
+/** One install action (plugin or OSC config) as a row with its own busy/result/replace state. */
+function InstallRow({
+  install,
+  asset,
+  label,
+  present,
+  presentDetail,
+  bundledLabel,
+  onDone,
 }: {
-  info: Ma3SetupInfo;
-  onRefresh: () => void;
+  install: Ma3Install;
+  asset: Ma3Asset;
+  label: string;
+  present: boolean;
+  presentDetail: string;
+  bundledLabel: string;
+  onDone: () => void;
 }) {
-  const [busyDir, setBusyDir] = useState<string | undefined>();
-  const [pendingReplace, setPendingReplace] = useState<{ dir: string; version?: string } | undefined>();
-  const [results, setResults] = useState<Record<string, Ma3InstallResult>>({});
+  const [busy, setBusy] = useState(false);
+  const [confirmReplace, setConfirmReplace] = useState<{ version?: string } | undefined>();
+  const [result, setResult] = useState<Ma3InstallResult | undefined>();
 
-  const install = useCallback(
-    async (pluginsDir: string, overwrite: boolean) => {
-      setBusyDir(pluginsDir);
-      setPendingReplace(undefined);
+  const run = useCallback(
+    async (overwrite: boolean) => {
+      setBusy(true);
+      setConfirmReplace(undefined);
       try {
-        const result = await window.pamOsc.installMa3Plugin(pluginsDir, overwrite);
-        if (result.status === "exists") {
-          // AC-2: replace only after an explicit confirmation.
-          setPendingReplace({ dir: pluginsDir, version: result.installedVersion });
+        const outcome = await window.pamOsc.installMa3Asset(install.base, asset, overwrite);
+        if (outcome.status === "exists") {
+          setConfirmReplace({ version: outcome.installedVersion });
         } else {
-          setResults((current) => ({ ...current, [pluginsDir]: result }));
-          onRefresh();
+          setResult(outcome);
+          onDone();
         }
       } finally {
-        setBusyDir(undefined);
+        setBusy(false);
       }
     },
-    [onRefresh]
+    [install.base, asset, onDone]
   );
 
   return (
-    <section className="card" aria-label="Install the console plugin">
-      <h2>Step 1 — Install the console plugin</h2>
+    <div className="device-row">
+      <span
+        className={`led ${present ? "ok" : "warn"}`}
+        aria-hidden="true"
+        title={present ? "installed" : "not installed"}
+      />
+      <div className="device-name">
+        {label}
+        <span className="board">{present ? presentDetail : "not installed yet"}</span>
+        {result?.status === "installed" && <span className="board">✓ installed to {result.target}</span>}
+        {result?.status === "error" && (
+          <span className="board">
+            failed: {result.error} — copy the file manually to {result.target}
+          </span>
+        )}
+      </div>
+      <div className="spacer" />
+      {confirmReplace ? (
+        <>
+          <span className="board">Replace {confirmReplace.version ?? "the installed file"} with {bundledLabel}?</span>
+          <button className="primary" onClick={() => void run(true)}>
+            Replace
+          </button>
+          <button onClick={() => setConfirmReplace(undefined)}>Keep</button>
+        </>
+      ) : (
+        <button disabled={busy} onClick={() => void run(false)}>
+          {busy ? "Installing …" : present ? "Reinstall" : "Install"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function InstallCard({ info, onRefresh }: { info: Ma3SetupInfo; onRefresh: () => void }) {
+  return (
+    <section className="card" aria-label="Install the console files">
+      <h2>Step 1 — Install the console files</h2>
       <p className="inspector-meta">
-        pam-osc ships plugin version <code>{info.bundledVersion ?? "unknown"}</code>. GrandMA3 imports plugins from{" "}
-        <code>gma3_library/datapools/plugins</code>.
+        pam-osc ships plugin version <code>{info.bundledVersion ?? "unknown"}</code>
+        {info.hasBundledOscConfig && <> and a ready-made OSC config</>}. GrandMA3 imports these from{" "}
+        <code>gma3_library/datapools/plugins</code> and <code>gma3_library/inout/osc</code>.
       </p>
 
       {info.installs.length === 0 && (
@@ -61,58 +108,39 @@ function InstallCard({
           </p>
           <ol className="guide-steps">
             <li>
-              Click “Show plugin file” below and copy <code>pam-osc.xml</code> onto a USB stick into the folder{" "}
+              Click “Show plugin file” below and copy <code>pam-osc.xml</code> onto a USB stick into{" "}
               <code>gma3_library/datapools/plugins/</code> (create it if needed).
             </li>
-            <li>Plug the stick into the console — continue with step 3 below.</li>
+            <li>Plug the stick into the console — continue with step 2.</li>
           </ol>
         </>
       )}
 
-      {info.installs.map((entry) => {
-        const result = results[entry.pluginsDir];
-        return (
-          <div className="device-row" key={entry.pluginsDir}>
-            <span
-              className={`led ${entry.hasPamOsc ? "ok" : "warn"}`}
-              aria-hidden="true"
-              title={entry.hasPamOsc ? "plugin present" : "plugin not installed"}
+      {info.installs.map((install) => (
+        <div key={install.base} style={{ marginBottom: 8 }}>
+          <p className="inspector-meta">{install.base}</p>
+          <InstallRow
+            install={install}
+            asset="plugin"
+            label="Plugin (pam-osc Start Stop / Settings)"
+            present={install.hasPamOsc}
+            presentDetail={`installed, version ${install.installedVersion ?? "unknown"}`}
+            bundledLabel={`version ${info.bundledVersion ?? "the bundled one"}`}
+            onDone={onRefresh}
+          />
+          {info.hasBundledOscConfig && (
+            <InstallRow
+              install={install}
+              asset="osc"
+              label="OSC config (creates the OSC entry)"
+              present={install.hasOscConfig}
+              presentDetail="OSC config present"
+              bundledLabel="the bundled OSC config"
+              onDone={onRefresh}
             />
-            <div className="device-name">
-              {entry.base}
-              <span className="board">
-                {entry.hasPamOsc
-                  ? `pam-osc.xml present (version ${entry.installedVersion ?? "unknown"})`
-                  : "pam-osc.xml not installed yet"}
-              </span>
-              {result?.status === "installed" && (
-                <span className="board">✓ installed to {result.target} — continue with step 2</span>
-              )}
-              {result?.status === "error" && (
-                <span className="board">
-                  Install failed: {result.error} — copy the file manually to {result.target}
-                </span>
-              )}
-            </div>
-            <div className="spacer" />
-            {pendingReplace?.dir === entry.pluginsDir ? (
-              <>
-                <span className="board">
-                  Replace version {pendingReplace.version ?? "unknown"} with {info.bundledVersion ?? "the bundled one"}?
-                </span>
-                <button className="primary" onClick={() => void install(entry.pluginsDir, true)}>
-                  Replace
-                </button>
-                <button onClick={() => setPendingReplace(undefined)}>Keep</button>
-              </>
-            ) : (
-              <button disabled={busyDir === entry.pluginsDir} onClick={() => void install(entry.pluginsDir, false)}>
-                {busyDir === entry.pluginsDir ? "Installing …" : entry.hasPamOsc ? "Update plugin" : "Install plugin"}
-              </button>
-            )}
-          </div>
-        );
-      })}
+          )}
+        </div>
+      ))}
 
       <div className="section-actions">
         <button onClick={() => void window.pamOsc.revealBundledPlugin()}>Show plugin file …</button>
@@ -125,15 +153,26 @@ function OscEntryCard({ values, localIps }: { values: ConsoleValues; localIps: s
   const sameMachine = values.address === "127.0.0.1" || values.address === "localhost";
   const destinationIps = sameMachine ? ["127.0.0.1 (onPC on this machine)"] : localIps;
   return (
-    <section className="card" aria-label="Create the OSC entry">
-      <h2>Step 2 — Create the OSC entry in GrandMA3</h2>
+    <section className="card" aria-label="Set up the OSC entries">
+      <h2>Step 2 — Set up OSC in GrandMA3</h2>
+      <p className="inspector-meta">
+        Open <strong>Menu → In &amp; Out → OSC</strong>. First pick the correct network card in the{" "}
+        <strong>Interface</strong> list (the one on the console/pam-osc network). pam-osc needs <strong>two</strong>{" "}
+        entries — one to receive commands, one to send feedback.
+      </p>
+      <h3 style={{ margin: "10px 0 2px" }}>Receive entry (name doesn’t matter)</h3>
       <ol className="guide-steps">
         <li>
-          In GrandMA3, open <strong>Menu → Settings → OSC</strong>.
+          Port <code>{values.sendPort}</code> — where pam-osc sends its commands (the send port in Setup).
         </li>
         <li>
-          Add an entry and name it exactly <code>pam-osc</code> — the plugin finds it by this name, the line number does
-          not matter.
+          Turn <strong>Receive</strong> and <strong>Receive Command</strong> on.
+        </li>
+      </ol>
+      <h3 style={{ margin: "12px 0 2px" }}>Send entry (name must be exactly “pam-osc”)</h3>
+      <ol className="guide-steps">
+        <li>
+          Name it exactly <code>pam-osc</code> — the plugin finds the feedback entry by this name.
         </li>
         <li>
           Destination IP:{" "}
@@ -150,20 +189,16 @@ function OscEntryCard({ values, localIps }: { values: ConsoleValues; localIps: s
           (this computer, where pam-osc runs).
         </li>
         <li>
-          Port: <code>{values.receivePort}</code> — pam-osc listens here for the console feedback (the receive port
-          under Setup).
+          Destination port <code>{values.receivePort}</code> — where pam-osc listens for feedback (the receive port in
+          Setup).
         </li>
         <li>
-          Mode <code>UDP</code>, and enable both <strong>Send</strong> and <strong>Receive</strong> on the entry.
-        </li>
-        <li>
-          Make sure the console accepts OSC input on port <code>{values.sendPort}</code> — that is where pam-osc sends
-          its commands (the send port under Setup).
+          Turn only <strong>Send Command</strong> on.
         </li>
       </ol>
       <p className="inspector-meta">
         pam-osc currently talks to the console at <code>{values.address}</code> — change it under Setup and this guide
-        updates with it.
+        updates with it. If you imported the OSC config in step 1, check both entries carry these values.
       </p>
     </section>
   );
@@ -178,7 +213,7 @@ function ImportPluginCard() {
           Open a <strong>Plugins pool</strong> window on the console, edit an empty slot and choose <strong>Import</strong>.
         </li>
         <li>
-          Pick <code>pam-osc</code> from the list (the file installed in step 1) and import both plugins.
+          Pick <code>pam-osc</code> from the list (installed in step 1) and import both plugins.
         </li>
         <li>
           Run <strong>“pam-osc Start Stop”</strong> once per session — the “pam-osc Settings” plugin configures colors,

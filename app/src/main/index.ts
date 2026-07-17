@@ -13,7 +13,7 @@ import { applySettings } from "./apply-settings.js";
 import { Catalog } from "./catalog.js";
 import { EngineHost } from "./engine-host.js";
 import { analyzeV1File, importV1File, ImportSerializer } from "./import-v1.js";
-import { detectMa3Installs, installPlugin, ma3BaseCandidates, readPluginVersion } from "./ma3-install.js";
+import { detectMa3Installs, installFile, ma3BaseCandidates, readPluginVersion } from "./ma3-install.js";
 import { MidiLearn } from "./midi-learn.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
@@ -249,10 +249,13 @@ async function main(): Promise<void> {
   });
 
   // ---- PAM-9 MA3 setup assistant ----
-  // The bundled plugin: repo file in dev, extraResources in the package.
+  // Bundled files: repo files in dev, extraResources in the package.
   const bundledPluginXml = app.isPackaged
     ? join(process.resourcesPath, "resources", "plugin", "pam-osc.xml")
     : resolve(app.getAppPath(), "../gma3_library/datapools/plugins/pam-osc.xml");
+  const bundledOscXml = app.isPackaged
+    ? join(process.resourcesPath, "resources", "osc", "pam-osc.xml")
+    : resolve(app.getAppPath(), "../gma3_library/inout/osc/pam-osc.xml");
   const detectInstalls = () =>
     detectMa3Installs(ma3BaseCandidates(process.platform, process.env as Record<string, string | undefined>, homedir()));
   // Non-internal IPv4 addresses — the OSC destination IP(s) shown in the guide (AC-5).
@@ -265,21 +268,25 @@ async function main(): Promise<void> {
   handle(IPC.getMa3Setup, async () => ({
     installs: await detectInstalls(),
     bundledVersion: await readPluginVersion(bundledPluginXml),
+    hasBundledOscConfig: (await stat(bundledOscXml).catch(() => undefined)) !== undefined,
     localIps: localIps(),
   }));
-  handle(IPC.installMa3Plugin, async (_event, rawDir, rawOverwrite) => {
-    const pluginsDir = String(rawDir);
-    // Only folders this app itself detected are writable targets — the
-    // renderer can never point the copy at an arbitrary path.
-    const installs = await detectInstalls();
-    if (!installs.some((install) => install.pluginsDir === pluginsDir)) {
-      return { status: "error", error: "unknown MA3 folder — reopen the setup guide", target: pluginsDir };
+  handle(IPC.installMa3Asset, async (_event, rawBase, rawAsset, rawOverwrite) => {
+    const base = String(rawBase);
+    const asset = rawAsset === "osc" ? "osc" : "plugin";
+    // Only bases this app itself detected are valid targets — the renderer
+    // can never point the copy at an arbitrary path.
+    const install = (await detectInstalls()).find((candidate) => candidate.base === base);
+    if (!install) {
+      return { status: "error", error: "unknown MA3 folder — reopen the setup guide", target: base };
     }
-    const result = await installPlugin(bundledPluginXml, pluginsDir, rawOverwrite === true);
+    const source = asset === "osc" ? bundledOscXml : bundledPluginXml;
+    const targetDir = asset === "osc" ? install.oscDir : install.pluginsDir;
+    const result = await installFile(source, targetDir, rawOverwrite === true);
     sessionLog.log(
       result.status === "installed"
-        ? `MA3 plugin installed to ${result.target}`
-        : `MA3 plugin install: ${result.status} (${result.target})`
+        ? `MA3 ${asset} installed to ${result.target}`
+        : `MA3 ${asset} install: ${result.status} (${result.target})`
     );
     return result;
   });

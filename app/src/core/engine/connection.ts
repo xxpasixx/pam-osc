@@ -8,20 +8,11 @@ import { EXPECTED_PLUGIN_PROTOCOL, type ConnectionStatus, type EngineTiming } fr
  * Evaluated after a timeout; non-connected results retry (v1 constants).
  */
 
-const OSC_ENTRY_FALLBACK = 2;
-
-/** Executed on the console via the Lua keyword — picks the OSC entry named
- * "pam-osc" (any line), falls back to entry 2, echoes the pong. Verbatim v1. */
-const CONNECTION_PONG_LUA =
-  "local n = " +
-  OSC_ENTRY_FALLBACK +
-  " " +
-  "local ok, found = pcall(function() " +
-  "for i, e in ipairs(Root().ShowData.ShowSettings.OSCData:Children()) do " +
-  "if string.lower(e.name or [[]]) == [[pam-osc]] then return i end " +
-  "end end) " +
-  "if ok and found then n = found end " +
-  'Cmd([[SendOSC ]] .. n .. [[ "/status/connectionPong,i,1"]])';
+/** Executed on the console via the Lua keyword — echoes the pong through the
+ * OSC entry named "pam-osc". MA3's SendOSC takes the entry name directly, so
+ * no index lookup is needed (PAM-12 AC-8): if the entry is missing the send
+ * is a harmless no-op and the check reports the console unreachable. */
+const CONNECTION_PONG_LUA = 'Cmd([[SendOSC "pam-osc" "/status/connectionPong,i,1"]])';
 
 export class ConnectionChecker {
   private connectionPongReceived = false;

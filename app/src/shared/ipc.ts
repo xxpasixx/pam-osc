@@ -166,15 +166,22 @@ export type ExportFileResult =
 
 // ---- PAM-9 MA3 setup assistant ----
 
+/** What the assistant can install into an MA3 library (AC-2). */
+export type Ma3Asset = "plugin" | "osc";
+
 /** One detected local GrandMA3/onPC installation (AC-1). */
 export interface Ma3Install {
   /** The MALightingTechnology base folder that was found. */
   base: string;
   /** The plugin import folder inside it (created on install when missing). */
   pluginsDir: string;
+  /** The OSC-config import folder (gma3_library/inout/osc). */
+  oscDir: string;
   hasPamOsc: boolean;
-  /** Version of the already-installed pam-osc.xml, when readable. */
+  /** Version of the already-installed plugin pam-osc.xml, when readable. */
   installedVersion?: string;
+  /** True when an OSC-config pam-osc.xml is already present. */
+  hasOscConfig: boolean;
 }
 
 export type Ma3InstallResult =
@@ -188,6 +195,8 @@ export interface Ma3SetupInfo {
   installs: Ma3Install[];
   /** Version of the plugin the app ships. */
   bundledVersion: string | undefined;
+  /** True when the app bundles an OSC-config file to install. */
+  hasBundledOscConfig: boolean;
   /** Non-internal IPv4 addresses of this machine — the OSC destination IP(s). */
   localIps: string[];
 }
@@ -255,7 +264,7 @@ export interface PamOscApi {
   importDeviceFile(): Promise<ImportShareOutcome>;
   exportSupportPackage(): Promise<ExportFileResult>;
   getMa3Setup(): Promise<Ma3SetupInfo>;
-  installMa3Plugin(pluginsDir: string, overwrite: boolean): Promise<Ma3InstallResult>;
+  installMa3Asset(base: string, asset: Ma3Asset, overwrite: boolean): Promise<Ma3InstallResult>;
   revealBundledPlugin(): Promise<void>;
   startEngine(): Promise<{ ok: boolean; error?: string }>;
   stopEngine(): Promise<void>;
@@ -301,7 +310,7 @@ export const IPC = {
   importDeviceFile: "pam:importDeviceFile",
   exportSupportPackage: "pam:exportSupportPackage",
   getMa3Setup: "pam:getMa3Setup",
-  installMa3Plugin: "pam:installMa3Plugin",
+  installMa3Asset: "pam:installMa3Asset",
   revealBundledPlugin: "pam:revealBundledPlugin",
   startEngine: "pam:startEngine",
   stopEngine: "pam:stopEngine",

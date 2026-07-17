@@ -45,21 +45,38 @@ export async function readPluginVersion(xmlPath: string): Promise<string | undef
   }
 }
 
+/** The plugin import folder inside an MA3 base. */
+export function pluginsDirOf(base: string): string {
+  return join(base, "gma3_library", "datapools", "plugins");
+}
+
+/** The OSC-config import folder inside an MA3 base. */
+export function oscDirOf(base: string): string {
+  return join(base, "gma3_library", "inout", "osc");
+}
+
 /**
  * AC-1: every candidate base whose gma3_library exists counts as an
- * installation — the datapools/plugins part may be missing on a fresh
- * install and is created by installPlugin.
+ * installation — the datapools/plugins and inout/osc subfolders may be
+ * missing on a fresh install and are created on install.
  */
 export async function detectMa3Installs(candidates: string[]): Promise<Ma3Install[]> {
   const installs: Ma3Install[] = [];
   for (const base of candidates) {
     if (!(await exists(join(base, "gma3_library")))) continue;
-    const pluginsDir = join(base, "gma3_library", "datapools", "plugins");
-    const pamOscXml = join(pluginsDir, "pam-osc.xml");
-    const hasPamOsc = await exists(pamOscXml);
-    const install: Ma3Install = { base, pluginsDir, hasPamOsc };
+    const pluginsDir = pluginsDirOf(base);
+    const oscDir = oscDirOf(base);
+    const pluginXml = join(pluginsDir, "pam-osc.xml");
+    const hasPamOsc = await exists(pluginXml);
+    const install: Ma3Install = {
+      base,
+      pluginsDir,
+      oscDir,
+      hasPamOsc,
+      hasOscConfig: await exists(join(oscDir, "pam-osc.xml")),
+    };
     if (hasPamOsc) {
-      const version = await readPluginVersion(pamOscXml);
+      const version = await readPluginVersion(pluginXml);
       if (version) install.installedVersion = version;
     }
     installs.push(install);
@@ -68,16 +85,17 @@ export async function detectMa3Installs(candidates: string[]): Promise<Ma3Instal
 }
 
 /**
- * AC-2/AC-3: copy the bundled pam-osc.xml into the plugin folder. An existing
- * file is only replaced with overwrite=true (the UI asks first); every
- * failure comes back as a friendly error carrying the exact target path for
- * manual copying.
+ * AC-2/AC-3: copy a bundled pam-osc.xml into a target library folder. An
+ * existing file is only replaced with overwrite=true (the UI asks first);
+ * every failure comes back as a friendly error carrying the exact target
+ * path for manual copying. Used for both the plugin and the OSC config —
+ * both files are named pam-osc.xml in their respective folders.
  */
-export async function installPlugin(bundledXml: string, pluginsDir: string, overwrite: boolean): Promise<Ma3InstallResult> {
-  const target = join(pluginsDir, "pam-osc.xml");
+export async function installFile(bundledXml: string, targetDir: string, overwrite: boolean): Promise<Ma3InstallResult> {
+  const target = join(targetDir, "pam-osc.xml");
   try {
     if (!(await exists(bundledXml))) {
-      return { status: "error", error: `bundled plugin file not found at ${bundledXml}`, target };
+      return { status: "error", error: `bundled file not found at ${bundledXml}`, target };
     }
     if (!overwrite && (await exists(target))) {
       const result: Ma3InstallResult = { status: "exists", target };
@@ -85,7 +103,7 @@ export async function installPlugin(bundledXml: string, pluginsDir: string, over
       if (version) result.installedVersion = version;
       return result;
     }
-    await mkdir(pluginsDir, { recursive: true });
+    await mkdir(targetDir, { recursive: true });
     await copyFile(bundledXml, target);
     return { status: "installed", target };
   } catch (error) {

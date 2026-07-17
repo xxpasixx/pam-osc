@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<GMA3 DataVersion="2.4.2.2">
+    <OSCData Name="pam-osc-recive" Guid="39 E2 33 AB 06 90 10 02 51 E0 89 DF C3 77 60 47" DestinationIP="127.0.0.1" Mode="UDP" Port="9003" Send="No" SendCommand="No" EchoInput="No" EchoOutput="No"/>
+</GMA3>

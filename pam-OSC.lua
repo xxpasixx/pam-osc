@@ -28,32 +28,23 @@ local oldDeskLockedStatus = 0
 -- an exact match; the v1 plugin answered 1.
 local PLUGIN_PROTOCOL = 2
 
-local oscEntry = nil -- resolved by name only (PAM-12 AC-8) — no numeric fallback
+-- The feedback OSC entry is addressed by NAME (PAM-12 AC-8): MA3's SendOSC
+-- accepts the entry name directly, so no index lookup is needed. The user
+-- names the Send entry exactly "pam-osc" (MENU > In & Out > OSC). If no such
+-- entry exists, SendOSC returns a non-"OK" result, which we log — correct
+-- diagnostics without a numeric fallback.
+local OSC_ENTRY_NAME = "pam-osc"
 
--- Find the OSC entry to send feedback to: only an entry named "pam-osc"
--- counts (any line number). Returns nil when it is missing.
-local function resolveOscEntry()
-    local ok, found = pcall(function()
-        for i, entry in ipairs(Root().ShowData.ShowSettings.OSCData:Children()) do
-            if string.lower(entry.name or "") == "pam-osc" then
-                return i
-            end
-        end
-        return nil
-    end)
-    if ok and found then
-        return found
+-- Send one bare OSC message (e.g. "/Page1/Fader201,f,50.00") to the named
+-- entry; the message is quote-wrapped here. Cmd() returns "OK" on success —
+-- anything else (e.g. no entry named "pam-osc") is logged once per failing
+-- send. Pattern taken from the EvoFaderWing plugin.
+local function sendOsc(message)
+    local feedback = Cmd('SendOSC "' .. OSC_ENTRY_NAME .. '" "' .. message .. '"')
+    if feedback ~= "OK" then
+        Printf('pam-osc: SendOSC to "' .. OSC_ENTRY_NAME .. '" failed: ' .. tostring(feedback))
     end
-    return nil
-end
-
--- Send one OSC payload to the resolved entry. Payload strings keep the exact
--- v1 formatting (including leading spaces); silently skipped while no entry
--- named "pam-osc" exists.
-local function sendOsc(payload)
-    if oscEntry ~= nil then
-        Cmd('SendOSC ' .. oscEntry .. payload)
-    end
+    return feedback
 end
 
 -- Configure here, what executors you want to watch:
@@ -237,7 +228,7 @@ local function executeCmdKey(execNo, page)
         Printf('pam-osc CMD: key ' .. execNo .. ' -> "' .. cmdText .. '" (Execute ' .. executeFlag .. ')')
     end
 
-    sendOsc(' "/status/cmdKeyDone,i,' .. execNo .. '"')
+    sendOsc('/status/cmdKeyDone,i,' .. execNo)
 end
 
 local function getApereanceColor(sequence)
@@ -346,13 +337,7 @@ local function main()
     Printf("sendTimecode: " .. (sendTimecode and "true" or "false"))
     Printf("fixedPageNr: " .. fixedPageNr)
 
-    oscEntry = resolveOscEntry()
-    if oscEntry ~= nil then
-        Printf("pam-osc: using OSC entry " .. oscEntry .. " (named 'pam-osc')")
-    else
-        Printf("pam-osc ERROR: no OSC entry named 'pam-osc' found in the MA3 OSC settings.")
-        Printf("pam-osc ERROR: create one (any line) and name it exactly 'pam-osc' - feedback is paused until then.")
-    end
+    Printf("pam-osc: sending feedback to the OSC entry named '" .. OSC_ENTRY_NAME .. "'")
     createQuickeysIfNotExists()
 
     local destPage = 1
@@ -370,16 +355,6 @@ local function main()
     end
 
     while (GetVar(GlobalVars(), "opdateOSC")) do
-        -- Keep looking for the OSC entry until it exists (AC-8) — the user can
-        -- create it while the plugin runs, no restart needed.
-        if oscEntry == nil then
-            oscEntry = resolveOscEntry()
-            if oscEntry ~= nil then
-                Printf("pam-osc: OSC entry 'pam-osc' found (line " .. oscEntry .. ") - feedback active")
-                forceReload = true
-            end
-        end
-
         local currentDeskLocked = DeskLocked()
         if currentDeskLocked ~= oldDeskLockedStatus then
             oldDeskLockedStatus = currentDeskLocked
@@ -400,14 +375,14 @@ local function main()
         -- The pong carries the protocol version (PAM-12 AC-7).
         if GetVar(GlobalVars(), "pamPing") == true then
             SetVar(GlobalVars(), "pamPing", false)
-            sendOsc(' "/status/pluginPong,i,' .. PLUGIN_PROTOCOL .. '"')
+            sendOsc('/status/pluginPong,i,' .. PLUGIN_PROTOCOL)
         end
 
         -- CMD mode: watch the MA3 command line, push flag changes (PAM-12 AC-1)
         local currentCmdFlags = getCmdFlags()
         if currentCmdFlags ~= lastCmdFlags or forceReload then
             lastCmdFlags = currentCmdFlags
-            sendOsc(' "/status/cmdFlags,i,' .. currentCmdFlags .. '"')
+            sendOsc('/status/cmdFlags,i,' .. currentCmdFlags)
         end
 
         -- CMD mode: consume a pressed executor key from the app (PAM-12 AC-2)
@@ -418,8 +393,8 @@ local function main()
         end
 
         if forceReload == true then
-            sendOsc(' "/updatePage/current,i,' .. destPage)
-            sendOsc(' "/status/deskLocked,' .. (currentDeskLocked and "T," or "F,") .. '"')
+            sendOsc('/updatePage/current,i,' .. destPage)
+            sendOsc('/status/deskLocked,' .. (currentDeskLocked and "T," or "F,"))
         end
 
         if automaticResendButtons then
@@ -434,7 +409,7 @@ local function main()
         for masterKey, masterValue in pairs(olsMasterEnabledValue) do
             local currValue = getMasterEnabled(masterKey)
             if currValue ~= masterValue then
-                sendOsc(' "/masterEnabled/' .. masterKey .. ',i,' .. (currValue and 1 or 0))
+                sendOsc('/masterEnabled/' .. masterKey .. ',i,' .. (currValue and 1 or 0))
                 olsMasterEnabledValue[masterKey] = currValue
             end
         end
@@ -459,7 +434,7 @@ local function main()
                 oldButtonValues[maKey] = false
             end
             forceReload = true
-            sendOsc(' "/updatePage/current,i,' .. destPage)
+            sendOsc('/updatePage/current,i,' .. destPage)
         end
 
         -- Get all Executors
@@ -499,30 +474,28 @@ local function main()
             -- Send Fader Value
             if (oldValues[listKey] ~= faderValue and not (isFlash and buttonValue and faderValue == 100)) or forceReload then
                 oldValues[listKey] = faderValue
-                sendOsc('  "/Page' .. destPage .. '/Fader' .. listValue .. ',f,' ..
-                        string.format("%.2f", faderValue) .. '"')
+                sendOsc('/Page' .. destPage .. '/Fader' .. listValue .. ',f,' ..
+                        string.format("%.2f", faderValue))
             end
 
             -- Send Button Value
             if oldButtonValues[listKey] ~= buttonValue or forceReload or forceReloadButtons then
                 oldButtonValues[listKey] = buttonValue
-                sendOsc('  "/Page' .. destPage .. '/Button' .. listValue .. ',s,' ..
-                        (buttonValue and "On" or "Off") .. '"')
+                sendOsc('/Page' .. destPage .. '/Button' .. listValue .. ',s,' ..
+                        (buttonValue and "On" or "Off"))
             end
 
             -- Send Color Value
             if sendColors and (oldColorValues[listKey] ~= colorValue or forceReload) then
                 oldColorValues[listKey] = colorValue
                 local newValue = string.gsub(colorValue, ",", ";")
-                sendOsc('  "/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. newValue ..
-                        '"')
+                sendOsc('/Page' .. destPage .. '/Color' .. listValue .. ',s,' .. newValue)
             end
 
             -- Send Name Value
             if sendNames and (oldNameValues[listKey] ~= nameValue or forceReload) then
                 oldNameValues[listKey] = nameValue
-                sendOsc('  "/Page' .. destPage .. '/Name' .. listValue .. ',s,' .. nameValue ..
-                        '"')
+                sendOsc('/Page' .. destPage .. '/Name' .. listValue .. ',s,' .. nameValue)
             end
         end
 
@@ -536,7 +509,7 @@ local function main()
                 if oldTimecodes[slot.no] ~= time or oldTimecodes[slot.no] == nil or forceReload == true then
                     oldTimecodes[slot.no] = time
 
-                    sendOsc(' "/Timecode' .. slot.no .. ',s,' .. time .. '"')
+                    sendOsc('/Timecode' .. slot.no .. ',s,' .. time)
                 end
             end
         end

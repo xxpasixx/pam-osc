@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile, chmod } from "node:fs/promises
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { detectMa3Installs, installPlugin, ma3BaseCandidates, readPluginVersion } from "./ma3-install.js";
+import { detectMa3Installs, installFile, ma3BaseCandidates, readPluginVersion } from "./ma3-install.js";
 
 /** PAM-9 AC-1/2/3: detection, install, overwrite protection, error paths. */
 
@@ -30,22 +30,30 @@ describe("ma3BaseCandidates", () => {
 });
 
 describe("detectMa3Installs (AC-1)", () => {
-  it("finds bases with a gma3_library, reports existing pam-osc.xml with version", async () => {
+  it("finds bases with a gma3_library, reports plugin + OSC config presence", async () => {
     const withPlugin = await tempDir();
     const withoutLibrary = await tempDir();
     const fresh = await tempDir();
     await mkdir(join(withPlugin, "gma3_library", "datapools", "plugins"), { recursive: true });
     await writeFile(join(withPlugin, "gma3_library", "datapools", "plugins", "pam-osc.xml"), XML_V1);
-    await mkdir(join(fresh, "gma3_library"), { recursive: true }); // no datapools yet
+    await mkdir(join(withPlugin, "gma3_library", "inout", "osc"), { recursive: true });
+    await writeFile(join(withPlugin, "gma3_library", "inout", "osc", "pam-osc.xml"), "<GMA3/>");
+    await mkdir(join(fresh, "gma3_library"), { recursive: true }); // no subfolders yet
 
     const installs = await detectMa3Installs([withPlugin, withoutLibrary, fresh, "/does/not/exist"]);
     expect(installs).toHaveLength(2);
-    expect(installs[0]).toMatchObject({ base: withPlugin, hasPamOsc: true, installedVersion: "1.2.0.0" });
-    expect(installs[1]).toMatchObject({ base: fresh, hasPamOsc: false });
+    expect(installs[0]).toMatchObject({
+      base: withPlugin,
+      hasPamOsc: true,
+      installedVersion: "1.2.0.0",
+      hasOscConfig: true,
+    });
+    expect(installs[0]?.oscDir).toContain("inout");
+    expect(installs[1]).toMatchObject({ base: fresh, hasPamOsc: false, hasOscConfig: false });
   });
 });
 
-describe("installPlugin (AC-2, AC-3)", () => {
+describe("installFile (AC-2, AC-3)", () => {
   it("copies the bundled xml and creates missing folders", async () => {
     const source = await tempDir();
     const base = await tempDir();
@@ -53,7 +61,7 @@ describe("installPlugin (AC-2, AC-3)", () => {
     await writeFile(bundled, XML_V2);
     const pluginsDir = join(base, "gma3_library", "datapools", "plugins");
 
-    const result = await installPlugin(bundled, pluginsDir, false);
+    const result = await installFile(bundled, pluginsDir, false);
     expect(result.status).toBe("installed");
     expect(await readFile(join(pluginsDir, "pam-osc.xml"), "utf8")).toBe(XML_V2);
   });
@@ -67,11 +75,11 @@ describe("installPlugin (AC-2, AC-3)", () => {
     await mkdir(pluginsDir, { recursive: true });
     await writeFile(join(pluginsDir, "pam-osc.xml"), XML_V1);
 
-    const refused = await installPlugin(bundled, pluginsDir, false);
+    const refused = await installFile(bundled, pluginsDir, false);
     expect(refused).toMatchObject({ status: "exists", installedVersion: "1.2.0.0" });
     expect(await readFile(join(pluginsDir, "pam-osc.xml"), "utf8")).toBe(XML_V1); // untouched
 
-    const replaced = await installPlugin(bundled, pluginsDir, true);
+    const replaced = await installFile(bundled, pluginsDir, true);
     expect(replaced.status).toBe("installed");
     expect(await readFile(join(pluginsDir, "pam-osc.xml"), "utf8")).toBe(XML_V2);
   });
@@ -85,7 +93,7 @@ describe("installPlugin (AC-2, AC-3)", () => {
     await mkdir(readonly);
     await chmod(readonly, 0o500); // no write permission
 
-    const result = await installPlugin(bundled, join(readonly, "plugins"), false);
+    const result = await installFile(bundled, join(readonly, "plugins"), false);
     await chmod(readonly, 0o700);
     expect(result.status).toBe("error");
     if (result.status === "error") {
@@ -96,7 +104,7 @@ describe("installPlugin (AC-2, AC-3)", () => {
 
   it("reports a missing bundled file instead of throwing", async () => {
     const base = await tempDir();
-    const result = await installPlugin(join(base, "nope.xml"), join(base, "plugins"), false);
+    const result = await installFile(join(base, "nope.xml"), join(base, "plugins"), false);
     expect(result.status).toBe("error");
   });
 });
