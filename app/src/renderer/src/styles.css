@@ -486,6 +486,24 @@ dialog .error {
   border-left: 3px solid var(--accent);
 }
 
+/* MA3 setup guide (PAM-9) */
+.guide-steps {
+  margin: 10px 0 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.guide-steps code {
+  font-family: var(--mono);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 /* traffic log (PAM-4) */
 .traffic-card {
   display: flex;

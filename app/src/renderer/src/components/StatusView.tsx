@@ -15,7 +15,7 @@ const UNREACHABLE_HINTS = [
 
 const PLUGIN_HINTS = [
   "GrandMA3 answered, but the pam-osc plugin did not — run the “pam-osc Start Stop” plugin on the console (once per session).",
-  "If the plugin is not installed yet, import pam-OSC.lua from the release files into the console.",
+  "If the plugin is not installed yet, the MA3 setup guide installs it and walks through the console settings.",
 ];
 
 const OUTDATED_HINTS = [
@@ -45,6 +45,7 @@ function ConnectionCard({
   onStart,
   onStop,
   onCheck,
+  onOpenGuide,
 }: {
   engineState: EngineState;
   connection: ConnectionStatus | undefined;
@@ -54,6 +55,7 @@ function ConnectionCard({
   onStart: () => void;
   onStop: () => void;
   onCheck: () => void;
+  onOpenGuide: () => void;
 }) {
   const stopped = engineState === "stopped";
   // Live console chips (PAM-12 AC-9/AC-10) — only meaningful while running.
@@ -117,6 +119,11 @@ function ConnectionCard({
             <li key={hint}>{hint}</li>
           ))}
         </ul>
+      )}
+      {(connection?.state === "plugin-missing" || connection?.state === "plugin-outdated") && !stopped && (
+        <div className="section-actions">
+          <button onClick={onOpenGuide}>Open MA3 setup guide</button>
+        </div>
       )}
       {deskLocked && (
         <p className="console-chip warn" role="status">
@@ -201,6 +208,7 @@ export function StatusView(props: {
   onCheck: () => void;
   onTest: (mappingId: string) => void;
   onExportSupportPackage: () => void;
+  onOpenGuide: () => void;
 }) {
   return (
     <>
@@ -213,6 +221,7 @@ export function StatusView(props: {
         onStart={props.onStart}
         onStop={props.onStop}
         onCheck={props.onCheck}
+        onOpenGuide={props.onOpenGuide}
       />
       <DevicesCard
         engineState={props.engineState}

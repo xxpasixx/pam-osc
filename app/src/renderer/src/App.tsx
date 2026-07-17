@@ -17,6 +17,7 @@ import { DevicesSection } from "./components/DevicesSection.js";
 import { BoardsView } from "./components/editor/BoardsView.js";
 import { EditorView, type EditorTarget } from "./components/editor/EditorView.js";
 import { ImportV1Dialog, type ImportFlow } from "./components/ImportV1Dialog.js";
+import { Ma3SetupView } from "./components/Ma3SetupView.js";
 import { NoticesArea } from "./components/NoticesArea.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { StatusView } from "./components/StatusView.js";
@@ -49,7 +50,7 @@ export function App() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | undefined>();
-  const [tab, setTab] = useState<"setup" | "status" | "boards">("setup");
+  const [tab, setTab] = useState<"setup" | "status" | "boards" | "ma3">("setup");
   const [traffic, setTraffic] = useState<TrafficEntry[]>([]);
   const [portDiagnosis, setPortDiagnosis] = useState<PortDiagnosis | undefined>();
   const [engineBusy, setEngineBusy] = useState(false);
@@ -361,6 +362,9 @@ export function App() {
         <button className={`tab ${tab === "setup" ? "active" : ""}`} onClick={() => setTab("setup")}>
           Setup
         </button>
+        <button className={`tab ${tab === "ma3" ? "active" : ""}`} onClick={() => setTab("ma3")}>
+          MA3 Setup
+        </button>
         <button className={`tab ${tab === "status" ? "active" : ""}`} onClick={() => setTab("status")}>
           Status
         </button>
@@ -389,10 +393,12 @@ export function App() {
               onCheck={() => void window.pamOsc.checkConnection()}
               onTest={(mappingId) => void runOutputTest(mappingId)}
               onExportSupportPackage={() => void exportSupportPackage()}
+              onOpenGuide={() => setTab("ma3")}
             />
             <TrafficLog entries={traffic} />
           </>
         )}
+        {tab === "ma3" && <Ma3SetupView values={draft.console} />}
         {tab === "setup" && (
           <>
             <ConsoleSection

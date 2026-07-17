@@ -11,6 +11,9 @@ files:
 extraResources:
   - from: ../resources
     to: resources
+  # PAM-9: the MA3 plugin the setup assistant installs into local onPC folders
+  - from: ../gma3_library/datapools/plugins
+    to: resources/plugin
 mac:
   target: dmg
   category: public.app-category.music

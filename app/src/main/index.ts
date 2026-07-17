@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from "electron";
 import type { IpcMainInvokeEvent, MenuItemConstructorOptions } from "electron";
 import { copyFile, stat } from "node:fs/promises";
+import { homedir, networkInterfaces } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { MAX_SHARE_BYTES, type ShareKind } from "../core/sharing/share.js";
 import { Engine } from "../core/engine/index.js";
@@ -12,6 +13,7 @@ import { applySettings } from "./apply-settings.js";
 import { Catalog } from "./catalog.js";
 import { EngineHost } from "./engine-host.js";
 import { analyzeV1File, importV1File, ImportSerializer } from "./import-v1.js";
+import { detectMa3Installs, installPlugin, ma3BaseCandidates, readPluginVersion } from "./ma3-install.js";
 import { MidiLearn } from "./midi-learn.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
@@ -244,6 +246,45 @@ async function main(): Promise<void> {
   });
   handle(IPC.revealMappingsFolder, async () => {
     await shell.openPath(join(userData, "mappings"));
+  });
+
+  // ---- PAM-9 MA3 setup assistant ----
+  // The bundled plugin: repo file in dev, extraResources in the package.
+  const bundledPluginXml = app.isPackaged
+    ? join(process.resourcesPath, "resources", "plugin", "pam-osc.xml")
+    : resolve(app.getAppPath(), "../gma3_library/datapools/plugins/pam-osc.xml");
+  const detectInstalls = () =>
+    detectMa3Installs(ma3BaseCandidates(process.platform, process.env as Record<string, string | undefined>, homedir()));
+  // Non-internal IPv4 addresses — the OSC destination IP(s) shown in the guide (AC-5).
+  const localIps = () =>
+    Object.values(networkInterfaces())
+      .flatMap((addresses) => addresses ?? [])
+      .filter((address) => address.family === "IPv4" && !address.internal)
+      .map((address) => address.address);
+
+  handle(IPC.getMa3Setup, async () => ({
+    installs: await detectInstalls(),
+    bundledVersion: await readPluginVersion(bundledPluginXml),
+    localIps: localIps(),
+  }));
+  handle(IPC.installMa3Plugin, async (_event, rawDir, rawOverwrite) => {
+    const pluginsDir = String(rawDir);
+    // Only folders this app itself detected are writable targets — the
+    // renderer can never point the copy at an arbitrary path.
+    const installs = await detectInstalls();
+    if (!installs.some((install) => install.pluginsDir === pluginsDir)) {
+      return { status: "error", error: "unknown MA3 folder — reopen the setup guide", target: pluginsDir };
+    }
+    const result = await installPlugin(bundledPluginXml, pluginsDir, rawOverwrite === true);
+    sessionLog.log(
+      result.status === "installed"
+        ? `MA3 plugin installed to ${result.target}`
+        : `MA3 plugin install: ${result.status} (${result.target})`
+    );
+    return result;
+  });
+  handle(IPC.revealBundledPlugin, () => {
+    shell.showItemInFolder(bundledPluginXml);
   });
   // BUG-7: both mutate the catalog — rebuild the menu's Export submenus so
   // they don't rely on the renderer's follow-up getSnapshot to stay fresh.
