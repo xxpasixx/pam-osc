@@ -1146,19 +1146,6 @@
         "type": "always-on",
         "value": 127
       }
-    },
-    {
-      "controlId": "btn-shift",
-      "action": {
-        "type": "command",
-        "command": "Quickey \"pam-osc_\""
-      },
-      "options": {
-        "minValue": 100
-      },
-      "feedback": {
-        "type": "none"
-      }
     }
   ]
 }
