@@ -49,6 +49,40 @@ describe("SettingsStore (AC-1, AC-4, EC-2)", () => {
     expect(loaded.notice?.message).toContain("console.");
   });
 
+  it("corrupt file: window-bounds save is a no-op until a real Save (EC-2)", async () => {
+    const file = join(dir, "settings.json");
+    const corrupt = "{ not json !!";
+    await writeFile(file, corrupt, "utf8");
+    const store = new SettingsStore(dir);
+    await store.load();
+    expect(store.hasPersisted).toBe(false);
+
+    // What the main process does on window close — must not touch the file.
+    await store.saveWindowBounds({ x: 0, y: 0, width: 980, height: 720 });
+    expect(await readFile(file, "utf8")).toBe(corrupt);
+
+    // After a real Save the file is ours again and bounds may persist.
+    await store.save(defaultSettings());
+    await store.saveWindowBounds({ x: 5, y: 6, width: 800, height: 600 });
+    const reloaded = await new SettingsStore(dir).load();
+    expect(reloaded.settings.ui?.windowBounds).toEqual({ x: 5, y: 6, width: 800, height: 600 });
+  });
+
+  it("first run: window-bounds save leaves no settings.json behind", async () => {
+    const store = new SettingsStore(dir);
+    await store.load();
+    await store.saveWindowBounds({ x: 0, y: 0, width: 980, height: 720 });
+    await expect(readFile(join(dir, "settings.json"), "utf8")).rejects.toThrow();
+  });
+
+  it("oversized file → defaults + notice, not buffered (hardening)", async () => {
+    const file = join(dir, "settings.json");
+    await writeFile(file, `{"pad":"${"x".repeat(1024 * 1024 + 16)}"}`, "utf8");
+    const loaded = await new SettingsStore(dir).load();
+    expect(loaded.firstRun).toBe(true);
+    expect(loaded.notice?.message).toContain("large");
+  });
+
   it("save → load roundtrip, atomic write, bounds saved outside the transaction", async () => {
     const store = new SettingsStore(dir);
     await store.load();

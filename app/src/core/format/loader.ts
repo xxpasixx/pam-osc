@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type { ZodType } from "zod";
 import { CURRENT_FORMAT_VERSION } from "./envelope.js";
@@ -204,9 +204,21 @@ function checkFormatVersion(raw: unknown, file: string, issues: FormatIssue[]): 
   return true;
 }
 
+/** Real pam-osc files are a few KB; refuse to buffer anything huge (PAM-7 will import community files). */
+const MAX_FILE_BYTES = 1024 * 1024;
+
 async function parseJsonFile(file: string, issues: FormatIssue[]): Promise<unknown | undefined> {
   let text: string;
   try {
+    const info = await stat(file);
+    if (info.size > MAX_FILE_BYTES) {
+      issues.push({
+        severity: "error",
+        file,
+        message: `file is too large (${info.size} bytes, limit ${MAX_FILE_BYTES}) — not a pam-osc file`,
+      });
+      return undefined;
+    }
     text = await readFile(file, "utf8");
   } catch (error) {
     issues.push({ severity: "error", file, message: `file could not be read: ${describe(error)}` });

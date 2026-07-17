@@ -58,6 +58,15 @@ describe("loadFormat", () => {
     expect(result.issues[0]?.message).toContain("not valid JSON");
   });
 
+  it("refuses oversized files instead of buffering them, keeps loading", async () => {
+    await write(bundled.devicesDir, "huge.json", `{"pad":"${"x".repeat(1024 * 1024 + 16)}"}`);
+    await write(bundled.devicesDir, "test-board.json", minimalDevice());
+    const result = await loadFormat(sources());
+    expect(result.devices).toHaveLength(1);
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0]?.message).toContain("too large");
+  });
+
   it("reports schema violations with file, path, and problem (AC-4)", async () => {
     const device = minimalDevice();
     (device.controls as { midi: unknown }[])[1]!.midi = { kind: "note", number: 999 };

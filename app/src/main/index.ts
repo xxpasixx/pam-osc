@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { app, BrowserWindow, ipcMain, screen, shell } from "electron";
+import type { IpcMainInvokeEvent } from "electron";
 import { join, resolve } from "node:path";
 import { Engine } from "../core/engine/index.js";
 import type { EngineConfig } from "../core/engine/index.js";
@@ -99,7 +100,7 @@ async function main(): Promise<void> {
   async function buildSnapshot(): Promise<Snapshot> {
     return {
       settings: draftFromPersisted(settingsStore.settings, catalog),
-      firstRun: loaded.firstRun,
+      firstRun: !settingsStore.hasPersisted,
       catalog: catalog.entries(),
       invalidFiles: catalog.invalidFiles(),
       midiPorts: midiPorts.current(),
@@ -109,10 +110,19 @@ async function main(): Promise<void> {
   }
 
   // ---- IPC (queries validated at the boundary; the renderer is untrusted) ----
-  ipcMain.handle(IPC.getSnapshot, () => buildSnapshot());
-  ipcMain.handle(IPC.listMidiPorts, () => midiPorts.current());
-  ipcMain.handle(IPC.applySettings, (_event, draft: SettingsDraft) =>
-    applySettings(draft, {
+  // Only our own window's main frame may call — anything else is dropped.
+  const handle = (channel: string, handler: (event: IpcMainInvokeEvent, ...args: unknown[]) => unknown) => {
+    ipcMain.handle(channel, (event, ...args) => {
+      if (!window || event.sender !== window.webContents) {
+        throw new Error("rejected: unknown IPC sender");
+      }
+      return handler(event, ...args);
+    });
+  };
+  handle(IPC.getSnapshot, () => buildSnapshot());
+  handle(IPC.listMidiPorts, () => midiPorts.current());
+  handle(IPC.applySettings, (_event, draft) =>
+    applySettings(draft as SettingsDraft, {
       catalog,
       settingsStore,
       engineHost,
@@ -124,16 +134,30 @@ async function main(): Promise<void> {
       buildSnapshot,
     }),
   );
-  ipcMain.handle(IPC.revealMappingsFolder, async () => {
+  handle(IPC.revealMappingsFolder, async () => {
     await shell.openPath(join(userData, "mappings"));
   });
-  ipcMain.handle(IPC.duplicateMapping, (_event, id: string) => catalog.duplicate(String(id)));
+  handle(IPC.duplicateMapping, (_event, id) => catalog.duplicate(String(id)));
 
   // ---- window ----
-  const bounds = settingsStore.settings.ui?.windowBounds;
+  // Saved bounds from a since-disconnected display would restore the window
+  // off-screen: only reuse the position when it still intersects a display.
+  const saved = settingsStore.settings.ui?.windowBounds;
+  const onScreen =
+    saved !== undefined &&
+    screen.getAllDisplays().some((display) => {
+      const area = display.workArea;
+      return (
+        saved.x < area.x + area.width &&
+        saved.x + saved.width > area.x &&
+        saved.y < area.y + area.height &&
+        saved.y + saved.height > area.y
+      );
+    });
+  const bounds = onScreen ? saved : undefined;
   window = new BrowserWindow({
-    width: bounds?.width ?? 980,
-    height: bounds?.height ?? 720,
+    width: bounds?.width ?? saved?.width ?? 980,
+    height: bounds?.height ?? saved?.height ?? 720,
     x: bounds?.x,
     y: bounds?.y,
     minWidth: 720,
@@ -147,6 +171,15 @@ async function main(): Promise<void> {
       sandbox: true,
       nodeIntegration: false,
     },
+  });
+
+  // The renderer is local display code — it never opens windows or navigates.
+  window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  window.webContents.on("will-navigate", (event, url) => {
+    const devServer = process.env["ELECTRON_RENDERER_URL"];
+    if (!(devServer && url.startsWith(devServer)) && !url.startsWith("file://")) {
+      event.preventDefault();
+    }
   });
 
   window.once("ready-to-show", () => window?.show());

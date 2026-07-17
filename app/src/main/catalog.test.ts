@@ -93,6 +93,15 @@ describe("Catalog (AC-2, EC-4)", () => {
     expect(await catalog.duplicate("ghost")).toEqual({ error: 'mapping "ghost" not found' });
   });
 
+  it("duplicating a duplicate counts up from the original — no (2) (2)", async () => {
+    await catalog.duplicate("test-map");
+    const third = await catalog.duplicate("test-map-2");
+    expect(third).toMatchObject({ id: "test-map-3" });
+    const raw = JSON.parse(await readFile(join(paths.userMappingsDir, "test-map-3.json"), "utf8")) as { name: string };
+    expect(raw.name).toMatch(/\(3\)$/);
+    expect(raw.name).not.toContain("(2)");
+  });
+
   it("survives a missing bundled folder (empty catalog, no crash)", async () => {
     const empty = new Catalog({ ...paths, bundledDevicesDir: join(tmpdir(), "nope-a"), bundledMappingsDir: join(tmpdir(), "nope-b") });
     await empty.refresh();

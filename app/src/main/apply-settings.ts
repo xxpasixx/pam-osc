@@ -24,8 +24,16 @@ export interface ApplyDeps {
   buildSnapshot(): Promise<Snapshot>;
 }
 
-export async function applySettings(draft: SettingsDraft, deps: ApplyDeps): Promise<ApplyResult> {
+export async function applySettings(rawDraft: SettingsDraft, deps: ApplyDeps): Promise<ApplyResult> {
   const notices: Notice[] = [];
+
+  // 0 — normalize: validation trims for its checks, so what gets persisted
+  // and handed to the engine must be the trimmed value too (copy-paste
+  // whitespace in the address otherwise passes validation but breaks DNS).
+  const draft: SettingsDraft = {
+    ...rawDraft,
+    console: { ...rawDraft.console, address: rawDraft.console.address.trim() },
+  };
 
   // 1 — validate
   const fieldErrors = validateDraft(draft, deps.catalog.validIds());

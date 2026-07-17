@@ -32,8 +32,9 @@ export function ConsoleSection({
 }) {
   const errorFor = (field: string) => errors.find((error) => error.field === field)?.message;
   const setPort = (key: "sendPort" | "receivePort", raw: string) => {
-    const value = Number.parseInt(raw, 10);
-    onChange({ ...consoleSettings, [key]: Number.isNaN(value) ? 0 : value });
+    // Digits only — "9003x" must not silently become 9003.
+    if (!/^\d*$/.test(raw)) return;
+    onChange({ ...consoleSettings, [key]: raw === "" ? 0 : Number.parseInt(raw, 10) });
   };
 
   return (

@@ -16,9 +16,17 @@ export class MidiPortLister {
     private readonly intervalMs = 2000,
   ) {}
 
+  private lastKnown: MidiPortList = { inputs: [], outputs: [] };
+
+  /** Native port enumeration can throw; the poll must never crash the main process. */
   current(): MidiPortList {
-    const ports = this.transport.listPorts();
-    return { inputs: ports.inputs, outputs: ports.outputs };
+    try {
+      const ports = this.transport.listPorts();
+      this.lastKnown = { inputs: ports.inputs, outputs: ports.outputs };
+    } catch {
+      // Keep serving the last successful list; the next tick retries.
+    }
+    return this.lastKnown;
   }
 
   start(): void {

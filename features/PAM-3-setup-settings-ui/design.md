@@ -208,3 +208,14 @@ Level 5 — Tests:     T7      unit: settings store, validation rules, catalog
 - **Engine host does stop→start explicitly instead of `engine.reconfigure()`** — the rollback path (EC-3) needs control between the stop and the start.
 - **Agent/CI caveat:** launching the app from a shell that carries `ELECTRON_RUN_AS_NODE` (e.g. VS Code task shells) makes Electron boot as plain Node — documented in AGENTS.md commands.
 - **Verified:** 116/116 Vitest (validation, settings store, catalog incl. copy-on-activate/duplicate/EC-4, apply transaction incl. rollback paths, plus all PAM-1/PAM-2 suites), typecheck clean, `electron-vite build` green, dev-mode boot smoke on macOS (window process up, userData folders created, first-run = no engine start).
+
+## Review-Fix Notes (added during /build, 2026-07-17 — fixes for review.md BUG-1…8)
+
+- **EC-2 for real (BUG-1):** `SettingsStore` now tracks `hasPersisted` (true after a successful load or save); `saveWindowBounds` is a no-op until then. A corrupt settings.json survives window close untouched, and a first run leaves no file behind until the first real Save.
+- **Draft normalization (BUG-2):** the Save transaction gained a step 0 — the console address is trimmed main-side before validation/apply/persist, so the persisted value is always the one that was validated.
+- **Notices (BUG-3):** the renderer adopts `snapshot.notices` only at mount; post-save snapshots no longer resurrect dismissed notices (engine issues still arrive live as events).
+- **Main-process resilience (BUG-4/5):** the MIDI port poll survives a throwing native enumeration (serves the last known list, retries next tick); saved window bounds are only reused when they still intersect a connected display's work area.
+- **`firstRun` live (BUG-6):** snapshots derive it from `settingsStore.hasPersisted` instead of a boot-time constant.
+- **Hardening (BUG-7):** `setWindowOpenHandler` denies all popups; `will-navigate` blocks non-local targets; every `ipcMain.handle` rejects senders other than our window's webContents; JSON ingest (PAM-1 loader + settings store) refuses files > 1 MB before buffering — relevant ahead of PAM-7 community imports.
+- **Input polish (BUG-8):** port fields accept digits only (no silent `"9003x"` → 9003); duplicating a duplicate counts up from the original (`x-touch-3`, "Name (3)") — a trailing number is only treated as a suffix when the base id exists; renderer `save()` surfaces a rejected invoke as an error notice.
+- **Verified (fix round):** 127/127 Vitest (11 new: EC-2 bounds guard, first-run no-write, oversized-file rejection ×2, address trim, duplicate-of-duplicate naming, port-lister ×3, autoStart ×2), typecheck clean, production build green, dev-mode boot smoke on macOS rerun.

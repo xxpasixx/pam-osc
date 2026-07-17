@@ -118,11 +118,19 @@ export class Catalog {
       return { error: `could not read mapping "${id}": ${error instanceof Error ? error.message : String(error)}` };
     }
 
+    // Duplicating a duplicate counts up from the original: x-touch-2 → x-touch-3,
+    // "Name (2)" → "Name (3)" — never "x-touch-2-2" / "Name (2) (2)". Only
+    // treat a trailing number as a duplicate suffix when the base id actually
+    // exists ("launchpad-mk-2" without a "launchpad-mk" stays untouched).
     const existing = this.validIds();
+    const stripped = id.replace(/-\d+$/, "");
+    const isDuplicateOf = stripped !== id && existing.has(stripped);
+    const baseId = isDuplicateOf ? stripped : id;
+    const baseName = isDuplicateOf ? (raw.name ?? id).replace(/ \(\d+\)$/, "") : (raw.name ?? id);
     let suffix = 2;
-    while (existing.has(`${id}-${suffix}`)) suffix += 1;
-    raw.id = `${id}-${suffix}`;
-    raw.name = `${raw.name ?? id} (${suffix})`;
+    while (existing.has(`${baseId}-${suffix}`)) suffix += 1;
+    raw.id = `${baseId}-${suffix}`;
+    raw.name = `${baseName} (${suffix})`;
 
     await writeFile(join(this.paths.userMappingsDir, `${raw.id}.json`), JSON.stringify(raw, null, 2) + "\n", "utf8");
     await this.refresh();

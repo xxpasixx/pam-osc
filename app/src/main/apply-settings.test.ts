@@ -122,6 +122,17 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
     expect(states).toEqual(["starting", "running"]);
   });
 
+  it("trims the console address before applying and persisting (copy-paste whitespace)", async () => {
+    const draft = validDraft();
+    draft.console.address = "  10.0.0.9\t";
+    const result = await applySettings(draft, deps);
+    expect(result.ok).toBe(true);
+
+    expect(engine.startedWith[0]?.consoleAddress).toBe("10.0.0.9");
+    const persisted = JSON.parse(await readFile(settingsFile, "utf8")) as { console: { address: string } };
+    expect(persisted.console.address).toBe("10.0.0.9");
+  });
+
   it("total engine failure rolls back to last-known-good and does not persist (EC-3)", async () => {
     await applySettings(validDraft(), deps); // establish a known-good config
     const persistedBefore = await readFile(settingsFile, "utf8");

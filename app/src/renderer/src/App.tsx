@@ -31,6 +31,9 @@ export function App() {
   const [loadError, setLoadError] = useState<string | undefined>();
   const appliedRef = useRef<SettingsDraft | undefined>(undefined);
 
+  // Notices deliberately stay out: adopting a post-save snapshot would
+  // resurrect notices the user already dismissed. They arrive once at mount
+  // and live as events afterwards.
   const adoptSnapshot = useCallback((next: Snapshot) => {
     setSnapshot(next);
     appliedRef.current = next.settings;
@@ -39,13 +42,15 @@ export function App() {
     setConnection(next.connection);
     setDevices(next.devices);
     setMidiPorts(next.midiPorts);
-    setNotices(next.notices);
   }, []);
 
   useEffect(() => {
     window.pamOsc
       .getSnapshot()
-      .then(adoptSnapshot)
+      .then((initial) => {
+        adoptSnapshot(initial);
+        setNotices(initial.notices);
+      })
       .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : String(error)));
     const unsubscribe = [
       window.pamOsc.onConnection(setConnection),
@@ -96,6 +101,11 @@ export function App() {
         setServerErrors(result.fieldErrors);
         setNotices((current) => [...current, ...result.notices]);
       }
+    } catch (error) {
+      setNotices((current) => [
+        ...current,
+        { severity: "error", message: `saving failed: ${error instanceof Error ? error.message : String(error)}` },
+      ]);
     } finally {
       setSaving(false);
     }
