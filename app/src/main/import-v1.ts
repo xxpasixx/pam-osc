@@ -65,10 +65,10 @@ export async function importV1File(request: ImportV1Request, catalog: Catalog): 
   // Unique against loaded mapping ids AND files already sitting in the user
   // folder (an invalid file there has no id but still owns its file name).
   const taken = new Set(catalog.validIds());
-  let id = makeUniqueId(name, taken);
+  let id = makeUniqueId(name, taken, "imported-v1-mapping");
   while (await fileExists(join(catalog.userMappingsDirPath, `${id}.json`))) {
     taken.add(id);
-    id = makeUniqueId(name, taken);
+    id = makeUniqueId(name, taken, "imported-v1-mapping");
   }
 
   const { mapping, summary } = convertV1({

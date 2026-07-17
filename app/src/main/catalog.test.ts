@@ -141,6 +141,13 @@ describe("Catalog (AC-2, EC-4)", () => {
     expect(await catalog.createMapping("test-board", "   ")).toEqual({ error: "the new mapping needs a name" });
   });
 
+  it("createMapping caps the name length before it becomes a filename (BUG-2) and uses a neutral fallback id (BUG-6)", async () => {
+    expect(await catalog.createMapping("test-board", "x".repeat(121))).toEqual({
+      error: "the name is too long — 120 characters max",
+    });
+    expect(await catalog.createMapping("test-board", "🎹")).toMatchObject({ id: "mapping" });
+  });
+
   it("createMapping neutralizes hostile names — file lands in the user folder (security)", async () => {
     const created = await catalog.createMapping("test-board", "../../../etc/passwd");
     expect(created).toMatchObject({ id: "etc-passwd", origin: "user" });

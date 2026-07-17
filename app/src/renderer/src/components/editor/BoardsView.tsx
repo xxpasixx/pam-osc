@@ -28,6 +28,7 @@ function NewMappingForm({
           id="new-mapping-name"
           value={name}
           autoFocus
+          maxLength={120}
           placeholder={`${boardName} — my setup`}
           onChange={(event) => setName(event.target.value)}
           onKeyDown={(event) => {
@@ -78,9 +79,7 @@ export function BoardsView({
   const visibleBoards =
     needle === ""
       ? boards
-      : boards.filter(
-          (board) => board.name.toLowerCase().includes(needle) || board.id.toLowerCase().includes(needle)
-        );
+      : boards.filter((board) => board.name.toLowerCase().includes(needle) || board.id.toLowerCase().includes(needle));
 
   return (
     <section className="card" aria-label="Boards">
@@ -152,7 +151,18 @@ export function BoardsView({
       )}
       {!creating && (
         <div className="section-actions">
-          <button onClick={() => setCreating(true)}>+ New board</button>
+          <button
+            onClick={() => {
+              // BUG-8 (review): the form opens with fresh defaults — stale
+              // values from a canceled round don't reappear.
+              setName("");
+              setWidth("8");
+              setHeight("8");
+              setCreating(true);
+            }}
+          >
+            + New board
+          </button>
         </div>
       )}
       {creating && (

@@ -514,11 +514,17 @@ export function EditorView({
   // header. Defaults to the mapping's bound unit when it is present; a fresh
   // mapping's placeholder port (the board name) falls back to the first real
   // input, so Test works before the mapping was ever activated (PAM-11).
+  // BUG-9 (PAM-11 re-review): a real bound unit that is currently unplugged
+  // surfaces as "(not connected)" instead of being silently swapped.
   const mappingPort = loaded?.mode === "mapping" ? loaded.mapping.midiPort.input : undefined;
+  const placeholderPort = loaded?.mode === "mapping" ? loaded.device.name : undefined;
   const defaultPort =
-    mappingPort !== undefined && midiPorts.inputs.includes(mappingPort) ? mappingPort : (midiPorts.inputs[0] ?? "");
+    mappingPort === undefined || (mappingPort === placeholderPort && !midiPorts.inputs.includes(mappingPort))
+      ? (midiPorts.inputs[0] ?? "")
+      : mappingPort;
   const hwPort = learn.port || defaultPort;
   const indicatePort = hwPort;
+  const hwConnected = midiPorts.inputs.includes(hwPort);
 
   const toggleIndicate = useCallback(() => {
     const state = indicateRef.current;
@@ -527,6 +533,8 @@ export function EditorView({
       state.suspended = false;
       setIndicateOn(false);
       setFlashKeys(new Set());
+      for (const timer of flashTimersRef.current.values()) clearTimeout(timer);
+      flashTimersRef.current.clear();
       void window.pamOsc.stopMidiIndicate();
       return;
     }
@@ -692,7 +700,7 @@ export function EditorView({
         <button
           className={indicateOn ? "learning" : ""}
           onClick={toggleIndicate}
-          disabled={!indicateOn && indicatePort === ""}
+          disabled={!indicateOn && !hwConnected}
           title="Indicate mode: press hardware controls to light them up in the 2D view (view-only)"
         >
           {indicateOn ? `Test: listening on ${indicateRef.current.port}` : "Test"}

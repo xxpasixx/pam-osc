@@ -98,7 +98,9 @@ export function DevicesSection({
           : [];
         const activeElsewhere = new Set(active.filter((_, i) => i !== index).map((other) => other.id));
         return (
-          <div className="device-row" key={`${mapping.id}-${index}`}>
+          // BUG-4 (review): rows are positional — keying by the mutable
+          // mapping id remounted the row (and dropped focus) on every switch.
+          <div className="device-row" key={index}>
             <span className={`led ${led}`} title={statusText} aria-label={statusText} />
             <div className="device-name">
               {entry?.boardName ?? "unknown board"}

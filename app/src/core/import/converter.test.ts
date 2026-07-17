@@ -221,7 +221,9 @@ describe("convertV1 against every real v1 file (AC-3)", () => {
     // Composite push-encoders carry two assignments per control — the
     // comparison key is (controlId, part), the mapping's uniqueness key.
     const byControl = (parsed: Mapping) =>
-      new Map(parsed.assignments.map((assignment) => [`${assignment.controlId}#${assignment.part ?? "main"}`, assignment]));
+      new Map(
+        parsed.assignments.map((assignment) => [`${assignment.controlId}#${assignment.part ?? "main"}`, assignment])
+      );
     const bundledMap = byControl(bundled);
     const convertedMap = byControl(converted);
 
@@ -304,7 +306,8 @@ describe("convertV1 mechanics", () => {
   });
 
   it("still matches a valid mapper padded with legitimate whitespace", () => {
-    const padded = "function ( value ) {  if ( value == 'On' ) { return 5 ; }  if ( value == 'Off' ) { return 0 ; } return 0 ; }";
+    const padded =
+      "function ( value ) {  if ( value == 'On' ) { return 5 ; }  if ( value == 'Off' ) { return 0 ; } return 0 ; }";
     const { mapping, summary } = convertRaw({ buttonFeedbackMapper: padded, note: { 10: { exec: 201 } } });
     expect(summary.warnings).toEqual([]);
     expect(mapping.assignments[0]?.feedback).toEqual({ type: "on-off", onValue: 5, offValue: 0 });
@@ -471,7 +474,8 @@ describe("makeUniqueId", () => {
   });
 
   it("falls back to a stable id for names without usable characters", () => {
-    expect(makeUniqueId("!!!", new Set())).toBe("imported-v1-mapping");
+    expect(makeUniqueId("!!!", new Set())).toBe("mapping");
+    expect(makeUniqueId("!!!", new Set(), "imported-v1-mapping")).toBe("imported-v1-mapping");
   });
 });
 

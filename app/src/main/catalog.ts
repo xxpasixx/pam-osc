@@ -198,6 +198,9 @@ export class Catalog {
     if (!device) return { error: `unknown board "${deviceDefinitionId}" — pick one from the list` };
     const trimmed = name.trim();
     if (trimmed.length === 0) return { error: "the new mapping needs a name" };
+    // BUG-2 (review): cap before the name becomes a filename — the UI limits
+    // to 120, this backstops direct IPC callers.
+    if (trimmed.length > 120) return { error: "the name is too long — 120 characters max" };
 
     // Unique against loaded ids AND files already in the user folder (an
     // invalid file there has no id but still owns its file name).
@@ -222,7 +225,15 @@ export class Catalog {
       const detail = check.error.issues[0];
       return { error: `could not create the mapping (${detail?.message ?? "unknown"}) — please report this as a bug` };
     }
-    await atomicWrite(join(this.paths.userMappingsDir, `${id}.json`), mapping);
+    // BUG-1 (review): friendly error instead of a raw Node error that leaks
+    // the absolute file path into the renderer notice.
+    try {
+      await atomicWrite(join(this.paths.userMappingsDir, `${id}.json`), mapping);
+    } catch (error) {
+      const code =
+        error instanceof Error && "code" in error ? ` (${String((error as NodeJS.ErrnoException).code)})` : "";
+      return { error: `could not write the mapping file${code} — check that the app data folder is writable` };
+    }
     await this.refresh();
     const entry = this.entries().find((candidate) => candidate.id === id);
     return entry ?? { error: `mapping "${id}" was written but did not load — check the file in the mappings folder` };
@@ -368,9 +379,7 @@ export class Catalog {
       const raw = JSON.parse(await readFile(mappingSource.file, "utf8")) as {
         assignments?: Array<{ controlId?: string }>;
       };
-      raw.assignments = (raw.assignments ?? []).filter(
-        (assignment) => !gone.has(assignment.controlId ?? "")
-      );
+      raw.assignments = (raw.assignments ?? []).filter((assignment) => !gone.has(assignment.controlId ?? ""));
       await atomicWrite(mappingSource.file, raw);
       if (!rewritten.includes(orphan.mapping.id)) rewritten.push(orphan.mapping.id);
     }

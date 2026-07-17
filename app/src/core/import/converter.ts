@@ -77,12 +77,14 @@ const ACTION_ENTRY_KEYS = new Set([
 
 const OTHER_ENTRY_KEYS = new Set(["minValue", "amount", "buttonFeedbackMapper", "permanentFeedback"]);
 
-export function makeUniqueId(name: string, taken: ReadonlySet<string>): string {
+export function makeUniqueId(name: string, taken: ReadonlySet<string>, fallback = "mapping"): string {
+  // BUG-6 (PAM-11 review): a name with no usable characters gets a neutral
+  // fallback; the v1 import passes its own so imported files stay traceable.
   const base =
     name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "imported-v1-mapping";
+      .replace(/^-+|-+$/g, "") || fallback;
   if (!taken.has(base)) return base;
   let suffix = 2;
   while (taken.has(`${base}-${suffix}`)) suffix += 1;

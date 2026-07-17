@@ -236,9 +236,7 @@ export function App() {
   // settings draft (same reasoning as the import flow).
   const adoptEditorSnapshot = useCallback((fresh: Snapshot) => {
     setSnapshot((current) =>
-      current
-        ? { ...current, catalog: fresh.catalog, invalidFiles: fresh.invalidFiles, boards: fresh.boards }
-        : current
+      current ? { ...current, catalog: fresh.catalog, invalidFiles: fresh.invalidFiles, boards: fresh.boards } : current
     );
   }, []);
 
@@ -246,13 +244,15 @@ export function App() {
   // catalog → open the mapping editor. Activation stays a Setup decision.
   const createMappingAndEdit = useCallback(
     async (deviceDefinitionId: string, name: string) => {
-      setDialogOpen(false);
       try {
         const result = await window.pamOsc.createMapping({ deviceDefinitionId, name });
         if ("error" in result) {
+          // BUG-3 (review): the dialog only closes on success — a failure
+          // keeps it open with the typed name.
           pushError(result.error);
           return;
         }
+        setDialogOpen(false);
         const fresh = await window.pamOsc.getSnapshot();
         adoptEditorSnapshot(fresh);
         setEditorTarget({ kind: "mapping", id: result.id });

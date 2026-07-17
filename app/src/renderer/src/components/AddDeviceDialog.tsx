@@ -117,6 +117,7 @@ export function AddDeviceDialog({
                   id="dialog-new-mapping-name"
                   value={newName}
                   autoFocus
+                  maxLength={120}
                   placeholder={`${board.name} — my setup`}
                   onChange={(event) => setNewName(event.target.value)}
                   onKeyDown={(event) => {
