@@ -17,3 +17,7 @@ out/
 !.env.example
 !.env.*.example
 app/node_modules/
+
+# pam-osc share-file test exports (PAM-7)
+*.mapping
+*.device
