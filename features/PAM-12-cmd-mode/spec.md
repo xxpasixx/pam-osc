@@ -7,7 +7,7 @@
 
 ## Status: Spec'd
 
-**Created:** 2026-07-17 · **Last Updated:** 2026-07-17 (pre-mortem findings folded in)
+**Created:** 2026-07-17 · **Last Updated:** 2026-07-18 (design deltas: AC-5 reworded, open questions resolved — see design.md)
 
 ## Why
 
@@ -35,7 +35,7 @@ Reference implementation for all interception behavior: EvoFaderWing PR #12 (`lu
 - [ ] **AC-2** — Given CMD flags with auto-execute are active, when I press a button whose action is an executor key, then the app fires the oops-clean macro sequence that appends `Page <page>.<execNo>` to the console command line and executes it — the normal `/Page<page>/Key<execNo>` press is fully suppressed (press **and** release), and the executor is not triggered.
 - [ ] **AC-3** — Given the command line holds `Copy`/`Move` context, then the button press is context-aware: no source yet → append `Page X.Y` **without** execute; source selected and target executor **empty** → `At Page X.Y` **with** execute (one press completes the copy); source selected and target **occupied** → `+ Page X.Y` without execute.
 - [ ] **AC-4** — Given the command line ends with an open `Thru`, then a button press appends only the bare executor number (no `Page` prefix), without execute; given a completed range (`Copy Page 1.X Thru Page 1.Y`), the next press behaves like AC-3 source-selected; given a command line ending in `At` (destination prompt), the press appends `Page X.Y` and executes.
-- [ ] **AC-5** — Given plugin v2 is running, then it reports each watched executor as one of **empty / occupied / active** (today's plugin only knows active-playback on/off); the app uses this to decide `At` vs `+` in AC-3.
+- [ ] **AC-5** — Given a copy/move CMD action executes, then the target executor's occupancy (empty vs occupied) is evaluated **live by the plugin at execution time**, so the `At` vs `+` decision in AC-3 never acts on stale state; occupancy is not streamed over OSC. _(Delta 2026-07-18: design moved execution console-side — the originally planned app-side 3-state streaming became obsolete; its only consumer was this decision.)_
 - [ ] **AC-6** — Given a CMD-mode action was performed, when I press Oops once on the console, then exactly the user-visible action is undone; the macro plumbing (delete/store/set/go of the `pam-osc_CMD` macro) runs with `/NoOops` and never appears in the Oops history.
 - [ ] **AC-7** — Given the app expects plugin protocol version N, when the plugin pong reports an older version or the v1 pong (plain `1`), then Status and diagnostics show a prominent "plugin update required" error naming both versions, and CMD mode stays disabled; basic bridging (faders, buttons, feedback) keeps working.
 - [ ] **AC-8** — Given plugin v2 starts, then it resolves the feedback OSC entry **only** by the name `pam-osc` (case-insensitive, any line number) — the numeric fallback is removed; if no such entry exists, the plugin prints a clear error naming the required entry name, and the app-side diagnosis points to the setup guide (PAM-9).
@@ -54,7 +54,7 @@ Reference implementation for all interception behavior: EvoFaderWing PR #12 (`lu
 
 - **EC-1** — Command line holds an unlisted keyword or free text → no interception, buttons behave normally.
 - **EC-2** — Buttons whose action is a QuickKey or free-text command, plus faders and encoders → never intercepted, regardless of CMD flags.
-- **EC-3 (stale flags)** — User clears the command line on the console (Please/Esc) in the same moment as the button press: the flags on the app side may be one poll tick old. The design must bound this window (poll tick ≤ plugin tick, flags reset on connection loss/session end) and choose a macro construction that degrades harmlessly when the command line turns out empty. [NEEDS CLARIFICATION → /design: exact stale-flag guard]
+- **EC-3 (stale flags)** — User clears the command line on the console (Please/Esc) in the same moment as the button press: the flags on the app side may be one poll tick old. _Resolved in design (2026-07-18): the plugin re-parses the command line at execution time; a stale press degrades to a safe no-op (console log line, ack still sent) — never an unexpected executor trigger._
 - **EC-4 (stale occupancy)** — A copy just filled the target executor but the occupancy update hasn't arrived: the press sends `At Page X.Y` + execute and MA3 shows its native overwrite/merge prompt — acceptable, but the design should minimize the window (occupancy resend on CMD actions).
 - **EC-5** — Connection loss, plugin stop, or session end → CMD flags and occupancy state reset app-side; no interception until fresh flags arrive.
 - **EC-6** — Desk locked while CMD flags active → input is blocked by AC-9 before any interception logic runs.
@@ -66,9 +66,9 @@ Reference implementation for all interception behavior: EvoFaderWing PR #12 (`lu
 
 ## Open Questions
 
-- [ ] **Atomic macro sequence** — the PR sends 7 separate `/cmd` UDP messages with `delay(10)`/`delay(50)`; UDP guarantees neither order nor delivery, and a lost message can fire a stale macro. Can the sequence be collapsed into fewer/one `/cmd` message (`;`-chained commands) or otherwise made loss-tolerant? (→ /design, verify on onPC)
-- [ ] **Which page for `Page X.Y`** — with the plugin's `fixedPageNr` setting, the watched page differs from the console's current page; define which page the CMD macro targets. (→ /design)
-- [ ] **`Go+`-style tokens** — keyword extraction uses `%a+` (letters only); confirm behavior for `Go+`, `GoFast` etc. matches the PR reference. (→ /design, low risk)
+- [x] **Atomic macro sequence** — _Resolved (design, 2026-07-18): the macro plumbing runs inside the plugin as synchronous Lua `Cmd()` calls, triggered by a single `SetVar` OSC message from the app — no UDP between the steps, no delays. (Build verifies the no-delay assumption once on onPC.)_
+- [x] **Which page for `Page X.Y`** — _Resolved (design, 2026-07-18): the plugin uses its own watched page (`fixedPageNr` if set, else current page) — consistent with what the board displays._
+- [x] **`Go+`-style tokens** — _Resolved (design, 2026-07-18): keyword parsing ported verbatim from the PR (`%a+`); `Go+` matches `go` and is intercepted with auto-execute, same as the proven reference._
 
 ## Decision Log
 
