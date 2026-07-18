@@ -188,7 +188,8 @@ export type Ma3InstallResult =
   | { status: "installed"; target: string }
   /** A pam-osc.xml is already there and overwrite was not confirmed (AC-2). */
   | { status: "exists"; target: string; installedVersion?: string }
-  | { status: "error"; error: string; target: string };
+  /** AC-3: friendly failure carrying both the bundled source and the target for manual copying. */
+  | { status: "error"; error: string; source: string; target: string };
 
 /** Everything the setup guide needs at open (AC-1/AC-4/AC-5). */
 export interface Ma3SetupInfo {
@@ -265,7 +266,7 @@ export interface PamOscApi {
   exportSupportPackage(): Promise<ExportFileResult>;
   getMa3Setup(): Promise<Ma3SetupInfo>;
   installMa3Asset(base: string, asset: Ma3Asset, overwrite: boolean): Promise<Ma3InstallResult>;
-  revealBundledPlugin(): Promise<void>;
+  revealBundledAsset(asset: Ma3Asset): Promise<void>;
   startEngine(): Promise<{ ok: boolean; error?: string }>;
   stopEngine(): Promise<void>;
   checkConnection(): Promise<void>;
@@ -311,7 +312,7 @@ export const IPC = {
   exportSupportPackage: "pam:exportSupportPackage",
   getMa3Setup: "pam:getMa3Setup",
   installMa3Asset: "pam:installMa3Asset",
-  revealBundledPlugin: "pam:revealBundledPlugin",
+  revealBundledAsset: "pam:revealBundledAsset",
   startEngine: "pam:startEngine",
   stopEngine: "pam:stopEngine",
   checkConnection: "pam:checkConnection",

@@ -126,25 +126,34 @@ function handlePitchEntry(context: InputContext, entry: RoutingEntry, value: num
 
 function handleNoteEntry(context: InputContext, unitRuntime: UnitRuntime, entry: RoutingEntry, value: number): void {
   const { assignment } = entry;
+  const action = assignment.action;
+
+  // CMD mode (PAM-12 AC-2): clean up a swallowed press's release *before* the
+  // minValue guard — otherwise a min-valued executor button (release = 0 ≤
+  // minValue) would drop the release here and leak its interceptedPresses
+  // entry forever (BUG-5). This runs for executor actions only.
+  if (action.type === "executor" && value <= 0) {
+    const pressKey = accumulatorKey(unitRuntime.unit.mapping.id, entry.control.id);
+    if (context.state.interceptedPresses.has(pressKey)) {
+      context.state.interceptedPresses.delete(pressKey);
+      return;
+    }
+  }
+
   // v1's exact threshold semantics: with minValue set, everything at or
   // below it — including releases — is dropped.
   const minValue = assignment.options?.minValue;
   if (minValue && value <= minValue) return;
 
-  const action = assignment.action;
   switch (action.type) {
     case "executor": {
-      // CMD mode (PAM-12 AC-2): while the console command line waits for a
-      // target, an executor press selects instead of triggering. Press and
-      // release always pair — an intercepted press swallows its release even
-      // if the flags changed in between.
+      // While the console command line waits for a target, an executor press
+      // selects instead of triggering. The matching release is handled above.
+      // A release whose press happened *before* CMD mode started is not in the
+      // set and falls through to a normal Key 0 (flash executors need it) —
+      // that press/release pairing is intentional, not an orphan (F7).
       const pressKey = accumulatorKey(unitRuntime.unit.mapping.id, entry.control.id);
-      const isPress = value > 0;
-      if (!isPress && context.state.interceptedPresses.has(pressKey)) {
-        context.state.interceptedPresses.delete(pressKey);
-        return;
-      }
-      if (isPress && cmdModeActive(context.state)) {
+      if (value > 0 && cmdModeActive(context.state)) {
         context.state.interceptedPresses.add(pressKey);
         context.enqueueCmdKey(action.number);
         return;

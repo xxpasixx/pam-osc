@@ -36,13 +36,21 @@ local PLUGIN_PROTOCOL = 2
 local OSC_ENTRY_NAME = "pam-osc"
 
 -- Send one bare OSC message (e.g. "/Page1/Fader201,f,50.00") to the named
--- entry; the message is quote-wrapped here. Cmd() returns "OK" on success —
--- anything else (e.g. no entry named "pam-osc") is logged once per failing
--- send. Pattern taken from the EvoFaderWing plugin.
+-- entry; the message is quote-wrapped here. Cmd() returns "OK" on success.
+-- Pattern taken from the EvoFaderWing plugin. To avoid flooding the log at
+-- ~10 Hz when the entry is missing (BUG-4), a failure is logged only once
+-- until the next success clears the latch.
+local oscSendWarned = false
 local function sendOsc(message)
     local feedback = Cmd('SendOSC "' .. OSC_ENTRY_NAME .. '" "' .. message .. '"')
     if feedback ~= "OK" then
-        Printf('pam-osc: SendOSC to "' .. OSC_ENTRY_NAME .. '" failed: ' .. tostring(feedback))
+        if not oscSendWarned then
+            Printf('pam-osc: SendOSC to "' .. OSC_ENTRY_NAME .. '" failed (' .. tostring(feedback) ..
+                ') - is the OSC entry named "' .. OSC_ENTRY_NAME .. '"? Further failures are suppressed.')
+            oscSendWarned = true
+        end
+    else
+        oscSendWarned = false
     end
     return feedback
 end
@@ -217,17 +225,26 @@ local function executeCmdKey(execNo, page)
         Printf("pam-osc CMD: command line changed - key " .. execNo .. " ignored")
     else
         -- Synchronous Cmd() calls — ordered, no UDP between the steps, and the
-        -- plumbing never enters the Oops history (/NoOops, AC-6).
-        Cmd('Delete Macro "pam-osc_CMD" /NoOops')
-        Cmd('Store Macro "pam-osc_CMD" /NoOops')
-        Cmd('Store Macro "pam-osc_CMD".1 /NoOops')
-        Cmd('Set Macro "pam-osc_CMD".1 command="' .. cmdText .. '" /NoOops')
-        Cmd('Set Macro "pam-osc_CMD".1 AddToCmdLine="Yes" /NoOops')
-        Cmd('Set Macro "pam-osc_CMD".1 Execute="' .. executeFlag .. '" /NoOops')
-        Cmd('Go Macro "pam-osc_CMD"')
-        Printf('pam-osc CMD: key ' .. execNo .. ' -> "' .. cmdText .. '" (Execute ' .. executeFlag .. ')')
+        -- plumbing never enters the Oops history (/NoOops, AC-6). Wrapped in
+        -- pcall (BUG-1): a raising Cmd() must never unwind the main loop and
+        -- kill all feedback — log it and still ack below so the app queue moves.
+        local ok, err = pcall(function()
+            Cmd('Delete Macro "pam-osc_CMD" /NoOops')
+            Cmd('Store Macro "pam-osc_CMD" /NoOops')
+            Cmd('Store Macro "pam-osc_CMD".1 /NoOops')
+            Cmd('Set Macro "pam-osc_CMD".1 command="' .. cmdText .. '" /NoOops')
+            Cmd('Set Macro "pam-osc_CMD".1 AddToCmdLine="Yes" /NoOops')
+            Cmd('Set Macro "pam-osc_CMD".1 Execute="' .. executeFlag .. '" /NoOops')
+            Cmd('Go Macro "pam-osc_CMD"')
+        end)
+        if ok then
+            Printf('pam-osc CMD: key ' .. execNo .. ' -> "' .. cmdText .. '" (Execute ' .. executeFlag .. ')')
+        else
+            Printf('pam-osc CMD ERROR: key ' .. execNo .. ' macro failed: ' .. tostring(err))
+        end
     end
 
+    -- Always ack (even on no-op / error) so the app's press queue advances.
     sendOsc('/status/cmdKeyDone,i,' .. execNo)
 end
 
@@ -385,13 +402,6 @@ local function main()
             sendOsc('/status/cmdFlags,i,' .. currentCmdFlags)
         end
 
-        -- CMD mode: consume a pressed executor key from the app (PAM-12 AC-2)
-        local pressedKey = tonumber(GetVar(GlobalVars(), "pamCmdKey") or 0) or 0
-        if pressedKey > 0 then
-            SetVar(GlobalVars(), "pamCmdKey", 0)
-            executeCmdKey(math.floor(pressedKey), destPage)
-        end
-
         if forceReload == true then
             sendOsc('/updatePage/current,i,' .. destPage)
             sendOsc('/status/deskLocked,' .. (currentDeskLocked and "T," or "F,"))
@@ -435,6 +445,15 @@ local function main()
             end
             forceReload = true
             sendOsc('/updatePage/current,i,' .. destPage)
+        end
+
+        -- CMD mode: consume a pressed executor key from the app (PAM-12 AC-2).
+        -- Done *after* destPage is recomputed so the macro targets the current
+        -- page even when the page changed on this very tick (BUG-8/F8).
+        local pressedKey = tonumber(GetVar(GlobalVars(), "pamCmdKey") or 0) or 0
+        if pressedKey > 0 then
+            SetVar(GlobalVars(), "pamCmdKey", 0)
+            executeCmdKey(math.floor(pressedKey), destPage)
         end
 
         -- Get all Executors

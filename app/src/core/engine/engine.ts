@@ -104,6 +104,7 @@ export class Engine {
         state: this.state,
         sendOsc,
         timing: this.timing,
+        onConsoleChanged: () => this.emitConsole(),
         log: (line) => this.log(line),
       };
 

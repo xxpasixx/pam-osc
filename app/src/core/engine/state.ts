@@ -26,6 +26,8 @@ export interface RuntimeState {
     queue: number[];
     awaitingAck: number | undefined;
     ackTimer: ReturnType<typeof setTimeout> | undefined;
+    /** Consecutive ack timeouts — a dead console self-disables CMD mode (EC-5). */
+    consecutiveTimeouts: number;
   };
   /** Controls whose press was intercepted — their release is swallowed too (AC-2). */
   interceptedPresses: Set<string>;
@@ -48,7 +50,7 @@ export function createRuntimeState(): RuntimeState {
     deskLocked: false,
     cmdFlags: 0,
     pluginProtocol: undefined,
-    cmd: { queue: [], awaitingAck: undefined, ackTimer: undefined },
+    cmd: { queue: [], awaitingAck: undefined, ackTimer: undefined, consecutiveTimeouts: 0 },
     interceptedPresses: new Set(),
     accumulators: new Map(),
     timecode: { selectedSlot: 0, slots: new Map(), holdTimer: undefined },

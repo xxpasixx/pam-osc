@@ -175,6 +175,49 @@ describe("CMD press queue (AC-11)", () => {
     expect(cmdKeyMessages(harness)).toHaveLength(2);
   });
 
+  it("ignores an ack for a different executor instead of advancing (BUG-2/F2)", async () => {
+    const harness = await startedEngine();
+    activateCmdMode(harness);
+    const unit = harness.midi.connection(TEST_PORT);
+
+    unit.emit({ kind: "note", channel: 1, note: 10, value: 127 }); // exec 301 in flight
+    unit.emit({ kind: "note", channel: 1, note: 10, value: 0 });
+    unit.emit({ kind: "note", channel: 1, note: 10, value: 127 }); // exec 301 queued
+    expect(cmdKeyMessages(harness)).toHaveLength(1);
+
+    // Bogus/late ack for a never-sent executor must NOT advance the queue.
+    harness.osc.socket().inject({ address: "/status/cmdKeyDone", args: [{ type: "integer", value: 999 }] });
+    await sleep(5);
+    expect(cmdKeyMessages(harness)).toHaveLength(1);
+
+    // The correct ack advances it.
+    harness.osc.socket().inject({ address: "/status/cmdKeyDone", args: [{ type: "integer", value: 301 }] });
+    await waitFor(() => cmdKeyMessages(harness).length === 2);
+  });
+
+  it("disables CMD mode after consecutive ack timeouts — dead console self-heals (BUG-3/EC-5)", async () => {
+    const harness = await startedEngine();
+    activateCmdMode(harness);
+    const unit = harness.midi.connection(TEST_PORT);
+
+    // Two presses, no acks → two consecutive timeouts → CMD mode resets.
+    unit.emit({ kind: "note", channel: 1, note: 10, value: 127 });
+    unit.emit({ kind: "note", channel: 1, note: 10, value: 0 });
+    await sleep(TEST_TIMING.cmdAckTimeoutMs + 10);
+    unit.emit({ kind: "note", channel: 1, note: 10, value: 127 });
+    unit.emit({ kind: "note", channel: 1, note: 10, value: 0 });
+    await sleep(TEST_TIMING.cmdAckTimeoutMs + 10);
+
+    // cmdFlags reset to 0 was surfaced to the UI.
+    await waitFor(() => harness.consoleStates.some((state) => state.cmdFlags === 0 && state.pluginProtocol === 2));
+
+    // A further press now triggers normally (Key), not intercepted.
+    harness.osc.socket().sent.length = 0;
+    unit.emit({ kind: "note", channel: 1, note: 10, value: 127 });
+    expect(keyMessages(harness)).toEqual(["/Page1/Key301"]);
+    expect(cmdKeyMessages(harness)).toEqual([]);
+  });
+
   it("drops presses beyond the queue limit instead of growing unbounded", async () => {
     const harness = await startedEngine();
     activateCmdMode(harness);

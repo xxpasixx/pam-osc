@@ -40,4 +40,11 @@ Residual (Low, not app-exploitable): `copyFile` follows a pre-planted symlink at
 
 ## Recommendation
 
-Approve. BUG-1 + BUG-2 are small polish (one shared reveal action per asset + append the source path to the error text) — fold into the next `/build` touch on this feature or fix now, your call. The OSC-config content gap is yours to close with the corrected export.
+Approve. BUG-1 + BUG-2 are small polish — **both fixed in the fix round below**. The OSC-config content gap (bundled file holds only the Receive entry) is yours to close with the corrected export.
+
+### Fix round outcomes (2026-07-18)
+
+- **BUG-1 (Low) — FIXED.** `revealBundledPlugin` → `revealBundledAsset(asset)`; each install row's error now has its own "Show file …" button revealing the *matching* bundled file (plugin vs OSC config), and the footer offers both "Show plugin file" and "Show OSC config".
+- **BUG-2 (Low) — FIXED.** `Ma3InstallResult` error variant now carries `source` as well as `target`; `installFile` fills both, and the UI shows "copy manually — from: … / to: …" (AC-3 fully satisfied). New assertion in `ma3-install.test.ts`.
+
+315/315 tests, typecheck, build green.

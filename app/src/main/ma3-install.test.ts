@@ -98,6 +98,7 @@ describe("installFile (AC-2, AC-3)", () => {
     expect(result.status).toBe("error");
     if (result.status === "error") {
       expect(result.target).toContain("pam-osc.xml");
+      expect(result.source).toBe(bundled); // AC-3: source path for manual copy
       expect(result.error.length).toBeGreaterThan(0);
     }
   });

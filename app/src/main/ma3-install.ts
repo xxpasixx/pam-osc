@@ -95,7 +95,7 @@ export async function installFile(bundledXml: string, targetDir: string, overwri
   const target = join(targetDir, "pam-osc.xml");
   try {
     if (!(await exists(bundledXml))) {
-      return { status: "error", error: `bundled file not found at ${bundledXml}`, target };
+      return { status: "error", error: `bundled file not found at ${bundledXml}`, source: bundledXml, target };
     }
     if (!overwrite && (await exists(target))) {
       const result: Ma3InstallResult = { status: "exists", target };
@@ -107,6 +107,7 @@ export async function installFile(bundledXml: string, targetDir: string, overwri
     await copyFile(bundledXml, target);
     return { status: "installed", target };
   } catch (error) {
-    return { status: "error", error: error instanceof Error ? error.message : String(error), target };
+    // AC-3: carry both paths so the user can copy the file by hand.
+    return { status: "error", error: error instanceof Error ? error.message : String(error), source: bundledXml, target };
   }
 }

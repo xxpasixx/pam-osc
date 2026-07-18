@@ -290,8 +290,8 @@ async function main(): Promise<void> {
     );
     return result;
   });
-  handle(IPC.revealBundledPlugin, () => {
-    shell.showItemInFolder(bundledPluginXml);
+  handle(IPC.revealBundledAsset, (_event, rawAsset) => {
+    shell.showItemInFolder(rawAsset === "osc" ? bundledOscXml : bundledPluginXml);
   });
   // BUG-7: both mutate the catalog — rebuild the menu's Export submenus so
   // they don't rely on the renderer's follow-up getSnapshot to stay fresh.

@@ -68,12 +68,17 @@ function InstallRow({
         <span className="board">{present ? presentDetail : "not installed yet"}</span>
         {result?.status === "installed" && <span className="board">✓ installed to {result.target}</span>}
         {result?.status === "error" && (
-          <span className="board">
-            failed: {result.error} — copy the file manually to {result.target}
-          </span>
+          <>
+            <span className="board">failed: {result.error}</span>
+            <span className="board">copy manually — from: {result.source}</span>
+            <span className="board">to: {result.target}</span>
+          </>
         )}
       </div>
       <div className="spacer" />
+      {result?.status === "error" && (
+        <button onClick={() => void window.pamOsc.revealBundledAsset(asset)}>Show file …</button>
+      )}
       {confirmReplace ? (
         <>
           <span className="board">Replace {confirmReplace.version ?? "the installed file"} with {bundledLabel}?</span>
@@ -143,7 +148,10 @@ function InstallCard({ info, onRefresh }: { info: Ma3SetupInfo; onRefresh: () =>
       ))}
 
       <div className="section-actions">
-        <button onClick={() => void window.pamOsc.revealBundledPlugin()}>Show plugin file …</button>
+        <button onClick={() => void window.pamOsc.revealBundledAsset("plugin")}>Show plugin file …</button>
+        {info.hasBundledOscConfig && (
+          <button onClick={() => void window.pamOsc.revealBundledAsset("osc")}>Show OSC config …</button>
+        )}
       </div>
     </section>
   );

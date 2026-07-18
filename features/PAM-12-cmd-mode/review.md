@@ -3,9 +3,21 @@
 **Reviewed:** 2026-07-18 · **Spec:** [spec.md](spec.md) · **Design:** [design.md](design.md)
 **Reviewer pass:** AC verification + code review + adversarial red-team (interception pairing, queue/ack, version gate, plugin Lua error paths). Regression: shares the engine feedback/input path with PAM-2 (Approved) — existing engine suite green (313/313).
 
-## Verdict: NOT READY — stays In Review
+## Verdict: fix round applied 2026-07-18 → Approved (app-side); onPC certification required before /ship
 
-No Critical. **One High (F1 — plugin resilience)**, three Medium (F2/F3 ordering, F4 EC-5 gap), three Low. The app-side logic is well-covered by tests; the weaknesses are the plugin's un-guarded macro execution and the queue's trust of the ack value. All ACs pass by reading/tests, but AC-11 has a real ordering hole and EC-5 is not implemented for live loss. Console-side behavior (AC-3/AC-4/AC-6, SendOSC-by-name) still needs onPC certification regardless.
+**First pass:** no Critical, one High (F1), three Medium (F2/F3, F4), three Low. **All fixed in the fix round below** (commit follows this file). No Critical/High remain → status **Approved**. The console-side behavior that can only be proven on hardware (macro plumbing/Oops cleanliness AC-3/AC-4/AC-6, SendOSC-by-name AC-8, the plugin-side pcall/log/page fixes) is **not** review-blocking but **is** a hard `/ship` gate per AGENTS.md (release-ready only after onPC + real device).
+
+### Fix round outcomes
+
+- **BUG-1 / F1 (High) — FIXED.** `pam-OSC.lua` `executeCmdKey`: the macro plumbing is now wrapped in `pcall`; on error it logs and still sends `/status/cmdKeyDone` so the app queue advances. A raising `Cmd()` can no longer unwind the main loop. (Console-verify on onPC that the happy path still stores/fires the macro.)
+- **BUG-2 / F2+F3 (Medium) — FIXED.** `cmd-keys.ts` `onCmdKeyAck` now advances only when `executor === awaitingAck`; late/duplicate/bogus acks are logged and ignored. New test `ignores an ack for a different executor…`.
+- **BUG-3 / F4 (Medium) — FIXED.** `cmd-keys.ts` counts consecutive ack timeouts; after 2 with no success it resets CMD state (flags 0, queue clear, interceptedPresses clear, UI notified) so a dead console self-heals; a live plugin re-sends flags on reconnect (forceReload). New test `disables CMD mode after consecutive ack timeouts…`.
+- **BUG-4 / F5 (Low) — FIXED.** `sendOsc` now logs a `SendOSC` failure only once (latched until the next success) — no ~10 Hz flooding. Still the top onPC watch item.
+- **BUG-5 / F6 (Low) — FIXED.** `input-router.ts` cleans up an intercepted press's release *before* the `minValue` guard, so min-valued executor buttons no longer leak `interceptedPresses` entries.
+- **BUG-6 / F7 (Low) — WON'T FIX (by design).** A release in CMD mode with no recorded press falls through to a normal Key 0 — this is required so a press made *before* CMD started still gets its release (covered by the "press/release pair normal when CMD starts in between" test). MA3 ignores a truly unmatched release. Documented in the code.
+- **BUG-7 / F8 (Low) — FIXED.** `pam-OSC.lua` consumes `pamCmdKey` *after* the page recompute, so a key pressed on the same tick as a page change targets the current page.
+
+315/315 tests, typecheck, build green.
 
 ## AC results
 
