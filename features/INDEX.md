@@ -30,7 +30,7 @@
 | PAM-9  | MA3 setup assistant — plugin install into local MA3 folder + in-app console setup guide (live values); network push cut to ideas                                        | P1       | PAM-3, PAM-4        | Approved | [PAM-9](PAM-9-ma3-setup-assistant/)                | 2026-07-16 |
 | PAM-10 | Colored button feedback                                                                                                                                                 | P2       | PAM-2               | Roadmap  | —                                                  | 2026-07-16 |
 | PAM-11 | Board-centric mapping management — boards list their mappings, board-first mapping picker/dropdown in Setup, create new (empty) mappings                                | P1       | PAM-1, PAM-3, PAM-6 | Approved | [PAM-11](PAM-11-board-centric-mapping-management/) | 2026-07-17 |
-| PAM-12 | Command-line aware executor buttons (CMD mode, plugin v2) — console keyword + board button targets executors; oops-clean macros; occupancy; version handshake           | P1       | PAM-2, PAM-4        | In Review | [PAM-12](PAM-12-cmd-mode/)                         | 2026-07-17 |
+| PAM-12 | Command-line aware executor buttons (CMD mode, plugin v2) — console keyword + board button targets executors; oops-clean macros; occupancy; version handshake           | P1       | PAM-2, PAM-4        | Approved | [PAM-12](PAM-12-cmd-mode/)                         | 2026-07-17 |
 
 <!-- Add features above this line -->
 
