@@ -22,6 +22,14 @@ export { loadFormat, type FormatSource, type LoadResult } from "./loader.js";
 export { checkCompatibility } from "./compatibility.js";
 export type { FormatIssue } from "./issues.js";
 export {
+  QUICKKEYS,
+  QUICKKEY_BY_CODE,
+  QUICKKEY_GROUP_ORDER,
+  isKnownQuickKey,
+  type QuickKeyDef,
+  type QuickKeyGroup,
+} from "./quickkeys.js";
+export {
   validateDeviceDraft,
   validateMappingDraft,
   controlUsage,

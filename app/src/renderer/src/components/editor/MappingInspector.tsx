@@ -1,5 +1,6 @@
 import type { Action, Assignment, Control, Feedback } from "../../../../core/format/index.js";
 import type { EditorIssue } from "../../../../core/format/index.js";
+import { QUICKKEYS, QUICKKEY_GROUP_ORDER, isKnownQuickKey } from "../../../../core/format/index.js";
 
 /**
  * Mapping mode inspector (design → Inspector panel): action, options, and
@@ -205,11 +206,27 @@ export function MappingInspector({
           {assignment.action.type === "quickKey" && (
             <div className="field">
               <label htmlFor="action-key">QuickKey (pam-osc_&lt;KEY&gt;)</label>
-              <input
+              <select
                 id="action-key"
                 value={assignment.action.key}
                 onChange={(event) => update({ action: { type: "quickKey", key: event.target.value } })}
-              />
+              >
+                {/* AC-3: an empty or unknown/legacy key (v1 import, hand-edited) stays visible
+                    and selectable at the top, flagged — never silently dropped. */}
+                {assignment.action.key === "" && <option value="">— select a key —</option>}
+                {assignment.action.key !== "" && !isKnownQuickKey(assignment.action.key) && (
+                  <option value={assignment.action.key}>unknown: {assignment.action.key}</option>
+                )}
+                {QUICKKEY_GROUP_ORDER.map((group) => (
+                  <optgroup key={group} label={group}>
+                    {QUICKKEYS.filter((qk) => qk.group === group).map((qk) => (
+                      <option key={qk.code} value={qk.code}>
+                        {qk.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             </div>
           )}
           {assignment.action.type === "attribute" && (
