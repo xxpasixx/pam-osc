@@ -214,6 +214,7 @@ async function main(): Promise<void> {
       notices: [...notices],
       traffic: trafficBuffer.recent(),
       portDiagnosis,
+      onboarding: settingsStore.settings.onboarding,
     };
   }
 
@@ -246,6 +247,11 @@ async function main(): Promise<void> {
   });
   handle(IPC.revealMappingsFolder, async () => {
     await shell.openPath(join(userData, "mappings"));
+  });
+  // PAM-14 (AC-2): the wizard was finished or skipped — stop auto-opening it.
+  handle(IPC.setOnboardingCompleted, async () => {
+    await settingsStore.setOnboardingCompleted();
+    sessionLog.log("onboarding marked complete");
   });
 
   // ---- PAM-9 MA3 setup assistant ----

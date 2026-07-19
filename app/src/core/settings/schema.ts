@@ -24,17 +24,33 @@ const windowBoundsSchema = z.strictObject({
   height: z.number().int().positive(),
 });
 
+// PAM-14: first-run wizard marker. Optional & additive — an older file simply
+// lacks it and is treated as "never completed" (absent = not done); no format
+// version bump is needed.
+const onboardingSchema = z.strictObject({ completed: z.boolean() });
+
 export const persistedSettingsSchema = z.strictObject({
   formatVersion: z.number().int().positive(),
   console: consoleSettingsSchema,
   activeMappingIds: z.array(z.string().min(1)),
   // Written on close outside the Save transaction — never dirties the form.
   ui: z.strictObject({ windowBounds: windowBoundsSchema.optional() }).optional(),
+  // PAM-14: set once the user finishes OR skips the setup wizard.
+  onboarding: onboardingSchema.optional(),
 });
 
 export type ConsoleSettings = z.infer<typeof consoleSettingsSchema>;
 export type PersistedSettings = z.infer<typeof persistedSettingsSchema>;
 export type WindowBounds = z.infer<typeof windowBoundsSchema>;
+export type Onboarding = z.infer<typeof onboardingSchema>;
+
+/**
+ * PAM-14 AC-1/AC-2: the wizard auto-opens until the user finishes or skips it.
+ * Absence of the flag (older files, first launch) means "not completed".
+ */
+export function isOnboardingCompleted(settings: Pick<PersistedSettings, "onboarding">): boolean {
+  return settings.onboarding?.completed === true;
+}
 
 /** v1 defaults (OpenStageControlConfig.config) — onPC on the same machine. */
 export function defaultSettings(): PersistedSettings {

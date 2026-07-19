@@ -19,6 +19,7 @@ import { EditorView, type EditorTarget } from "./components/editor/EditorView.js
 import { ImportV1Dialog, type ImportFlow } from "./components/ImportV1Dialog.js";
 import { Ma3SetupView } from "./components/Ma3SetupView.js";
 import { NoticesArea } from "./components/NoticesArea.js";
+import { SetupWizard } from "./components/SetupWizard.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { StatusView } from "./components/StatusView.js";
 import { TrafficLog } from "./components/TrafficLog.js";
@@ -58,6 +59,9 @@ export function App() {
   const [importFlow, setImportFlow] = useState<ImportFlow | undefined>();
   const [importBusy, setImportBusy] = useState(false);
   const [editorTarget, setEditorTarget] = useState<EditorTarget | undefined>();
+  // PAM-14: the first-run wizard. Opened once at mount when onboarding isn't
+  // complete (AC-1), and re-openable from the tab bar afterwards (AC-2).
+  const [wizardOpen, setWizardOpen] = useState(false);
   const appliedRef = useRef<SettingsDraft | undefined>(undefined);
 
   // Notices deliberately stay out: adopting a post-save snapshot would
@@ -85,6 +89,10 @@ export function App() {
       .then((initial) => {
         adoptSnapshot(initial);
         setNotices(initial.notices);
+        // AC-1: first launch (no completed flag) opens the wizard instead of
+        // the tabbed UI. Only decided from the initial snapshot — later
+        // adoptSnapshot calls (post-save) must never reopen it.
+        if (initial.onboarding?.completed !== true) setWizardOpen(true);
       })
       .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : String(error)));
   }, [adoptSnapshot]);
@@ -158,6 +166,17 @@ export function App() {
   const pushError = useCallback((message: string) => {
     setNotices((current) => [...current, { severity: "error", message }]);
   }, []);
+
+  // PAM-14 (AC-2/AC-7): finishing or skipping the wizard persists the flag so
+  // it never auto-opens again, then reveals the tabbed UI.
+  const closeWizardCompleted = useCallback(async () => {
+    try {
+      await window.pamOsc.setOnboardingCompleted();
+    } catch (error) {
+      pushError(`could not save setup progress: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    setWizardOpen(false);
+  }, [pushError]);
 
   // Every notice dismisses itself after 15 s (per-notice timer, keyed by
   // object identity — each notice object enters the list exactly once).
@@ -373,6 +392,40 @@ export function App() {
     </div>
   );
 
+  // The add-device / v1-import dialogs are shared: they float above BOTH the
+  // tabbed Setup tab and the first-run wizard's controller step (PAM-14 T3),
+  // driven by the same App state so there is one source of truth.
+  const sharedDialogs = (
+    <>
+      <ImportV1Dialog
+        flow={importFlow}
+        boards={snapshot.boards}
+        busy={importBusy}
+        onImport={(deviceDefinitionId, name) => void runImportV1(deviceDefinitionId, name)}
+        onClose={() => setImportFlow(undefined)}
+      />
+      <AddDeviceDialog
+        open={dialogOpen}
+        boards={snapshot.boards}
+        catalog={snapshot.catalog}
+        invalidFiles={snapshot.invalidFiles}
+        alreadyActive={new Set(draft.activeMappings.map((mapping) => mapping.id))}
+        onClose={() => setDialogOpen(false)}
+        onCreateNew={(deviceDefinitionId, name) => void createMappingAndEdit(deviceDefinitionId, name)}
+        onPick={(entry) => {
+          setDialogOpen(false);
+          updateDraft((current) => ({
+            ...current,
+            activeMappings: [
+              ...current.activeMappings,
+              { id: entry.id, input: entry.midiPort.input, output: entry.midiPort.output },
+            ],
+          }));
+        }}
+      />
+    </>
+  );
+
   if (editorTarget) {
     return (
       <div className="app">
@@ -385,6 +438,40 @@ export function App() {
           onSaved={adoptEditorSnapshot}
           pushNotices={(fresh) => setNotices((current) => [...current, ...fresh])}
         />
+      </div>
+    );
+  }
+
+  // PAM-14: the first-run wizard replaces the tabbed UI (same overlay slot as
+  // the editor). The dialogs it drives (controller step) float above it.
+  if (wizardOpen) {
+    return (
+      <div className="app">
+        <StatusBar engineState={engineState} connection={connection} />
+        {noticesLayer}
+        <SetupWizard
+          consoleSettings={draft.console}
+          fieldErrors={fieldErrors}
+          activeMappingCount={draft.activeMappings.length}
+          engineState={engineState}
+          connection={connection}
+          saving={saving}
+          engineBusy={engineBusy}
+          hasConsoleErrors={fieldErrors.some((error) => error.field.startsWith("console."))}
+          onConsoleChange={(console) => updateDraft((current) => ({ ...current, console }))}
+          onAddController={() => setDialogOpen(true)}
+          onImportV1={() => void startImportV1()}
+          onApply={save}
+          onStartEngine={startEngine}
+          onCheck={() => void window.pamOsc.checkConnection()}
+          onFinish={() => void closeWizardCompleted()}
+          onSkip={() => void closeWizardCompleted()}
+          onOpenDiagnostics={() => {
+            setTab("status");
+            void closeWizardCompleted();
+          }}
+        />
+        {sharedDialogs}
       </div>
     );
   }
@@ -425,6 +512,11 @@ export function App() {
           onClick={() => setTab("boards")}
         >
           Boards
+        </button>
+        <div className="grow" />
+        {/* PAM-14 AC-2: reopen the first-run wizard at step 1 anytime. */}
+        <button className="tab setup-guide" onClick={() => setWizardOpen(true)}>
+          Setup guide
         </button>
       </nav>
       <main className="app-body">
@@ -518,32 +610,7 @@ export function App() {
           </button>
         </footer>
       )}
-      <ImportV1Dialog
-        flow={importFlow}
-        boards={snapshot.boards}
-        busy={importBusy}
-        onImport={(deviceDefinitionId, name) => void runImportV1(deviceDefinitionId, name)}
-        onClose={() => setImportFlow(undefined)}
-      />
-      <AddDeviceDialog
-        open={dialogOpen}
-        boards={snapshot.boards}
-        catalog={snapshot.catalog}
-        invalidFiles={snapshot.invalidFiles}
-        alreadyActive={new Set(draft.activeMappings.map((mapping) => mapping.id))}
-        onClose={() => setDialogOpen(false)}
-        onCreateNew={(deviceDefinitionId, name) => void createMappingAndEdit(deviceDefinitionId, name)}
-        onPick={(entry) => {
-          setDialogOpen(false);
-          updateDraft((current) => ({
-            ...current,
-            activeMappings: [
-              ...current.activeMappings,
-              { id: entry.id, input: entry.midiPort.input, output: entry.midiPort.output },
-            ],
-          }));
-        }}
-      />
+      {sharedDialogs}
     </div>
   );
 }

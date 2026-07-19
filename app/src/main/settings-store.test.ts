@@ -79,6 +79,48 @@ describe("SettingsStore (AC-1, AC-4, EC-2)", () => {
     await expect(readFile(join(dir, "settings.json"), "utf8")).rejects.toThrow();
   });
 
+  // PAM-14: the onboarding flag is optional & additive.
+  it("PAM-14: a settings file without `onboarding` loads fine, flag absent (not completed)", async () => {
+    await writeFile(
+      join(dir, "settings.json"),
+      JSON.stringify({
+        formatVersion: 1,
+        console: { address: "127.0.0.1", sendPort: 9003, receivePort: 9004 },
+        activeMappingIds: [],
+      }),
+      "utf8"
+    );
+    const loaded = await new SettingsStore(dir).load();
+    expect(loaded.firstRun).toBe(false);
+    expect(loaded.settings.onboarding).toBeUndefined();
+  });
+
+  it("PAM-14: setOnboardingCompleted persists the flag and survives a reload", async () => {
+    const store = new SettingsStore(dir);
+    await store.load();
+    expect(store.settings.onboarding).toBeUndefined();
+
+    // Even on a first run (nothing saved yet) the flag must materialize —
+    // a skip before any Save must not re-open the wizard next launch.
+    await store.setOnboardingCompleted();
+    expect(store.settings.onboarding).toEqual({ completed: true });
+
+    const reloaded = await new SettingsStore(dir).load();
+    expect(reloaded.firstRun).toBe(false);
+    expect(reloaded.settings.onboarding).toEqual({ completed: true });
+  });
+
+  it("PAM-14: a later Save keeps the onboarding flag intact", async () => {
+    const store = new SettingsStore(dir);
+    await store.load();
+    await store.setOnboardingCompleted();
+    // A normal Save rebuilds the object — the flag must be carried through.
+    await store.save({ ...store.settings, activeMappingIds: ["x-touch-default-1"] });
+    const reloaded = await new SettingsStore(dir).load();
+    expect(reloaded.settings.onboarding).toEqual({ completed: true });
+    expect(reloaded.settings.activeMappingIds).toEqual(["x-touch-default-1"]);
+  });
+
   it("oversized file → defaults + notice, not buffered (hardening)", async () => {
     const file = join(dir, "settings.json");
     await writeFile(file, `{"pad":"${"x".repeat(1024 * 1024 + 16)}"}`, "utf8");

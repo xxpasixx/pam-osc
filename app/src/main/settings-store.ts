@@ -91,6 +91,20 @@ export class SettingsStore {
   }
 
   /**
+   * PAM-14 (AC-2): mark the setup wizard done. Unlike window bounds this
+   * writes even on a first run — a user who skips the wizard before ever
+   * saving settings must not be greeted by it again next launch, so this
+   * materializes settings.json (with whatever console/mappings are current)
+   * carrying the onboarding flag.
+   */
+  async setOnboardingCompleted(): Promise<void> {
+    const next: PersistedSettings = { ...this.current, onboarding: { completed: true } };
+    await this.write(next);
+    this.current = next;
+    this.persisted = true;
+  }
+
+  /**
    * Window bounds are saved outside the Save transaction (design). While the
    * on-disk file is missing or corrupt (nothing successfully persisted yet),
    * this is a no-op — EC-2: a corrupt file stays untouched until a real Save,

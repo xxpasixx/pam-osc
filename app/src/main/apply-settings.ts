@@ -76,6 +76,8 @@ export async function applySettings(rawDraft: SettingsDraft, deps: ApplyDeps): P
     console: draft.console,
     activeMappingIds: draft.activeMappings.map((mapping) => mapping.id),
     ui: deps.settingsStore.settings.ui,
+    // PAM-14: a Save mid-wizard must not wipe the onboarding flag.
+    onboarding: deps.settingsStore.settings.onboarding,
   };
   try {
     await deps.settingsStore.save(persisted);

@@ -21,6 +21,7 @@ const api: PamOscApi = {
   getSnapshot: () => ipcRenderer.invoke(IPC.getSnapshot),
   listMidiPorts: () => ipcRenderer.invoke(IPC.listMidiPorts),
   applySettings: (draft) => ipcRenderer.invoke(IPC.applySettings, draft),
+  setOnboardingCompleted: () => ipcRenderer.invoke(IPC.setOnboardingCompleted),
   revealMappingsFolder: () => ipcRenderer.invoke(IPC.revealMappingsFolder),
   duplicateMapping: (id) => ipcRenderer.invoke(IPC.duplicateMapping, id),
   createMapping: (request) => ipcRenderer.invoke(IPC.createMapping, request),

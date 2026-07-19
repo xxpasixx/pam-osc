@@ -229,6 +229,8 @@ export interface Snapshot {
   /** Recent traffic (bounded) so the log survives a renderer (re)mount. */
   traffic: TrafficEntry[];
   portDiagnosis: PortDiagnosis | undefined;
+  /** PAM-14: first-run wizard marker. Absent/false → the wizard auto-opens. */
+  onboarding: { completed: boolean } | undefined;
 }
 
 /** Field-level validation error, rendered inline at the causing field (AC-6). */
@@ -247,6 +249,8 @@ export interface PamOscApi {
   getSnapshot(): Promise<Snapshot>;
   listMidiPorts(): Promise<MidiPortList>;
   applySettings(draft: SettingsDraft): Promise<ApplyResult>;
+  /** PAM-14 (AC-2): mark the setup wizard finished/skipped so it stops auto-opening. */
+  setOnboardingCompleted(): Promise<void>;
   revealMappingsFolder(): Promise<void>;
   duplicateMapping(id: string): Promise<CatalogEntry | { error: string }>;
   createMapping(request: CreateMappingRequest): Promise<CatalogEntry | { error: string }>;
@@ -293,6 +297,7 @@ export const IPC = {
   getSnapshot: "pam:getSnapshot",
   listMidiPorts: "pam:listMidiPorts",
   applySettings: "pam:applySettings",
+  setOnboardingCompleted: "pam:setOnboardingCompleted",
   revealMappingsFolder: "pam:revealMappingsFolder",
   duplicateMapping: "pam:duplicateMapping",
   createMapping: "pam:createMapping",

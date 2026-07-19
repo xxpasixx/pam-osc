@@ -233,7 +233,15 @@ function ImportPluginCard() {
   );
 }
 
-export function Ma3SetupView({ values }: { values: ConsoleValues }) {
+/**
+ * Presentation mode (PAM-14): the full MA3 tab renders all three cards; the
+ * setup wizard reuses the SAME cards one step at a time — "install" for its
+ * install step, "osc" for the console-OSC step. One data path (getMa3Setup),
+ * no forked components.
+ */
+export type Ma3SetupMode = "full" | "install" | "osc";
+
+export function Ma3SetupView({ values, mode = "full" }: { values: ConsoleValues; mode?: Ma3SetupMode }) {
   const [info, setInfo] = useState<Ma3SetupInfo | undefined>();
   const [loadError, setLoadError] = useState<string | undefined>();
 
@@ -264,9 +272,9 @@ export function Ma3SetupView({ values }: { values: ConsoleValues }) {
 
   return (
     <>
-      <InstallCard info={info} onRefresh={refresh} />
-      <OscEntryCard values={values} localIps={info.localIps} />
-      <ImportPluginCard />
+      {mode !== "osc" && <InstallCard info={info} onRefresh={refresh} />}
+      {mode !== "install" && <OscEntryCard values={values} localIps={info.localIps} />}
+      {mode !== "install" && <ImportPluginCard />}
     </>
   );
 }

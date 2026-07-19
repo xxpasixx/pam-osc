@@ -100,6 +100,7 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
         notices: [],
         traffic: [],
         portDiagnosis: undefined,
+        onboarding: store.settings.onboarding,
       }),
     };
   });
@@ -113,6 +114,14 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
     if (!result.ok) expect(result.fieldErrors.length).toBeGreaterThan(0);
     expect(engine.startedWith).toEqual([]);
     await expect(readFile(settingsFile, "utf8")).rejects.toThrow(); // nothing persisted
+  });
+
+  it("PAM-14: a Save preserves the onboarding flag set mid-wizard", async () => {
+    await store.setOnboardingCompleted();
+    const result = await applySettings(validDraft(), deps);
+    expect(result.ok).toBe(true);
+    const persisted = JSON.parse(await readFile(settingsFile, "utf8")) as { onboarding?: { completed: boolean } };
+    expect(persisted.onboarding).toEqual({ completed: true });
   });
 
   it("success: mapping files written, engine reconfigured, settings persisted (AC-3)", async () => {
