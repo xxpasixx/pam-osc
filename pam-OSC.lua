@@ -181,7 +181,11 @@ local function isExecutorOccupied(execNo, page)
     local ok, occupied = pcall(function()
         for _, maValue in pairs(DataPool().Pages[page]:Children()) do
             if maValue.No == execNo then
-                return maValue.Object ~= nil
+                -- PR #42: on assignments spanned across several executors only
+                -- the master cell carries .Object; follow .EXEC to it so occupancy
+                -- is read from the master, not only the bottom-right cell. Guarded
+                -- so a nil EXEC reads as "not occupied" (matches the old nil-Object).
+                return maValue.EXEC ~= nil and maValue.EXEC.Object ~= nil
             end
         end
         return false
@@ -476,7 +480,12 @@ local function main()
                     faderValue = maValue:GetFader(faderOptions)
                     isFlash = maValue.KEY == "Flash"
 
-                    local myobject = maValue.Object
+                    -- PR #42: spanned multi-executor assignments only carry
+                    -- .Object on the master cell; follow .EXEC to reach it.
+                    -- Guarded so a nil EXEC degrades to "no object" instead of
+                    -- throwing (this read is not inside a pcall).
+                    local exec = maValue.EXEC
+                    local myobject = exec and exec.Object or nil
                     if myobject ~= nil then
                         buttonValue = myobject:HasActivePlayback() and true or false
                         if sendColors then

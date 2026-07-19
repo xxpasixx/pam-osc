@@ -46,9 +46,15 @@ describe("bundled MA3 plugin XML (PAM-12)", () => {
     expect(components.map((c) => c.pluginName)).toEqual(["pam-osc Start Stop", "pam-osc Settings"]);
   });
 
-  it("carries plugin version 2.0.0.0 on both plugins", () => {
+  it("carries the generator's PLUGIN_VERSION on both plugins", () => {
+    // Single source of truth: the version lives in build-plugin-xml.mjs and is
+    // bumped (last/"mini" component) on every plugin change. The test follows it
+    // automatically so a routine bump never has to touch this assertion.
+    const generator = readFileSync(resolve(repoRoot, "app/scripts/build-plugin-xml.mjs"), "utf8");
+    const expected = generator.match(/PLUGIN_VERSION\s*=\s*"([^"]+)"/)?.[1];
+    expect(expected).toBeTruthy();
     for (const component of components) {
-      expect(component.version).toBe("2.0.0.0");
+      expect(component.version).toBe(expected);
     }
   });
 

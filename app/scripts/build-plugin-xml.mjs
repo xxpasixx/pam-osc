@@ -12,8 +12,10 @@ import { fileURLToPath } from "node:url";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const outFile = resolve(repoRoot, "gma3_library/datapools/plugins/pam-osc.xml");
 
-/** Bumped for plugin v2 (CMD mode + protocol handshake, PAM-12). */
-const PLUGIN_VERSION = "2.0.0.0";
+/** Plugin file version. Bump the last ("mini"/patch) component on EVERY plugin
+ *  change so an install version-mismatch is visible; PLUGIN_PROTOCOL only moves
+ *  on real protocol breaks. 2.0.0.1: PR #42 EXEC.Object fix (multi-executor). */
+const PLUGIN_VERSION = "2.0.0.1";
 const DATA_VERSION = "2.0.2.0";
 const BLOCK_SIZE = 1024;
 
