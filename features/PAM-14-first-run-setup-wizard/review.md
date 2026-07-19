@@ -1,6 +1,6 @@
 # PAM-14 — Review
 
-**Date:** 2026-07-19 · **Commit:** 63cb88b · **Verdict: NOT READY** (one AC only partially met + no renderer test guard)
+**Date:** 2026-07-19 · **Commit:** 63cb88b (build), fix follows · **Verdict: READY → Approved** (after re-review — see bottom)
 
 Regression baseline: typecheck clean, full suite **343 passing**. No Critical/High.
 
@@ -31,5 +31,13 @@ Red-team confirmed clean: pristine-skip persists; no auto-open loop; mid-wizard 
 - **F6 — Low:** theoretical sub-100ms double-start race between the auto-start effect and the visible "Start bridge" button (main guards it → at worst a spurious error notice).
 - **F7 — Info:** `mode="osc"` renders `OscEntryCard` **and** `ImportPluginCard`; design step 5 named only OscEntryCard. Broader, not wrong.
 
-## Verdict
+## Verdict (initial)
 No Critical/High, but **AC-3 is only partially met** (v1-import path) and the renderer ACs have no test guard. **NOT READY** — fix BUG-1 (activate the imported mapping) and add renderer tests (BUG-2), then re-review. The Low items are optional polish.
+
+## Re-review — 2026-07-19 (after fix)
+
+- **BUG-1 resolved.** `runImportV1` now activates the imported mapping via the shared `activateCatalogEntry` helper using `ImportV1Result.entry` (a `CatalogEntry` with id + ports) — `App.tsx:261`. The same helper now backs all three activation sites (bundled pick, duplicate, v1 import), so **AC-3 is met on the import path**: a completed v1 import sets `activeMappingCount ≥ 1`, the controller step shows a ready controller, Next enables. Idempotent (dedups by id) so it's harmless from the normal tabbed import.
+- **BUG-2 resolved.** No renderer harness exists, so the decision logic was extracted to a pure module `wizard-logic.ts` (`shouldAutoOpenWizard`, `activateCatalogEntry`, `shouldAutoStartEngine`) — the components call these exact functions — with 12 unit tests (`wizard-logic.test.ts`) covering first-snapshot-only auto-open (AC-1), the import-activation (AC-3), and the auto-start guard (AC-8).
+- Regression: typecheck clean, full suite **355 passing** (343 + 12).
+
+The Low items F3–F7 remain optional polish (not blockers). **Verdict: Approved.**
