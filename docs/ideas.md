@@ -13,3 +13,5 @@
 - Indicate-Mode auch im Status-Tab (Board-Ansicht mit Live-Highlight außerhalb des Editors) (2026-07-17)
 - Format: Push-Fähigkeit auch für Fader-Knobs (X-Touch Compact knob-1–8) bzw. Absolut-Modus für Encoder — dann wäre 1 Control pro Knob möglich statt abs/rel-Twins + Push (2026-07-17)
 - Editor UX: Board- vs. Mapping-Modus sichtbarer trennen/erklären (kurzer Hinweistext o. Onboarding — "Board = Hardware-Fakten, Mapping = deine Belegung"), Nutzer-Feedback: Trennung kommt nicht rüber (2026-07-17)
+- UX-L2: kleines Richtungs-Diagramm neben Send-/Receive-Port ("App → Konsole" / "Konsole → App") statt nur Textlabels (UX-Review 2026-07-18)
+- UX-L4: leeres Port-Feld ("unset") sauber von 0 unterscheiden, oder 0 am Input blocken (UX-Review 2026-07-18)
