@@ -238,6 +238,7 @@ export function Ma3SetupView({ values }: { values: ConsoleValues }) {
   const [loadError, setLoadError] = useState<string | undefined>();
 
   const refresh = useCallback(() => {
+    setLoadError(undefined);
     window.pamOsc
       .getMa3Setup()
       .then(setInfo)
@@ -248,7 +249,17 @@ export function Ma3SetupView({ values }: { values: ConsoleValues }) {
     refresh();
   }, [refresh]);
 
-  if (loadError) return <p className="empty-state">Failed to load the setup assistant: {loadError}</p>;
+  if (loadError)
+    return (
+      <section className="card" aria-label="Setup assistant">
+        <p className="empty-state">Failed to load the setup assistant: {loadError}</p>
+        <div className="section-actions">
+          <button className="primary" onClick={refresh}>
+            Retry
+          </button>
+        </div>
+      </section>
+    );
   if (!info) return <p className="empty-state">Looking for GrandMA3 installations …</p>;
 
   return (

@@ -76,7 +76,10 @@ export function App() {
     setPortDiagnosis(next.portDiagnosis);
   }, []);
 
-  useEffect(() => {
+  // Startup load, retryable (PAM-17 AC-3) — a failed initial snapshot no
+  // longer strands the user on a dead screen; Retry re-runs this.
+  const loadSnapshot = useCallback(() => {
+    setLoadError(undefined);
     window.pamOsc
       .getSnapshot()
       .then((initial) => {
@@ -84,6 +87,10 @@ export function App() {
         setNotices(initial.notices);
       })
       .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : String(error)));
+  }, [adoptSnapshot]);
+
+  useEffect(() => {
+    loadSnapshot();
     const unsubscribe = [
       window.pamOsc.onConnection(setConnection),
       window.pamOsc.onConsoleState(setConsoleState),
@@ -95,7 +102,7 @@ export function App() {
       window.pamOsc.onPortDiagnosis(setPortDiagnosis),
     ];
     return () => unsubscribe.forEach((off) => off());
-  }, [adoptSnapshot]);
+  }, [loadSnapshot]);
 
   const validCatalogIds = useMemo(() => new Set((snapshot?.catalog ?? []).map((entry) => entry.id)), [snapshot]);
 
@@ -238,16 +245,23 @@ export function App() {
   const runOutputTest = useCallback(
     async (mappingId: string) => {
       setTesting((current) => new Set(current).add(mappingId));
-      // The engine reports rejections; the animation itself takes ~3.5 s.
-      setTimeout(() => {
+      const clear = () =>
         setTesting((current) => {
           const next = new Set(current);
           next.delete(mappingId);
           return next;
         });
-      }, 4000);
-      const result = await window.pamOsc.runOutputTest(mappingId);
-      if (!result.ok) pushError(`output test failed: ${result.error ?? "unknown error"}`);
+      // The button stays "Testing …" until the engine actually finishes the
+      // animation (or rejects) — the ack resolves when the test really ends,
+      // not on a fixed timer (PAM-17 AC-4).
+      try {
+        const result = await window.pamOsc.runOutputTest(mappingId);
+        if (!result.ok) pushError(`output test failed: ${result.error ?? "unknown error"}`);
+      } catch (error) {
+        pushError(`output test failed: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+        clear();
+      }
     },
     [pushError]
   );
@@ -334,16 +348,36 @@ export function App() {
   }, [pushError]);
 
   if (loadError) {
-    return <div className="app-body">Failed to load: {loadError}</div>;
+    return (
+      <div className="app-body load-error">
+        <p className="error">Failed to load: {loadError}</p>
+        <button className="primary" onClick={loadSnapshot}>
+          Retry
+        </button>
+      </div>
+    );
   }
   if (!snapshot || !draft) {
     return <div className="app-body">Loading …</div>;
   }
 
+  // Notices live at the App ROOT (PAM-17 AC-1): a fixed overlay that floats
+  // above BOTH the tabbed body and the full-window editor overlay, so an
+  // editor save/learn/port error is never raised behind an invisible layer.
+  const noticesLayer = (
+    <div className="notices-layer">
+      <NoticesArea
+        notices={notices}
+        onDismiss={(index) => setNotices((current) => current.filter((_, i) => i !== index))}
+      />
+    </div>
+  );
+
   if (editorTarget) {
     return (
       <div className="app">
         <StatusBar engineState={engineState} connection={connection} />
+        {noticesLayer}
         <EditorView
           target={editorTarget}
           midiPorts={midiPorts}
@@ -358,25 +392,42 @@ export function App() {
   return (
     <div className="app">
       <StatusBar engineState={engineState} connection={connection} />
-      <nav className="tabs" aria-label="Views">
-        <button className={`tab ${tab === "setup" ? "active" : ""}`} onClick={() => setTab("setup")}>
+      {noticesLayer}
+      <nav className="tabs" role="tablist" aria-label="Views">
+        <button
+          role="tab"
+          aria-selected={tab === "setup"}
+          className={`tab ${tab === "setup" ? "active" : ""}`}
+          onClick={() => setTab("setup")}
+        >
           Setup
         </button>
-        <button className={`tab ${tab === "ma3" ? "active" : ""}`} onClick={() => setTab("ma3")}>
+        <button
+          role="tab"
+          aria-selected={tab === "ma3"}
+          className={`tab ${tab === "ma3" ? "active" : ""}`}
+          onClick={() => setTab("ma3")}
+        >
           MA3 Setup
         </button>
-        <button className={`tab ${tab === "status" ? "active" : ""}`} onClick={() => setTab("status")}>
+        <button
+          role="tab"
+          aria-selected={tab === "status"}
+          className={`tab ${tab === "status" ? "active" : ""}`}
+          onClick={() => setTab("status")}
+        >
           Status
         </button>
-        <button className={`tab ${tab === "boards" ? "active" : ""}`} onClick={() => setTab("boards")}>
+        <button
+          role="tab"
+          aria-selected={tab === "boards"}
+          className={`tab ${tab === "boards" ? "active" : ""}`}
+          onClick={() => setTab("boards")}
+        >
           Boards
         </button>
       </nav>
       <main className="app-body">
-        <NoticesArea
-          notices={notices}
-          onDismiss={(index) => setNotices((current) => current.filter((_, i) => i !== index))}
-        />
         {tab === "status" && (
           <>
             <StatusView

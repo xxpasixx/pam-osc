@@ -181,22 +181,42 @@ export class Engine {
   /**
    * On-demand MIDI output test for one bound device (PAM-4 AC-4). Restores
    * the live feedback state from the cache afterwards (EC-1).
+   *
+   * Resolves only when the test animation has actually completed (or was
+   * cancelled by a stop/reconfigure) — the UI drives its "Testing …" state
+   * off this ack, never off a fixed timer (PAM-17 AC-4). Validation failures
+   * resolve immediately with the reason.
    */
-  outputTest(mappingId: string): { ok: true } | { ok: false; error: string } {
-    if (!this.running || !this.deviceManager) return { ok: false, error: "engine is not running" };
-    if (!this.animationDone) return { ok: false, error: "startup is still in progress" };
+  outputTest(mappingId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+    if (!this.running || !this.deviceManager) return Promise.resolve({ ok: false, error: "engine is not running" });
+    if (!this.animationDone) return Promise.resolve({ ok: false, error: "startup is still in progress" });
     const unitRuntime = this.deviceManager.units.find((unit) => unit.unit.mapping.id === mappingId);
-    if (!unitRuntime) return { ok: false, error: `mapping "${mappingId}" is not active` };
-    if (!unitRuntime.connection) return { ok: false, error: "device is not connected" };
-    if (this.testAnimations.has(mappingId)) return { ok: false, error: "output test already running" };
+    if (!unitRuntime) return Promise.resolve({ ok: false, error: `mapping "${mappingId}" is not active` });
+    if (!unitRuntime.connection) return Promise.resolve({ ok: false, error: "device is not connected" });
+    if (this.testAnimations.has(mappingId)) return Promise.resolve({ ok: false, error: "output test already running" });
 
     this.log(`MIDI output test on "${mappingId}" ...`);
-    const handle = playStartupAnimation([unitRuntime], this.timing, () => {
-      this.testAnimations.delete(mappingId);
-      restoreUnit(unitRuntime, this.state);
+    return new Promise((resolve) => {
+      let settled = false;
+      const settle = (result: { ok: true } | { ok: false; error: string }) => {
+        if (settled) return;
+        settled = true;
+        resolve(result);
+      };
+      const handle = playStartupAnimation([unitRuntime], this.timing, () => {
+        this.testAnimations.delete(mappingId);
+        restoreUnit(unitRuntime, this.state);
+        settle({ ok: true });
+      });
+      // A stop/reconfigure cancels the handle — settle the ack so the caller
+      // (and the UI button) is never left hanging.
+      this.testAnimations.set(mappingId, {
+        cancel: () => {
+          handle.cancel();
+          settle({ ok: false, error: "output test canceled" });
+        },
+      });
     });
-    this.testAnimations.set(mappingId, handle);
-    return { ok: true };
   }
 
   // ---- internals ----

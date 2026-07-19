@@ -30,7 +30,7 @@ function formatLine(entry: TrafficEntry): string {
 
 export function TrafficLog({ entries }: { entries: TrafficEntry[] }) {
   const [enabled, setEnabled] = useState<Set<TrafficCategory>>(new Set(FILTERS.map((filter) => filter.category)));
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const [follow, setFollow] = useState(true);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -54,10 +54,13 @@ export function TrafficLog({ entries }: { entries: TrafficEntry[] }) {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(visible.map(formatLine).join("\n"));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 1500);
     } catch {
-      // Clipboard denied — nothing sensible to do beyond not crashing.
+      // Clipboard denied — tell the user instead of silently doing nothing
+      // (PAM-17 AC-2); the failure state lingers longer so it's readable.
+      setCopyState("failed");
+      setTimeout(() => setCopyState("idle"), 4000);
     }
   };
 
@@ -76,8 +79,13 @@ export function TrafficLog({ entries }: { entries: TrafficEntry[] }) {
           </button>
         ))}
         <div className="spacer" />
-        <button className="subtle" onClick={() => void copy()} disabled={visible.length === 0}>
-          {copied ? "Copied" : "Copy"}
+        <button
+          className={`subtle ${copyState === "failed" ? "danger" : ""}`}
+          onClick={() => void copy()}
+          disabled={visible.length === 0}
+          title={copyState === "failed" ? "Clipboard access was denied — select the log text manually to copy it" : undefined}
+        >
+          {copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy failed" : "Copy"}
         </button>
       </div>
       <div

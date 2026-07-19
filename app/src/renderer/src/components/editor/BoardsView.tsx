@@ -38,7 +38,12 @@ function NewMappingForm({
         />
       </div>
       <button onClick={onCancel}>Cancel</button>
-      <button className="primary" disabled={!canCreate} onClick={() => onCreate(name.trim())}>
+      <button
+        className="primary"
+        disabled={!canCreate}
+        title={canCreate ? undefined : "Enter a mapping name first"}
+        onClick={() => onCreate(name.trim())}
+      >
         Create &amp; open editor
       </button>
     </div>
@@ -220,6 +225,13 @@ export function BoardsView({
             <button
               className="primary"
               disabled={!canCreate}
+              title={
+                canCreate
+                  ? undefined
+                  : name.trim() === ""
+                    ? "Enter a board name first"
+                    : "Width and height must be greater than 0"
+              }
               onClick={() => {
                 setCreating(false);
                 setName("");

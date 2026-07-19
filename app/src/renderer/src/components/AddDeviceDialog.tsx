@@ -131,6 +131,7 @@ export function AddDeviceDialog({
               <button
                 className="primary"
                 disabled={newName.trim() === ""}
+                title={newName.trim() === "" ? "Enter a mapping name first" : undefined}
                 onClick={() => onCreateNew(board.id, newName.trim())}
               >
                 Create &amp; open editor

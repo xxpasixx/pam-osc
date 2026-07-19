@@ -21,7 +21,7 @@ export interface EngineLike {
   start(config: EngineConfig): Promise<void>;
   stop(): Promise<void>;
   checkConnection(): void;
-  outputTest(mappingId: string): { ok: true } | { ok: false; error: string };
+  outputTest(mappingId: string): Promise<{ ok: true } | { ok: false; error: string }>;
   on<E extends keyof EngineEvents>(event: E, listener: EngineEvents[E]): unknown;
 }
 
@@ -138,8 +138,8 @@ export class EngineHost {
     this.engine.checkConnection();
   }
 
-  /** On-demand output test passthrough (PAM-4 AC-4). */
-  outputTest(mappingId: string): { ok: true } | { ok: false; error: string } {
+  /** On-demand output test passthrough (PAM-4 AC-4) — resolves on the engine's real ack (PAM-17). */
+  async outputTest(mappingId: string): Promise<{ ok: true } | { ok: false; error: string }> {
     if (this.state !== "running") return { ok: false, error: "engine is not running" };
     return this.engine.outputTest(mappingId);
   }

@@ -29,7 +29,7 @@ class FakeEngine implements EngineLike {
   }
   async stop(): Promise<void> {}
   checkConnection(): void {}
-  outputTest(): { ok: true } {
+  async outputTest(): Promise<{ ok: true }> {
     return { ok: true };
   }
   on(): unknown {

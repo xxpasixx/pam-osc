@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 // Runtime imports come from the browser-safe modules directly — the format
 // barrel re-exports the Node loader, which must never enter the renderer.
 import { validateDeviceDraft, validateMappingDraft } from "../../../../core/format/editor-rules.js";
@@ -137,6 +137,44 @@ function newControl(device: DeviceDefinition, type: Control["type"]): Control {
       return { ...base, type, index, capabilities: { segments: 7 } } as unknown as Control;
     }
   }
+}
+
+/**
+ * Native `<dialog>` wrapper (PAM-17 AC-6) — real focus-trapping and Escape
+ * handling, matching AddDeviceDialog/ImportV1Dialog. `onCancel` fires on
+ * Escape; we drive open/closed from React state (the source of truth) rather
+ * than the element's own close, so intent (e.g. save-then-close) survives.
+ */
+function ModalDialog({
+  open,
+  ariaLabel,
+  onCancel,
+  children,
+}: {
+  open: boolean;
+  ariaLabel: string;
+  onCancel: () => void;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    else if (!open && dialog.open) dialog.close();
+  }, [open]);
+  return (
+    <dialog
+      ref={ref}
+      aria-label={ariaLabel}
+      onCancel={(event) => {
+        event.preventDefault();
+        onCancel();
+      }}
+    >
+      {open ? children : null}
+    </dialog>
+  );
 }
 
 export function EditorView({
@@ -726,7 +764,24 @@ export function EditorView({
         <button onClick={() => adopt(loaded)} disabled={!dirty || saving}>
           Discard
         </button>
-        <button className="primary" onClick={() => void save()} disabled={!canSave}>
+        <button
+          className="primary"
+          onClick={() => void save()}
+          disabled={!canSave}
+          title={
+            canSave
+              ? undefined
+              : saving
+                ? "Saving …"
+                : !dirty
+                  ? "No unsaved changes"
+                  : empty
+                    ? "Add at least one control first"
+                    : validation.issues.length > 0
+                      ? "Fix the highlighted errors before saving"
+                      : undefined
+          }
+        >
           {saving ? "Saving …" : "Save"}
         </button>
         <button onClick={close}>Close</button>
@@ -739,7 +794,7 @@ export function EditorView({
           <button onClick={() => addControl("button")}>+ Button</button>
           <button onClick={() => addControl("encoder")}>+ Encoder</button>
           <button onClick={() => addControl("display")}>+ Display</button>
-          {empty && <span className="toolbar-hint">Add at least one control to save (AC-6).</span>}
+          {empty && <span className="toolbar-hint">Add at least one control to save.</span>}
         </div>
       )}
 
@@ -815,43 +870,43 @@ export function EditorView({
         </aside>
       </div>
 
-      {closePrompt && (
-        <div className="modal-backdrop" role="dialog" aria-label="Unsaved changes">
-          <div className="modal">
-            <h3>Unsaved changes</h3>
-            <p>Save your changes before closing?</p>
-            <div className="dialog-actions">
-              <button onClick={() => setClosePrompt(false)}>Cancel</button>
-              <button
-                onClick={() => {
-                  setClosePrompt(false);
-                  onClose();
-                }}
-              >
-                Discard &amp; close
-              </button>
-              <button
-                className="primary"
-                disabled={!canSave}
-                onClick={() => {
-                  setClosePrompt(false);
-                  void save().then((result) => {
-                    if (result === true) onClose();
-                    // BUG-9: the retarget dialog finishes the save — carry the close intent over.
-                    else if (result === "prompted") closeAfterSaveRef.current = true;
-                  });
-                }}
-              >
-                Save &amp; close
-              </button>
-            </div>
-          </div>
+      <ModalDialog open={closePrompt} ariaLabel="Unsaved changes" onCancel={() => setClosePrompt(false)}>
+        <h3>Unsaved changes</h3>
+        <p>Save your changes before closing?</p>
+        <div className="dialog-actions">
+          <button onClick={() => setClosePrompt(false)}>Cancel</button>
+          <button
+            onClick={() => {
+              setClosePrompt(false);
+              onClose();
+            }}
+          >
+            Discard &amp; close
+          </button>
+          <button
+            className="primary"
+            disabled={!canSave}
+            onClick={() => {
+              setClosePrompt(false);
+              void save().then((result) => {
+                if (result === true) onClose();
+                // BUG-9: the retarget dialog finishes the save — carry the close intent over.
+                else if (result === "prompted") closeAfterSaveRef.current = true;
+              });
+            }}
+          >
+            Save &amp; close
+          </button>
         </div>
-      )}
+      </ModalDialog>
 
-      {deletePrompt && (
-        <div className="modal-backdrop" role="dialog" aria-label="Delete control">
-          <div className="modal">
+      <ModalDialog
+        open={deletePrompt !== undefined}
+        ariaLabel="Delete control"
+        onCancel={() => setDeletePrompt(undefined)}
+      >
+        {deletePrompt && (
+          <>
             <h3>Delete “{deletePrompt.control.label ?? deletePrompt.control.id}”?</h3>
             <p>
               This control is assigned in {deletePrompt.usage.length} mapping
@@ -877,13 +932,20 @@ export function EditorView({
                 Delete control
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </ModalDialog>
 
-      {retargetPrompt && (
-        <div className="modal-backdrop" role="dialog" aria-label="Retarget mappings">
-          <div className="modal">
+      <ModalDialog
+        open={retargetPrompt !== undefined}
+        ariaLabel="Retarget mappings"
+        onCancel={() => {
+          setRetargetPrompt(undefined);
+          closeAfterSaveRef.current = false;
+        }}
+      >
+        {retargetPrompt && (
+          <>
             <h3>Point mappings at the copy?</h3>
             <p>
               Saving creates a user copy of this bundled board. These mappings currently use the original — tick the
@@ -939,9 +1001,9 @@ export function EditorView({
                 Save copy
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </ModalDialog>
     </div>
   );
 }

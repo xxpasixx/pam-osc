@@ -16,3 +16,4 @@
 - UX-L2: kleines Richtungs-Diagramm neben Send-/Receive-Port ("App → Konsole" / "Konsole → App") statt nur Textlabels (UX-Review 2026-07-18)
 - UX-L4: leeres Port-Feld ("unset") sauber von 0 unterscheiden, oder 0 am Input blocken (UX-Review 2026-07-18)
 - Boards-Liste nach Mapping-Status (draft/community/tested) filtern/sortieren — Nice-to-have aus PAM-19 (2026-07-19)
+- **Test-Output-Bug (Kandidat, PAM-17 AC-4):** ein Mapping gilt als "bound" (grüne LED, Test aktiv), sobald der MIDI-**Input** da ist — auch ohne `midiPort.output`. `EasymidiConnection.send` ist dann ein stiller No-op → Test sendet nichts. Fix: "kein Output-Port" validieren/anzeigen oder Test sperren. Braucht Hardware-Bestätigung + eigenen Spec-Delta (2026-07-19)

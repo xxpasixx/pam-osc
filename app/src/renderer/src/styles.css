@@ -28,7 +28,10 @@ body {
   font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.45;
-  user-select: none;
+  /* Text is selectable by default (PAM-17 AC-5): diagnostic values — console
+     IP, error messages, the port-diagnosis line, the traffic log — must be
+     copyable. user-select: none is scoped to the drag/canvas surfaces only
+     (see .board / .board-control). */
 }
 
 .app {
@@ -244,6 +247,35 @@ button.subtle {
 
 button.subtle:hover {
   color: var(--text);
+}
+
+/* notices — root-level floating layer so editor failures surface too (PAM-17 AC-1).
+   Sits above the editor overlay and its modals; the container ignores pointer
+   events so it never blocks the UI beneath, individual notices re-enable them. */
+.notices-layer {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 40px));
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.notices-layer .notice {
+  pointer-events: auto;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+/* startup load-failure screen (PAM-17 AC-3) */
+.load-error {
+  align-items: flex-start;
+  gap: 12px;
+  padding-top: 20px;
+}
+
+.load-error .error {
+  color: var(--err);
 }
 
 /* notices */
@@ -463,6 +495,8 @@ dialog .error {
   border-radius: 5px;
   font-family: var(--mono);
   font-size: 12px;
+  /* Diagnostic text is explicitly copyable (PAM-17 AC-5). */
+  user-select: text;
 }
 
 /* live console chips (PAM-12): desk lock + CMD mode */
@@ -777,6 +811,13 @@ dialog .error {
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 24px 24px;
   background-position: -1px -1px;
+  /* Drag/canvas surface — not a text surface (PAM-17 AC-5). */
+  user-select: none;
+}
+
+.board:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .board-control {
@@ -925,29 +966,8 @@ button.learning {
   font-size: 12px;
 }
 
-/* editor modals (plain divs — nested inside the editor view) */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px;
-  width: 520px;
-  max-width: 90vw;
-}
-
-.modal h3 {
-  margin: 0 0 10px;
-}
+/* Editor confirm/delete/retarget dialogs use the native <dialog> element
+   (PAM-17 AC-6) — they inherit the shared `dialog` styles above. */
 
 /* composite push-encoders + indicate mode (PAM-6 delta) */
 .push-cap {

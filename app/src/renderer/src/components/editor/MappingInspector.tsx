@@ -204,7 +204,10 @@ export function MappingInspector({
             </div>
           )}
           {assignment.action.type === "quickKey" && (
-            <div className="field">
+            <div
+              className="field"
+              title="QuickKey: a fixed GrandMA3 keyboard shortcut (e.g. Store, Clear, Go). The plugin maps each one to its console key — pick the action, no command line needed."
+            >
               <label htmlFor="action-key">QuickKey (pam-osc_&lt;KEY&gt;)</label>
               <select
                 id="action-key"
@@ -241,7 +244,10 @@ export function MappingInspector({
           )}
           {assignment.action.type === "modifier" && (
             <>
-              <div className="field">
+              <div
+                className="field"
+                title="App-local modifiers (no console command): encoderFine = small steps per detent, encoderRough = large steps per detent, attributeSelect = make the named attribute the active encoder target."
+              >
                 <label htmlFor="action-modifier">Modifier</label>
                 <select
                   id="action-modifier"

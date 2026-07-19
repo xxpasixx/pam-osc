@@ -35,7 +35,7 @@ describe("EngineHost.autoStart (AC-4)", () => {
       },
       stop: async () => {},
       checkConnection: () => {},
-      outputTest: () => ({ ok: true }) as const,
+      outputTest: async () => ({ ok: true }) as const,
       on: () => undefined,
     };
     const { host, states } = makeHost(engine);
@@ -54,7 +54,7 @@ describe("EngineHost.autoStart (AC-4)", () => {
       },
       stop: async () => {},
       checkConnection: () => {},
-      outputTest: () => ({ ok: true }) as const,
+      outputTest: async () => ({ ok: true }) as const,
       on: () => undefined,
     };
     const { host, states } = makeHost(engine);

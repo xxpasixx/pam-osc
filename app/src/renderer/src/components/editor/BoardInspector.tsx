@@ -218,7 +218,10 @@ export function BoardInspector({
       {selected.type !== "display" && (
         <>
           <div className="form-row">
-            <div className="field">
+            <div
+              className="field"
+              title="How the control sends MIDI: cc = Control Change (most faders/knobs), note = Note On/Off (most buttons/pads), pitchbend = 14-bit pitch-bend (many motor faders)."
+            >
               <label htmlFor="ctl-kind">MIDI kind</label>
               <select
                 id="ctl-kind"
@@ -476,7 +479,10 @@ function EncoderCapabilities({
       {capabilities.push && (
         <>
           <div className="form-row">
-            <div className="field">
+            <div
+              className="field"
+              title="How the knob's press sends MIDI: note = Note On/Off (most common), cc = Control Change."
+            >
               <label htmlFor="push-kind">Push kind</label>
               <select
                 id="push-kind"

@@ -96,12 +96,64 @@ export function BoardCanvas({
 
   const endDrag = () => setDrag(undefined);
 
+  // Keyboard support (AC-8): arrows nudge the selected control on the grid in
+  // board mode, and move the selection between controls otherwise; Escape
+  // clears the selection so arrows can navigate again.
+  const NUDGE = SNAP;
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    const controls = device.controls;
+    if (controls.length === 0) return;
+    if (event.key === "Escape") {
+      if (selected) {
+        event.preventDefault();
+        onSelect(undefined);
+      }
+      return;
+    }
+    const deltas: Record<string, [number, number]> = {
+      ArrowLeft: [-NUDGE, 0],
+      ArrowRight: [NUDGE, 0],
+      ArrowUp: [0, -NUDGE],
+      ArrowDown: [0, NUDGE],
+    };
+    const delta = deltas[event.key];
+    if (!delta) return;
+    event.preventDefault();
+    const currentIndex = selected ? controls.findIndex((control) => control.id === selected.id) : -1;
+    const current = currentIndex >= 0 ? controls[currentIndex] : undefined;
+
+    // Board mode with a control selected: nudge it (snapped + clamped).
+    if (mode === "board" && onGeometry && current && selected?.part === undefined) {
+      onGeometry(current.id, {
+        x: clamp(snap(current.position.x + delta[0]), 0, Math.max(0, device.layout.width - current.position.width)),
+        y: clamp(snap(current.position.y + delta[1]), 0, Math.max(0, device.layout.height - current.position.height)),
+        width: current.position.width,
+        height: current.position.height,
+      });
+      return;
+    }
+
+    // Otherwise arrows move the selection between controls.
+    const forward = event.key === "ArrowRight" || event.key === "ArrowDown";
+    const nextIndex =
+      currentIndex < 0
+        ? forward
+          ? 0
+          : controls.length - 1
+        : (currentIndex + (forward ? 1 : -1) + controls.length) % controls.length;
+    const next = controls[nextIndex];
+    if (next) onSelect({ id: next.id });
+  };
+
   return (
     <div className="board-scroll" ref={containerRef}>
       <div
         className="board"
         role="listbox"
         aria-label="Board layout"
+        tabIndex={0}
+        aria-activedescendant={selected ? `bc-${selected.id}` : undefined}
+        onKeyDown={onKeyDown}
         style={{ width: device.layout.width * scale, height: device.layout.height * scale }}
         onPointerDown={() => onSelect(undefined)}
       >
@@ -127,6 +179,7 @@ export function BoardCanvas({
           return (
             <div
               key={control.id}
+              id={`bc-${control.id}`}
               role="option"
               aria-selected={isSelected || isPushSelected}
               className={classes}

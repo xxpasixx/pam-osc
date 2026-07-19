@@ -546,10 +546,10 @@ describe("diagnostics (PAM-4)", () => {
     expect(liveFader).toEqual({ kind: "cc", channel: 1, controller: 7, value: 64 });
     unit.sent.length = 0;
 
-    const result = harness.engine.outputTest("test-map");
-    expect(result).toEqual({ ok: true });
+    const resultPromise = harness.engine.outputTest("test-map");
     await waitFor(() => unit.sent.length > 0); // animation frames flow
-    await sleep(TEST_TIMING.animationMs + TEST_TIMING.animationFrameMs * 4);
+    // The ack resolves only when the animation actually completes (PAM-17 AC-4).
+    expect(await resultPromise).toEqual({ ok: true });
 
     // After the animation the cached live value is back on the motor fader.
     const faderValues = unit.sent.filter((m) => m.kind === "cc" && m.controller === 7);
@@ -558,11 +558,11 @@ describe("diagnostics (PAM-4)", () => {
 
   it("rejects the output test for missing devices and unknown mappings (AC-4)", async () => {
     const harness = await startedEngine();
-    expect(harness.engine.outputTest("nope")).toEqual({ ok: false, error: 'mapping "nope" is not active' });
+    expect(await harness.engine.outputTest("nope")).toEqual({ ok: false, error: 'mapping "nope" is not active' });
 
     harness.midi.ports = { inputs: [], outputs: [] };
     await waitFor(() => harness.deviceEvents.some((statuses) => statuses.some((s) => s.state === "missing")));
-    const result = harness.engine.outputTest("test-map");
+    const result = await harness.engine.outputTest("test-map");
     expect(result.ok).toBe(false);
   });
 
@@ -585,6 +585,6 @@ describe("diagnostics (PAM-4)", () => {
     const harness = await startedEngine();
     await harness.engine.stop();
     expect(() => harness.engine.checkConnection()).not.toThrow();
-    expect(harness.engine.outputTest("test-map").ok).toBe(false);
+    expect((await harness.engine.outputTest("test-map")).ok).toBe(false);
   });
 });
