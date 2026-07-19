@@ -288,6 +288,11 @@ export function convertV1(input: ConvertV1Input): { mapping: Mapping; summary: I
     status: "draft",
     midiPort: hasFeedbackCapability(device) ? { input: device.name, output: device.name } : { input: device.name },
     enableTimecodeSend,
+    // PAM-16 feedback flags — schema defaults, set explicitly so the output
+    // type is complete (v1 had no equivalent, so defaults are the right start).
+    sendColors: true,
+    sendNames: true,
+    resendButtons: false,
     assignments,
   };
 

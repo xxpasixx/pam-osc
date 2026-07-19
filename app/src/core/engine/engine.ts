@@ -4,6 +4,7 @@ import type { MidiTransport } from "../../transports/midi.js";
 import type { OscMessage, OscSocket, OscTransport } from "../../transports/osc.js";
 import { formatMidiIn, formatMidiOut, formatOsc } from "./traffic.js";
 import { cancelCmdTimers, enqueueCmdKey, onCmdKeyAck, type CmdKeyContext } from "./cmd-keys.js";
+import { buildPamConfig, serializePamConfig, ConfigSender } from "./config-handshake.js";
 import { ConnectionChecker } from "./connection.js";
 import { DeviceManager, type UnitRuntime } from "./device-manager.js";
 import { handleOscMessage, type FeedbackContext } from "./feedback-router.js";
@@ -38,6 +39,7 @@ export class Engine {
   private socket: OscSocket | undefined;
   private deviceManager: DeviceManager | undefined;
   private connectionChecker: ConnectionChecker | undefined;
+  private configSender: ConfigSender | undefined;
   private animation: AnimationHandle | undefined;
   private animationDone = false;
   private running = false;
@@ -133,6 +135,22 @@ export class Engine {
         (line) => this.log(line)
       );
 
+      // PAM-16 config handshake: the app tells the plugin exactly which
+      // executors to watch and which flags to honor. The payload is derived
+      // from the active mappings (fixed for this run) + the global fixed page.
+      this.configSender = new ConfigSender({
+        sendOsc,
+        buildPayload: () =>
+          serializePamConfig(
+            buildPamConfig(
+              units.map((unit) => unit.mapping),
+              config.fixedPage
+            )
+          ),
+        heartbeatMs: this.timing.configHeartbeatMs,
+        log: (line) => this.log(line),
+      });
+
       this.animationDone = false;
       this.deviceManager.start(units);
 
@@ -145,7 +163,15 @@ export class Engine {
         for (const unitRuntime of bound) {
           this.initialUnitState(unitRuntime);
         }
-        sendOsc(forceReloadMessage());
+        // PAM-16: push the config on connect (this sends pamConfig + the
+        // forceReload the startup relied on), then run the heartbeat re-sync.
+        // Falls back to a bare forceReload if the sender is somehow absent.
+        if (this.configSender) {
+          this.configSender.syncNow("connect");
+          this.configSender.startHeartbeat();
+        } else {
+          sendOsc(forceReloadMessage());
+        }
         this.connectionChecker?.start();
       });
     } catch (error) {
@@ -335,6 +361,8 @@ export class Engine {
     this.testAnimations.clear();
     this.connectionChecker?.stop();
     this.connectionChecker = undefined;
+    this.configSender?.stopHeartbeat();
+    this.configSender = undefined;
     cancelTimecodeTimers(this.state);
     cancelCmdTimers(this.state);
     this.cmdContext = undefined;

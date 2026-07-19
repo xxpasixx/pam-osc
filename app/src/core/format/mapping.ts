@@ -86,6 +86,15 @@ export const mappingSchema = z
     // files with no status simply load as "draft" — no format-version bump.
     status: z.enum(["draft", "community", "tested"]).default("draft"),
     enableTimecodeSend: z.boolean().default(false),
+    // PAM-16 feedback flags — the app OR-merges these across the active
+    // mappings and pushes them to the plugin in the config handshake, so the
+    // console-side feedback follows the app's configuration. Additive with
+    // defaults, so older files load unchanged — no format-version bump.
+    // enableTimecodeSend above is reused as the timecode flag.
+    sendColors: z.boolean().default(true),
+    sendNames: z.boolean().default(true),
+    // v1's automaticResendButtons workaround — off by default.
+    resendButtons: z.boolean().default(false),
     assignments: z.array(assignmentSchema),
   })
   .superRefine((mapping, ctx) => {

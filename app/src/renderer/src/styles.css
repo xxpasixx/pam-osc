@@ -935,6 +935,20 @@ button.danger {
   color: var(--err);
 }
 
+.feedback-options {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.feedback-options h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
 .check {
   display: flex;
   align-items: center;

@@ -708,7 +708,9 @@ export function EditorView({
               className="editor-name"
               aria-label="Mapping name"
               value={name}
-              onChange={(event) => setDraft((current) => (current ? { ...current, name: event.target.value } : current))}
+              onChange={(event) =>
+                setDraft((current) => (current ? { ...current, name: event.target.value } : current))
+              }
             />
             <label className="editor-status" title="Maturity / provenance of this mapping (PAM-19)">
               Status
@@ -717,7 +719,7 @@ export function EditorView({
                 value={(draft as Mapping).status}
                 onChange={(event) =>
                   setDraft((current) =>
-                    current ? ({ ...(current as Mapping), status: event.target.value as Mapping["status"] }) : current
+                    current ? { ...(current as Mapping), status: event.target.value as Mapping["status"] } : current
                   )
                 }
               >
@@ -844,6 +846,10 @@ export function EditorView({
                 Board: {device.name} · click a control to edit its assignment (dimmed = unassigned). Encoders with a
                 center cap are push-encoders — the cap is the press.
               </p>
+              <MappingFeedbackOptions
+                mapping={draft as Mapping}
+                onChange={(patch) => setDraft((current) => (current ? { ...(current as Mapping), ...patch } : current))}
+              />
             </div>
           )}
           {mode === "board" && (
@@ -1004,6 +1010,53 @@ export function EditorView({
           </>
         )}
       </ModalDialog>
+    </div>
+  );
+}
+
+/**
+ * PAM-16 per-mapping feedback flags. The app OR-merges these across the
+ * active mappings and pushes them to the plugin in the config handshake, so
+ * the console-side feedback follows the app's configuration.
+ */
+function MappingFeedbackOptions({
+  mapping,
+  onChange,
+}: {
+  mapping: Mapping;
+  onChange: (patch: Partial<Mapping>) => void;
+}) {
+  const options: { key: keyof Mapping; label: string; title: string }[] = [
+    {
+      key: "sendColors",
+      label: "Send colors",
+      title: "Send executor appearance colors to the board (button LED colors)",
+    },
+    { key: "sendNames", label: "Send names", title: "Send sequence/cue names to LED displays" },
+    {
+      key: "enableTimecodeSend",
+      label: "Send timecode",
+      title: "Mirror timecode state to a 7-segment display (mc-mode boards)",
+    },
+    {
+      key: "resendButtons",
+      label: "Resend buttons",
+      title: "v1 workaround: periodically re-send button LED states (fixes controllers that drop LED feedback)",
+    },
+  ];
+  return (
+    <div className="feedback-options" role="group" aria-label="Feedback options">
+      <h4>Feedback options</h4>
+      {options.map(({ key, label, title }) => (
+        <label key={key} className="check" title={title}>
+          <input
+            type="checkbox"
+            checked={mapping[key] === true}
+            onChange={(event) => onChange({ [key]: event.target.checked } as Partial<Mapping>)}
+          />
+          {label}
+        </label>
+      ))}
     </div>
   );
 }

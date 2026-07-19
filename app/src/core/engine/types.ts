@@ -12,6 +12,8 @@ export interface EngineConfig {
   sources: FormatSource[];
   /** Mapping ids to run — two units of the same board = two mappings. */
   activeMappingIds: string[];
+  /** PAM-16 global fixed executor page (1..9999); undefined = follow current page. */
+  fixedPage?: number;
   /** Test/dev overrides only — production uses the v1 constants. */
   timing?: Partial<EngineTiming>;
 }
@@ -27,6 +29,8 @@ export interface EngineTiming {
   holdOffMs: number;
   /** CMD-mode press queue: wait this long for the plugin ack before advancing (PAM-12 AC-11). */
   cmdAckTimeoutMs: number;
+  /** PAM-16 config handshake heartbeat: re-send pamConfig+forceReload this often (AC-3). */
+  configHeartbeatMs: number;
 }
 
 /** The v1 constants — bit-parity with the Open Stage Control module. */
@@ -39,6 +43,7 @@ export const DEFAULT_TIMING: EngineTiming = {
   hotplugPollMs: 2000,
   holdOffMs: 500,
   cmdAckTimeoutMs: 300,
+  configHeartbeatMs: 30000,
 };
 
 /**

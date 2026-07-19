@@ -57,6 +57,15 @@ export function validateDraft(draft: SettingsDraft, validMappingIds: ReadonlySet
     });
   }
 
+  // PAM-16: the global fixed page is optional; when set it must be 1..9999.
+  const fixedPage = draft.fixedPage;
+  if (fixedPage !== undefined && !(Number.isInteger(fixedPage) && fixedPage >= 1 && fixedPage <= 9999)) {
+    errors.push({
+      field: "fixedPage",
+      message: "Fixed page must be a whole number 1–9999, or empty to follow the current page",
+    });
+  }
+
   const seenInputs = new Map<string, string>();
   const seenOutputs = new Map<string, string>();
   const seenIds = new Set<string>();

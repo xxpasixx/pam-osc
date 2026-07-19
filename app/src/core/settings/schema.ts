@@ -37,6 +37,11 @@ export const persistedSettingsSchema = z.strictObject({
   ui: z.strictObject({ windowBounds: windowBoundsSchema.optional() }).optional(),
   // PAM-14: set once the user finishes OR skips the setup wizard.
   onboarding: onboardingSchema.optional(),
+  // PAM-16: global fixed executor page (1..9999) pushed to the plugin in the
+  // config handshake. Absent = follow the console's current page (default).
+  // Global, not per mapping, so two active mappings can't demand different
+  // pages. Additive & optional — an older file simply lacks it; no bump.
+  fixedPage: z.number().int().min(1).max(9999).optional(),
 });
 
 export type ConsoleSettings = z.infer<typeof consoleSettingsSchema>;
@@ -75,4 +80,6 @@ export interface ActiveMappingDraft {
 export interface SettingsDraft {
   console: ConsoleSettings;
   activeMappings: ActiveMappingDraft[];
+  // PAM-16: global fixed executor page; undefined = follow the current page.
+  fixedPage?: number;
 }

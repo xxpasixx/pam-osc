@@ -16,5 +16,7 @@ export function draftFromPersisted(settings: PersistedSettings, catalog: Catalog
       const entry = entriesById.get(id);
       return { id, input: entry?.midiPort.input ?? "", output: entry?.midiPort.output };
     }),
+    // PAM-16: global fixed executor page (undefined = follow current page).
+    fixedPage: settings.fixedPage,
   };
 }

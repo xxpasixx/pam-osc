@@ -202,6 +202,7 @@ export const TEST_TIMING: EngineTiming = {
   hotplugPollMs: 25,
   holdOffMs: 50,
   cmdAckTimeoutMs: 40,
+  configHeartbeatMs: 50,
 };
 
 export interface FixtureOptions {

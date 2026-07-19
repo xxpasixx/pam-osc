@@ -546,8 +546,10 @@ export function App() {
           <>
             <ConsoleSection
               console={draft.console}
+              fixedPage={draft.fixedPage}
               errors={fieldErrors}
               onChange={(console) => updateDraft((current) => ({ ...current, console }))}
+              onFixedPageChange={(fixedPage) => updateDraft((current) => ({ ...current, fixedPage }))}
             />
             <DevicesSection
               active={draft.activeMappings}

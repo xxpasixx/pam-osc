@@ -23,18 +23,28 @@ function Field({
 
 export function ConsoleSection({
   console: consoleSettings,
+  fixedPage,
   errors,
   onChange,
+  onFixedPageChange,
 }: {
   console: ConsoleSettings;
+  /** PAM-16 global fixed executor page; undefined = follow the current page.
+   *  Optional — the first-run wizard omits it (only the full Setup shows it). */
+  fixedPage?: number;
   errors: FieldError[];
   onChange: (console: ConsoleSettings) => void;
+  onFixedPageChange?: (fixedPage: number | undefined) => void;
 }) {
   const errorFor = (field: string) => errors.find((error) => error.field === field)?.message;
   const setPort = (key: "sendPort" | "receivePort", raw: string) => {
     // Digits only — "9003x" must not silently become 9003.
     if (!/^\d*$/.test(raw)) return;
     onChange({ ...consoleSettings, [key]: raw === "" ? 0 : Number.parseInt(raw, 10) });
+  };
+  const setFixedPage = (raw: string) => {
+    if (!/^\d*$/.test(raw)) return; // digits only
+    onFixedPageChange?.(raw === "" ? undefined : Math.min(Number.parseInt(raw, 10), 9999));
   };
 
   return (
@@ -65,6 +75,17 @@ export function ConsoleSection({
             onChange={(event) => setPort("receivePort", event.target.value)}
           />
         </Field>
+        {onFixedPageChange && (
+          <Field id="console-fixed-page" label="Fixed page (empty = follow console)" error={errorFor("fixedPage")}>
+            <input
+              id="console-fixed-page"
+              inputMode="numeric"
+              placeholder="follow current"
+              value={fixedPage === undefined ? "" : String(fixedPage)}
+              onChange={(event) => setFixedPage(event.target.value)}
+            />
+          </Field>
+        )}
       </div>
     </section>
   );

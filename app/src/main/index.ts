@@ -175,18 +175,23 @@ async function main(): Promise<void> {
     (event) => send(IPC.evMidiActivity, event)
   );
 
-  const engineConfigFrom = (console: SettingsDraft["console"], mappingIds: string[]): EngineConfig => ({
+  const engineConfigFrom = (
+    console: SettingsDraft["console"],
+    mappingIds: string[],
+    fixedPage: number | undefined
+  ): EngineConfig => ({
     consoleAddress: console.address,
     sendPort: console.sendPort,
     receivePort: console.receivePort,
     sources: catalog.sources(),
     activeMappingIds: mappingIds,
+    fixedPage,
   });
 
   // AC-4: valid persisted settings → the engine starts before the window.
   if (!loaded.firstRun && loaded.settings.activeMappingIds.length > 0) {
     const error = await engineHost.autoStart(
-      engineConfigFrom(loaded.settings.console, loaded.settings.activeMappingIds)
+      engineConfigFrom(loaded.settings.console, loaded.settings.activeMappingIds, loaded.settings.fixedPage)
     );
     if (error) {
       pushNotice({ severity: "error", message: `engine did not start with the saved settings: ${error}` });
@@ -238,7 +243,8 @@ async function main(): Promise<void> {
       buildEngineConfig: (validated) =>
         engineConfigFrom(
           validated.console,
-          validated.activeMappings.map((mapping) => mapping.id)
+          validated.activeMappings.map((mapping) => mapping.id),
+          validated.fixedPage
         ),
       buildSnapshot,
     });
@@ -531,7 +537,9 @@ async function main(): Promise<void> {
   const reloadEngineIfNeeded = async (needed: boolean): Promise<Notice[]> => {
     if (!needed || engineHost.snapshot().engineState === "stopped") return [];
     const settings = settingsStore.settings;
-    const outcome = await engineHost.apply(engineConfigFrom(settings.console, settings.activeMappingIds));
+    const outcome = await engineHost.apply(
+      engineConfigFrom(settings.console, settings.activeMappingIds, settings.fixedPage)
+    );
     if (outcome.ok) return [];
     return [
       {
@@ -599,7 +607,9 @@ async function main(): Promise<void> {
     if (settings.activeMappingIds.length === 0) {
       return { ok: false, error: "no active mappings configured — add a device under Setup first" };
     }
-    const error = await engineHost.autoStart(engineConfigFrom(settings.console, settings.activeMappingIds));
+    const error = await engineHost.autoStart(
+      engineConfigFrom(settings.console, settings.activeMappingIds, settings.fixedPage)
+    );
     if (error) runPortDiagnosis();
     return error ? { ok: false, error } : { ok: true };
   });
