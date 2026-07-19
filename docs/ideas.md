@@ -15,3 +15,4 @@
 - Editor UX: Board- vs. Mapping-Modus sichtbarer trennen/erklären (kurzer Hinweistext o. Onboarding — "Board = Hardware-Fakten, Mapping = deine Belegung"), Nutzer-Feedback: Trennung kommt nicht rüber (2026-07-17)
 - UX-L2: kleines Richtungs-Diagramm neben Send-/Receive-Port ("App → Konsole" / "Konsole → App") statt nur Textlabels (UX-Review 2026-07-18)
 - UX-L4: leeres Port-Feld ("unset") sauber von 0 unterscheiden, oder 0 am Input blocken (UX-Review 2026-07-18)
+- Boards-Liste nach Mapping-Status (draft/community/tested) filtern/sortieren — Nice-to-have aus PAM-19 (2026-07-19)

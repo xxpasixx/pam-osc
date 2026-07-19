@@ -37,12 +37,13 @@
 | PAM-16 | Config handshake — app tells the plugin which executors + feature flags to watch (from mapping + settings), with a periodic re-sync that self-heals a stuck plugin       | P1       | PAM-2, PAM-12, PAM-3 | Spec'd   | [PAM-16](PAM-16-config-handshake/)                 | 2026-07-18 |
 | PAM-17 | UX review follow-ups — notices over the editor (High), clipboard/retry recoverability, selectable text, modal/tab a11y, jargon &amp; copy cleanup, editor keyboard nav        | P1       | PAM-3, PAM-4, PAM-6 | Spec'd   | [PAM-17](PAM-17-ux-review-followups/)              | 2026-07-18 |
 | PAM-18 | QuickKey dropdown + uninstall + confirmed-native key handling — dropdown from one canonical key list (no free text); "Remove QuickKeys" cleanup; EvoFaderWing review baked in (executors stay CMD, hardkeys stay QuickKey) | P1       | PAM-6, PAM-1, PAM-2 | Spec'd   | [PAM-18](PAM-18-quickkey-dropdown/)                | 2026-07-19 |
+| PAM-19 | Mapping status — draft / community / tested badge per mapping (self-declared), shown in lists &amp; pickers; supports community sharing                                    | P2       | PAM-1, PAM-11, PAM-7 | Spec'd   | [PAM-19](PAM-19-mapping-status/)                   | 2026-07-19 |
 
 <!-- Add features above this line -->
 
 **Recommended build order:** PAM-1 → PAM-2 → PAM-3 → PAM-4 → PAM-5 = MVP release, then PAM-6/PAM-7 (P1), then P2. New onboarding/plugin cluster (P1): PAM-13 + PAM-16 together (both regenerate the plugin) → PAM-14 (wizard, reuses PAM-9) → PAM-15 (later, best-effort re-arm).
 
-## Next Available ID: PAM-19
+## Next Available ID: PAM-20
 
 ## Operations
 
