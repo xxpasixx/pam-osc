@@ -129,6 +129,7 @@ export function BoardsView({
               {mappings.map((entry) => (
                 <div className="mapping-row" key={entry.id}>
                   <span>{entry.name}</span>
+                  <span className={`badge status-badge ${entry.status}`}>{entry.status}</span>
                   <span className="badge">{entry.origin}</span>
                   <div className="spacer" />
                   <button className="subtle" onClick={() => onExportMapping(entry.id)}>

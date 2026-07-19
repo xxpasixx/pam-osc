@@ -2,6 +2,7 @@
   "formatVersion": 1,
   "id": "x-touch-compact-default-1",
   "name": "X-Touch Compact Default 1",
+  "status": "tested",
   "notes": "Re-expressed from v1 mappings/xTouchCompact1.json. Uses both hardware layers (A and B) - layer-B assignments target the -b controls. All 16 encoders run in their default absolute-CC config; MA3 fader values come back as CC feedback (motor faders + encoder LED rings).",
   "deviceDefinitionId": "x-touch-compact",
   "midiPort": {

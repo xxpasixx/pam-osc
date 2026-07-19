@@ -282,6 +282,10 @@ export function convertV1(input: ConvertV1Input): { mapping: Mapping; summary: I
     name: input.name,
     notes,
     deviceDefinitionId: device.id,
+    // PAM-19 AC-6: a v1 conversion is unverified until checked on hardware.
+    // (This equals the schema default; set explicitly so the output type is
+    // complete and the intent is on the record.)
+    status: "draft",
     midiPort: hasFeedbackCapability(device) ? { input: device.name, output: device.name } : { input: device.name },
     enableTimecodeSend,
     assignments,

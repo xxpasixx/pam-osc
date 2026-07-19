@@ -97,6 +97,7 @@ export function AddDeviceDialog({
                     {entry.name}
                     {active && <span className="board"> (already active)</span>}
                   </span>
+                  <span className={`badge status-badge ${entry.status}`}>{entry.status}</span>
                   <span className="badge">{entry.origin}</span>
                 </button>
               );

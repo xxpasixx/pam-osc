@@ -94,6 +94,14 @@ describe("bundled resources", () => {
     }
   });
 
+  it("ships every bundled mapping as status 'tested' (PAM-19 AC-4)", async () => {
+    const result = await loadBundled();
+    expect(result.mappings.length).toBeGreaterThan(0);
+    for (const mapping of result.mappings) {
+      expect(mapping.status, `${mapping.id} should ship as tested`).toBe("tested");
+    }
+  });
+
   it("every bundled mapping has an output port when it uses feedback", async () => {
     const result = await loadBundled();
     for (const mapping of result.mappings) {

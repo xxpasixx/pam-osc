@@ -66,7 +66,15 @@ export function parseShareFile(expected: ShareKind, raw: string): ParseShareResu
         error: `not a valid mapping file${path ? ` (${path})` : ""}: ${issue?.message ?? "unknown"}`,
       };
     }
-    return { ok: true, kind: "mapping", entity: check.data };
+    // PAM-19 AC-5: a shared file's own status is preserved as-is (that author's
+    // claim); a shared file with no status at all is provenance-tagged
+    // "community". Presence is checked on the RAW object — the schema has
+    // already filled the absent field with its "draft" default.
+    const entity = check.data;
+    const hadStatus =
+      typeof value === "object" && value !== null && Object.prototype.hasOwnProperty.call(value, "status");
+    if (!hadStatus) entity.status = "community";
+    return { ok: true, kind: "mapping", entity };
   }
   const check = deviceDefinitionSchema.safeParse(value);
   if (!check.success) {

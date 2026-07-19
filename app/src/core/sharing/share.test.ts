@@ -52,6 +52,18 @@ describe("parseShareFile (AC-13, AC-5)", () => {
     expect((parseShareFile("mapping", oversized) as { error: string }).error).toContain("1 MB");
   });
 
+  it("defaults a statusless shared mapping to 'community', preserves an explicit status (PAM-19 AC-5)", () => {
+    const statusless = parseShareFile("mapping", JSON.stringify(minimalMapping()));
+    expect(statusless).toMatchObject({ ok: true, kind: "mapping" });
+    expect((statusless as { entity: Mapping }).entity.status).toBe("community");
+
+    const claimed = parseShareFile("mapping", JSON.stringify(minimalMapping({ status: "tested" })));
+    expect((claimed as { entity: Mapping }).entity.status).toBe("tested");
+
+    const draft = parseShareFile("mapping", JSON.stringify(minimalMapping({ status: "draft" })));
+    expect((draft as { entity: Mapping }).entity.status).toBe("draft");
+  });
+
   it("runs the strict schema — a detected-but-invalid entity is refused with the failing path", () => {
     const broken = minimalMapping({ assignments: [{ controlId: "x", action: { type: "warp" } }] });
     const result = parseShareFile("mapping", JSON.stringify(broken));

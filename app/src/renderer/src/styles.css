@@ -619,6 +619,51 @@ dialog .error {
   border-color: var(--accent);
 }
 
+/* PAM-19: per-mapping status badge — shown everywhere a mapping is listed or
+   picked. Distinct color AND the text label (never color alone). */
+.status-badge {
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.status-badge.draft {
+  color: var(--text-dim);
+  border-color: var(--border);
+}
+
+.status-badge.community {
+  color: #6ab7ff;
+  border-color: #6ab7ff;
+}
+
+.status-badge.tested {
+  color: #3ddc84;
+  border-color: #3ddc84;
+}
+
+/* Status picker in the mapping editor header (AC-3). */
+.editor-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.editor-status select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  padding: 4px 6px;
+}
+
 .editor-name {
   background: var(--surface-2);
   border: 1px solid var(--border);

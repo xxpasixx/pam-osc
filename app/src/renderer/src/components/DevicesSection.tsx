@@ -106,6 +106,7 @@ export function DevicesSection({
               {entry?.boardName ?? "unknown board"}
               <span className="board">{statusText}</span>
             </div>
+            {entry && <span className={`badge status-badge ${entry.status}`}>{entry.status}</span>}
             <div className={`field ${errorFor(`mapping:${mapping.id}`) ? "invalid" : ""}`}>
               <label htmlFor={`mapping-${index}`}>Mapping</label>
               <select

@@ -5,7 +5,7 @@
  */
 
 import type { ConnectionStatus, ConsoleState, DeviceStatus, TrafficDirection } from "../core/engine/types.js";
-import type { DeviceDefinition, EditorIssue, Mapping } from "../core/format/index.js";
+import type { DeviceDefinition, EditorIssue, Mapping, MappingStatus } from "../core/format/index.js";
 import type { ImportSummary, V1SectionCounts } from "../core/import/index.js";
 import type { SettingsDraft } from "../core/settings/schema.js";
 
@@ -39,6 +39,8 @@ export interface CatalogEntry {
   /** Display name of the referenced board type (device definition). */
   boardName: string;
   origin: "bundled" | "user";
+  /** Maturity/provenance badge (PAM-19) — draft / community / tested. */
+  status: MappingStatus;
   /** Port names currently stored in the mapping file. */
   midiPort: { input: string; output?: string };
   valid: true;

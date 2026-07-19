@@ -82,6 +82,9 @@ export const mappingSchema = z
       // Input-only boards have no feedback and therefore no output port.
       output: z.string().min(1).optional(),
     }),
+    // Maturity/provenance (PAM-19 AC-1): additive with a default, so older
+    // files with no status simply load as "draft" — no format-version bump.
+    status: z.enum(["draft", "community", "tested"]).default("draft"),
     enableTimecodeSend: z.boolean().default(false),
     assignments: z.array(assignmentSchema),
   })
@@ -106,3 +109,4 @@ export type Action = z.infer<typeof actionSchema>;
 export type Feedback = z.infer<typeof feedbackSchema>;
 export type Assignment = z.infer<typeof assignmentSchema>;
 export type Mapping = z.infer<typeof mappingSchema>;
+export type MappingStatus = Mapping["status"];

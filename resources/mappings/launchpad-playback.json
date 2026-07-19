@@ -2,6 +2,7 @@
   "formatVersion": 1,
   "id": "launchpad-playback",
   "name": "Launchpad Playback",
+  "status": "tested",
   "notes": "Converted from v1 LaunchPad-Playback.json. Executors on the lower three pad rows, dimmer/color/position/zoom presets above, fixture-group selection on the top pad row, quick keys and commands on the scene column. v1 numeric permanentFeedback values are Launchpad palette colors sent permanently (in v1 they also override executor on/off feedback), so they become always-on feedback here - including on the executor pads, whose LEDs are fixed row colors. The top-row CC buttons act as flash-style executor triggers (press = 100%, release = 0%); their v1 feedback mirrored the executor fader level as a CC value, which is approximated here as on-off (127/0). minValue 100 keeps light touches from triggering command/quick-key pads, as in v1.",
   "deviceDefinitionId": "launchpad",
   "midiPort": {

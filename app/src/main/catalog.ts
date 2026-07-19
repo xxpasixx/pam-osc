@@ -105,6 +105,7 @@ export class Catalog {
       deviceDefinitionId: mapping.deviceDefinitionId,
       boardName: devicesById.get(mapping.deviceDefinitionId)?.name ?? mapping.deviceDefinitionId,
       origin: this.sourceById.get(mapping.id)?.origin ?? "bundled",
+      status: mapping.status,
       midiPort: { input: mapping.midiPort.input, output: mapping.midiPort.output },
       valid: true as const,
     }));

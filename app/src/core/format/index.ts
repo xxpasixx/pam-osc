@@ -13,6 +13,7 @@ export {
   feedbackSchema,
   assignmentSchema,
   type Mapping,
+  type MappingStatus,
   type Action,
   type Feedback,
   type Assignment,

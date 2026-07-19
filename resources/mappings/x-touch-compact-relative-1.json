@@ -2,6 +2,7 @@
   "formatVersion": 1,
   "id": "x-touch-compact-relative-1",
   "name": "X-Touch Compact Relative 1",
+  "status": "tested",
   "notes": "Re-expressed from v1 mappings/xTouchCompactRltv1.json. Same as the default mapping, but the right-side encoders 9-16 are set to relative mode (via the X-Touch editor) and control fixture attributes; pushing encoder 9 toggles fine, encoder 10 toggles rough sensitivity. v1 defined no LED-ring feedback for these encoders, so their feedback is none. The remaining right-knob pushes (v1 notes 10-15) and all layer-B right-knob pushes had no v1 assignment.",
   "deviceDefinitionId": "x-touch-compact",
   "midiPort": {

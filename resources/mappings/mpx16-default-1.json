@@ -2,6 +2,7 @@
   "formatVersion": 1,
   "id": "mpx16-default-1",
   "name": "MPX16 Default 1",
+  "status": "tested",
   "notes": "Re-expressed from v1 mappings/mpx16-1.json: 16 pads on executors 191-198 and 291-298. The v1 file-level buttonFeedbackMapper (On=127, Off=0) becomes on-off feedback with onValue 127 / offValue 0 on every assignment.",
   "deviceDefinitionId": "mpx16",
   "midiPort": { "input": "MPX16", "output": "MPX16" },

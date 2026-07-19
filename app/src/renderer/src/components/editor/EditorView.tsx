@@ -665,12 +665,30 @@ export function EditorView({
       <header className="editor-header">
         <span className={`badge ${mode}`}>{mode === "mapping" ? "Mapping" : "Board"}</span>
         {loaded.mode === "mapping" ? (
-          <input
-            className="editor-name"
-            aria-label="Mapping name"
-            value={name}
-            onChange={(event) => setDraft((current) => (current ? { ...current, name: event.target.value } : current))}
-          />
+          <>
+            <input
+              className="editor-name"
+              aria-label="Mapping name"
+              value={name}
+              onChange={(event) => setDraft((current) => (current ? { ...current, name: event.target.value } : current))}
+            />
+            <label className="editor-status" title="Maturity / provenance of this mapping (PAM-19)">
+              Status
+              <select
+                aria-label="Mapping status"
+                value={(draft as Mapping).status}
+                onChange={(event) =>
+                  setDraft((current) =>
+                    current ? ({ ...(current as Mapping), status: event.target.value as Mapping["status"] }) : current
+                  )
+                }
+              >
+                <option value="draft">draft</option>
+                <option value="community">community</option>
+                <option value="tested">tested</option>
+              </select>
+            </label>
+          </>
         ) : (
           <span className="editor-name-static">{name}</span>
         )}
