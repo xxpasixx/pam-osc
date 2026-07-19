@@ -19,8 +19,11 @@ extraResources:
 mac:
   target: dmg
   category: public.app-category.music
+  icon: build/icon-mac.png
 win:
   target: nsis
+  icon: build/icon-win.png
 linux:
   target: AppImage
   category: Audio
+  icon: build/icon-linux.png
