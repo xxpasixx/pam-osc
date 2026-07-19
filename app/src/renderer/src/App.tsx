@@ -23,6 +23,7 @@ import { SetupWizard } from "./components/SetupWizard.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { StatusView } from "./components/StatusView.js";
 import { TrafficLog } from "./components/TrafficLog.js";
+import { activateCatalogEntry, shouldAutoOpenWizard } from "./wizard-logic.js";
 
 /** Renderer-side cap for the traffic log (EC-2) — main sends batches. */
 const TRAFFIC_LIMIT = 1000;
@@ -92,7 +93,7 @@ export function App() {
         // AC-1: first launch (no completed flag) opens the wizard instead of
         // the tabbed UI. Only decided from the initial snapshot — later
         // adoptSnapshot calls (post-save) must never reopen it.
-        if (initial.onboarding?.completed !== true) setWizardOpen(true);
+        if (shouldAutoOpenWizard(initial.onboarding)) setWizardOpen(true);
       })
       .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : String(error)));
   }, [adoptSnapshot]);
@@ -244,13 +245,21 @@ export function App() {
           return;
         }
         // The catalog gained a mapping — refresh the lists (same pattern as
-        // Duplicate); settings stay untouched, activation is the user's step.
+        // Duplicate) BEFORE activating, so the new id is a valid catalog id.
         const fresh = await window.pamOsc.getSnapshot();
         setSnapshot((current) =>
           current
             ? { ...current, catalog: fresh.catalog, invalidFiles: fresh.invalidFiles, boards: fresh.boards }
             : current
         );
+        // PAM-14 BUG-1 / AC-3: activate the imported mapping the SAME way the
+        // bundled-board pick does, so the wizard's controller step ends with an
+        // active mapping and Next enables. Idempotent, so it is harmless from
+        // the normal tabbed import (it just pre-selects the new mapping to save).
+        updateDraft((current) => ({
+          ...current,
+          activeMappings: activateCatalogEntry(current.activeMappings, result.entry),
+        }));
         setImportFlow({ phase: "result", entryName: result.entry.name, summary: result.summary });
       } catch (error) {
         setImportFlow({ phase: "error", error: error instanceof Error ? error.message : String(error) });
@@ -258,7 +267,7 @@ export function App() {
         setImportBusy(false);
       }
     },
-    [importFlow]
+    [importFlow, updateDraft]
   );
 
   const runOutputTest = useCallback(
@@ -416,10 +425,7 @@ export function App() {
           setDialogOpen(false);
           updateDraft((current) => ({
             ...current,
-            activeMappings: [
-              ...current.activeMappings,
-              { id: entry.id, input: entry.midiPort.input, output: entry.midiPort.output },
-            ],
+            activeMappings: activateCatalogEntry(current.activeMappings, entry),
           }));
         }}
       />
@@ -573,10 +579,7 @@ export function App() {
                 );
                 updateDraft((current) => ({
                   ...current,
-                  activeMappings: [
-                    ...current.activeMappings,
-                    { id: result.id, input: result.midiPort.input, output: result.midiPort.output },
-                  ],
+                  activeMappings: activateCatalogEntry(current.activeMappings, result),
                 }));
               }}
             />

@@ -4,6 +4,7 @@ import type { ConsoleSettings } from "../../../core/settings/schema.js";
 import type { EngineState, FieldError } from "../../../shared/ipc.js";
 import { ConsoleSection } from "./ConsoleSection.js";
 import { Ma3SetupView } from "./Ma3SetupView.js";
+import { shouldAutoStartEngine } from "../wizard-logic.js";
 
 /**
  * PAM-14: the first-run setup wizard. A full-window overlay (same slot as the
@@ -121,7 +122,7 @@ export function SetupWizard({
   // never has to discover the Status tab. Only when something is bound and the
   // engine is idle; the engine then runs its own connection check.
   useEffect(() => {
-    if (step === 6 && engineState === "stopped" && activeMappingCount > 0) {
+    if (shouldAutoStartEngine({ onVerifyStep: step === TOTAL_STEPS, engineState, activeMappingCount })) {
       void onStartEngine();
     }
   }, [step, engineState, activeMappingCount, onStartEngine]);
