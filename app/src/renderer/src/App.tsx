@@ -302,6 +302,37 @@ export function App() {
     );
   }, []);
 
+  // PAM-22: delete a user mapping / user board (bundled are refused main-side).
+  const deleteMapping = useCallback(
+    async (id: string) => {
+      const result = await window.pamOsc.deleteMapping(id);
+      if ("error" in result) {
+        pushError(result.error);
+        return;
+      }
+      const fresh = await window.pamOsc.getSnapshot();
+      adoptEditorSnapshot(fresh);
+      // If it was active, drop it from the draft so no dangling row remains.
+      updateDraft((current) => ({ ...current, activeMappings: current.activeMappings.filter((m) => m.id !== id) }));
+      setNotices((current) => [...current, { severity: "info", message: `mapping "${id}" deleted` }]);
+    },
+    [pushError, adoptEditorSnapshot, updateDraft]
+  );
+
+  const deleteBoard = useCallback(
+    async (id: string) => {
+      const result = await window.pamOsc.deleteDevice(id);
+      if ("error" in result) {
+        pushError(result.error);
+        return;
+      }
+      const fresh = await window.pamOsc.getSnapshot();
+      adoptEditorSnapshot(fresh);
+      setNotices((current) => [...current, { severity: "info", message: `board "${id}" deleted` }]);
+    },
+    [pushError, adoptEditorSnapshot]
+  );
+
   // Menu-driven imports (PAM-7 AC-14) change the catalog in the main process
   // — it pushes a fresh snapshot; notices arrive via the normal event.
   useEffect(() => window.pamOsc.onCatalogChanged(adoptEditorSnapshot), [adoptEditorSnapshot]);
@@ -547,7 +578,12 @@ export function App() {
             <TrafficLog entries={traffic} />
           </>
         )}
-        {tab === "ma3" && <Ma3SetupView values={draft.console} />}
+        {tab === "ma3" && (
+          <Ma3SetupView
+            values={draft.console}
+            pushNotice={(notice) => setNotices((current) => [...current, notice])}
+          />
+        )}
         {tab === "setup" && (
           <>
             <ConsoleSection
@@ -598,6 +634,8 @@ export function App() {
             onExportMapping={(id) => void exportShare("mapping", id)}
             onImportBoard={() => void importShare("device")}
             onImportMapping={() => void importShare("mapping")}
+            onDeleteBoard={(id) => void deleteBoard(id)}
+            onDeleteMapping={(id) => void deleteMapping(id)}
           />
         )}
       </main>

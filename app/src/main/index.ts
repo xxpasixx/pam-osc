@@ -13,7 +13,14 @@ import { applySettings } from "./apply-settings.js";
 import { Catalog } from "./catalog.js";
 import { EngineHost } from "./engine-host.js";
 import { analyzeV1File, importV1File, ImportSerializer } from "./import-v1.js";
-import { detectMa3Installs, installFile, ma3BaseCandidates, readPluginVersion } from "./ma3-install.js";
+import {
+  comparePluginVersions,
+  detectMa3Installs,
+  installFile,
+  ma3BaseCandidates,
+  readPluginVersion,
+} from "./ma3-install.js";
+import { consoleImportPath, listRemovableDrives, usbTargetDirs } from "./usb-export.js";
 import { MidiLearn } from "./midi-learn.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
@@ -305,6 +312,85 @@ async function main(): Promise<void> {
   handle(IPC.revealBundledAsset, (_event, rawAsset) => {
     shell.showItemInFolder(rawAsset === "osc" ? bundledOscXml : bundledPluginXml);
   });
+
+  // ---- PAM-23 USB plugin export ----
+  // Copy targets are validated against a fresh drive scan OR a folder the user
+  // picked through the native dialog below — the renderer never points the copy
+  // at an arbitrary path (mirrors the PAM-9 base check and the PAM-5 file check).
+  const pickedUsbFolders = new Set<string>();
+  handle(IPC.listRemovableDrives, async () => ({
+    drives: await listRemovableDrives(process.platform),
+    bundledVersion: await readPluginVersion(bundledPluginXml),
+  }));
+  handle(IPC.chooseUsbFolder, async () => {
+    if (!window) return { status: "canceled" };
+    const picked = await dialog.showOpenDialog(window, {
+      title: "Choose a USB stick or folder",
+      properties: ["openDirectory", "createDirectory"],
+    });
+    const dir = picked.filePaths[0];
+    if (picked.canceled || !dir) return { status: "canceled" };
+    pickedUsbFolders.add(dir);
+    return { status: "chosen", path: dir };
+  });
+  handle(IPC.copyPluginToUsb, async (_event, rawDriveId, rawOverwrite) => {
+    const driveId = String(rawDriveId);
+    const overwrite = rawOverwrite === true;
+    const { pluginsDir, oscDir } = usbTargetDirs(driveId);
+    const pluginTarget = join(pluginsDir, "pam-osc.xml");
+    const oscTarget = join(oscDir, "pam-osc.xml");
+    // Security gate: the target must be a currently-detected removable drive or
+    // a dialog-picked folder from this session.
+    const known =
+      pickedUsbFolders.has(driveId) ||
+      (await listRemovableDrives(process.platform)).some((drive) => drive.id === driveId);
+    if (!known) {
+      return { status: "error", error: "unknown drive — rescan and pick it again", pluginTarget, oscTarget };
+    }
+    // Check BOTH targets up front so a single confirm covers both copies (AC-5)
+    // — otherwise an existing OSC config could be skipped while we still report
+    // "copied".
+    if (!overwrite) {
+      const pluginExists = (await stat(pluginTarget).catch(() => undefined)) !== undefined;
+      const oscExists = (await stat(oscTarget).catch(() => undefined)) !== undefined;
+      if (pluginExists || oscExists) {
+        return {
+          status: "exists",
+          existingPluginVersion: pluginExists ? await readPluginVersion(pluginTarget) : undefined,
+        };
+      }
+    }
+    // Nothing to protect (or the user confirmed) — copy both.
+    const pluginResult = await installFile(bundledPluginXml, pluginsDir, true);
+    if (pluginResult.status === "error") {
+      return { status: "error", error: pluginResult.error, pluginTarget, oscTarget };
+    }
+    const oscResult = await installFile(bundledOscXml, oscDir, true);
+    if (oscResult.status === "error") {
+      return { status: "error", error: oscResult.error, pluginTarget, oscTarget };
+    }
+    sessionLog.log(`USB export: copied plugin + OSC config to ${driveId}`);
+    return { status: "copied", pluginTarget, oscTarget, consolePath: consoleImportPath() };
+  });
+
+  // AC-9 (PAM-9): surface a "plugin update available" notice at startup for a
+  // detected local install older than the bundled plugin — without the user
+  // opening the setup assistant. De-duped by pushNotice; fire-and-forget.
+  void (async () => {
+    const bundledVersion = await readPluginVersion(bundledPluginXml);
+    if (!bundledVersion) return;
+    const installs = await detectInstalls();
+    const outdated = installs.some(
+      (install) => install.installedVersion && comparePluginVersions(install.installedVersion, bundledVersion) < 0
+    );
+    if (outdated) {
+      pushNotice({
+        severity: "info",
+        source: "MA3 plugin",
+        message: `MA3 plugin update available — bundle ${bundledVersion} is newer than the version installed on this machine. Open the MA3 tab to update.`,
+      });
+    }
+  })();
   // BUG-7: both mutate the catalog — rebuild the menu's Export submenus so
   // they don't rely on the renderer's follow-up getSnapshot to stay fresh.
   handle(IPC.duplicateMapping, async (_event, id) => {
@@ -319,6 +405,16 @@ async function main(): Promise<void> {
     }
     const result = await catalog.createMapping(request.deviceDefinitionId, request.name);
     if (!("error" in result)) rebuildMenu();
+    return result;
+  });
+  handle(IPC.deleteMapping, async (_event, id) => {
+    const result = await catalog.deleteMapping(String(id));
+    if ("ok" in result) rebuildMenu();
+    return result;
+  });
+  handle(IPC.deleteDevice, async (_event, id) => {
+    const result = await catalog.deleteDevice(String(id));
+    if ("ok" in result) rebuildMenu();
     return result;
   });
 
@@ -530,6 +626,7 @@ async function main(): Promise<void> {
   const activeIds = () => new Set(settingsStore.settings.activeMappingIds);
   handle(IPC.getMappingForEdit, (_event, id) => catalog.mappingForEdit(String(id)));
   handle(IPC.getDeviceDefinitionForEdit, (_event, id) => catalog.deviceForEdit(String(id), activeIds()));
+  handle(IPC.getDeviceImage, (_event, id) => catalog.deviceImage(String(id)));
   handle(IPC.getDefinitionUsage, (_event, id) => catalog.definitionUsage(String(id), activeIds()));
 
   // Editor saves reuse the PAM-3 apply transaction for the engine reload

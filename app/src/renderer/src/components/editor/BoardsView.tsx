@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { BoardInfo, CatalogEntry, InvalidCatalogEntry } from "../../../../shared/ipc.js";
+import { BoardThumb } from "../BoardThumb.js";
+import { PencilIcon, ShareIcon, TrashIcon } from "../icons.js";
 
 /**
  * The Boards tab (PAM-6 AC-8, PAM-11 AC-1/2/3): the board is the anchor —
@@ -62,6 +64,8 @@ export function BoardsView({
   onExportMapping,
   onImportBoard,
   onImportMapping,
+  onDeleteBoard,
+  onDeleteMapping,
 }: {
   boards: BoardInfo[];
   catalog: CatalogEntry[];
@@ -75,6 +79,8 @@ export function BoardsView({
   onExportMapping: (id: string) => void;
   onImportBoard: () => void;
   onImportMapping: () => void;
+  onDeleteBoard: (id: string) => void;
+  onDeleteMapping: (id: string) => void;
 }) {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -119,16 +125,39 @@ export function BoardsView({
         return (
           <div className="board-group" key={board.id} aria-label={board.name}>
             <div className="board-group-header">
+              <BoardThumb boardId={board.id} />
               <span className="board-group-name">{board.name}</span>
               <span className="board mono">{board.id}</span>
               <span className="badge">{board.origin}</span>
               <div className="spacer" />
-              <button className="subtle" onClick={() => onExportBoard(board.id)}>
-                Export
+              <button
+                className="icon-btn"
+                title="Export / share board"
+                aria-label={`Export board "${board.name}"`}
+                onClick={() => onExportBoard(board.id)}
+              >
+                <ShareIcon />
               </button>
-              <button className="subtle" onClick={() => onEdit(board.id)}>
-                {board.origin === "bundled" ? "Edit board (a copy)" : "Edit board"}
+              <button
+                className="icon-btn"
+                title={board.origin === "bundled" ? "Edit board (creates a copy)" : "Edit board"}
+                aria-label={board.origin === "bundled" ? `Edit board "${board.name}" (creates a copy)` : `Edit board "${board.name}"`}
+                onClick={() => onEdit(board.id)}
+              >
+                <PencilIcon />
               </button>
+              {board.origin === "user" && (
+                <button
+                  className="icon-btn danger"
+                  title="Delete board"
+                  aria-label={`Delete board "${board.name}"`}
+                  onClick={() => {
+                    if (window.confirm(`Delete the board "${board.name}"? This cannot be undone.`)) onDeleteBoard(board.id);
+                  }}
+                >
+                  <TrashIcon />
+                </button>
+              )}
             </div>
             <div className="board-group-mappings">
               {mappings.map((entry) => (
@@ -137,12 +166,34 @@ export function BoardsView({
                   <span className={`badge status-badge ${entry.status}`}>{entry.status}</span>
                   <span className="badge">{entry.origin}</span>
                   <div className="spacer" />
-                  <button className="subtle" onClick={() => onExportMapping(entry.id)}>
-                    Export
+                  <button
+                    className="icon-btn"
+                    title="Export / share mapping"
+                    aria-label={`Export mapping "${entry.name}"`}
+                    onClick={() => onExportMapping(entry.id)}
+                  >
+                    <ShareIcon />
                   </button>
-                  <button className="subtle" onClick={() => onEditMapping(entry.id)}>
-                    Edit mapping
+                  <button
+                    className="icon-btn"
+                    title="Edit mapping"
+                    aria-label={`Edit mapping "${entry.name}"`}
+                    onClick={() => onEditMapping(entry.id)}
+                  >
+                    <PencilIcon />
                   </button>
+                  {entry.origin === "user" && (
+                    <button
+                      className="icon-btn danger"
+                      title="Delete mapping"
+                      aria-label={`Delete mapping "${entry.name}"`}
+                      onClick={() => {
+                        if (window.confirm(`Delete the mapping "${entry.name}"? This cannot be undone.`)) onDeleteMapping(entry.id);
+                      }}
+                    >
+                      <TrashIcon />
+                    </button>
+                  )}
                 </div>
               ))}
               {mappings.length === 0 && (

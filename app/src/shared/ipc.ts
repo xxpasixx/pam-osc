@@ -210,6 +210,49 @@ export interface Notice {
   message: string;
 }
 
+// ---- PAM-23 USB plugin export ----
+
+/** How likely a GrandMA3 console can read this filesystem (drives AC-9). */
+export type ConsoleReadable = "yes" | "likely" | "no" | "unknown";
+
+/** One connected removable/external drive offered as a copy target (AC-1). */
+export interface RemovableDrive {
+  /** Stable key AND write root: mount path (macOS/Linux) or drive root (Windows, e.g. "E:\\"). */
+  id: string;
+  /** Volume name; empty labels fall back to the mount path / drive letter in the UI. */
+  label: string;
+  /** Filesystem name (FAT32, exFAT, APFS, HFS+, NTFS, ext4 …); undefined when unknown. */
+  filesystem?: string;
+  /** Derived console-readability hint from the filesystem (AC-9). */
+  consoleReadable: ConsoleReadable;
+  /** Total capacity in bytes, for disambiguating identical sticks (optional). */
+  capacityBytes?: number;
+  /** Free space in bytes (optional). */
+  freeBytes?: number;
+  /** True when a pam-osc plugin already exists at the stick's plugin path. */
+  hasExistingPlugin: boolean;
+  /** Version of that on-stick plugin when readable (feeds AC-5 + AC-8). */
+  existingPluginVersion?: string;
+}
+
+/** Result of listing removable drives (AC-1/AC-2). */
+export interface UsbExportInfo {
+  drives: RemovableDrive[];
+  /** Plugin version the app ships — the compare source for the AC-8 update hint. */
+  bundledVersion: string | undefined;
+}
+
+/** Result of copying the plugin + OSC config to a stick (AC-3/AC-5/AC-6/AC-10). */
+export type UsbCopyResult =
+  | { status: "copied"; pluginTarget: string; oscTarget: string; consolePath: string }
+  /** A target file is already present and overwrite was not confirmed (AC-5). */
+  | { status: "exists"; existingPluginVersion?: string }
+  /** AC-6: friendly failure carrying both target paths for manual copying. */
+  | { status: "error"; error: string; pluginTarget: string; oscTarget: string };
+
+/** Result of the native "choose folder" fallback (AC-2). */
+export type ChooseUsbFolderResult = { status: "chosen"; path: string } | { status: "canceled" };
+
 /** Everything the UI needs at mount, in one round trip. */
 export interface Snapshot {
   settings: SettingsDraft;
@@ -254,10 +297,15 @@ export interface PamOscApi {
   revealMappingsFolder(): Promise<void>;
   duplicateMapping(id: string): Promise<CatalogEntry | { error: string }>;
   createMapping(request: CreateMappingRequest): Promise<CatalogEntry | { error: string }>;
+  /** PAM-22: delete a user mapping / user board (bundled can't be deleted). */
+  deleteMapping(id: string): Promise<{ ok: true } | { error: string }>;
+  deleteDevice(id: string): Promise<{ ok: true } | { error: string }>;
   pickV1MappingFile(): Promise<PickV1FileResult>;
   importV1Mapping(request: ImportV1Request): Promise<ImportV1Result>;
   getMappingForEdit(id: string): Promise<MappingEditData | { error: string }>;
   getDeviceDefinitionForEdit(id: string): Promise<DeviceEditData | { error: string }>;
+  /** PAM-21: the board's photo as a data URL, or null when none exists. */
+  getDeviceImage(id: string): Promise<string | null>;
   getDefinitionUsage(id: string): Promise<UsageRef[]>;
   saveMapping(draft: unknown): Promise<EditorSaveResult>;
   saveDeviceDefinition(request: SaveDeviceRequest): Promise<EditorSaveResult>;
@@ -273,6 +321,12 @@ export interface PamOscApi {
   getMa3Setup(): Promise<Ma3SetupInfo>;
   installMa3Asset(base: string, asset: Ma3Asset, overwrite: boolean): Promise<Ma3InstallResult>;
   revealBundledAsset(asset: Ma3Asset): Promise<void>;
+  /** PAM-23: list connected removable drives + the bundled version (AC-1). */
+  listRemovableDrives(): Promise<UsbExportInfo>;
+  /** PAM-23: native folder-picker fallback when no drive is detected (AC-2). */
+  chooseUsbFolder(): Promise<ChooseUsbFolderResult>;
+  /** PAM-23: copy the bundled plugin + OSC config to a stick (AC-3/AC-5/AC-6/AC-10). */
+  copyPluginToUsb(driveId: string, overwrite: boolean): Promise<UsbCopyResult>;
   startEngine(): Promise<{ ok: boolean; error?: string }>;
   stopEngine(): Promise<void>;
   checkConnection(): Promise<void>;
@@ -301,10 +355,13 @@ export const IPC = {
   revealMappingsFolder: "pam:revealMappingsFolder",
   duplicateMapping: "pam:duplicateMapping",
   createMapping: "pam:createMapping",
+  deleteMapping: "pam:deleteMapping",
+  deleteDevice: "pam:deleteDevice",
   pickV1MappingFile: "pam:pickV1MappingFile",
   importV1Mapping: "pam:importV1Mapping",
   getMappingForEdit: "pam:getMappingForEdit",
   getDeviceDefinitionForEdit: "pam:getDeviceDefinitionForEdit",
+  getDeviceImage: "pam:getDeviceImage",
   getDefinitionUsage: "pam:getDefinitionUsage",
   saveMapping: "pam:saveMapping",
   saveDeviceDefinition: "pam:saveDeviceDefinition",
@@ -320,6 +377,9 @@ export const IPC = {
   getMa3Setup: "pam:getMa3Setup",
   installMa3Asset: "pam:installMa3Asset",
   revealBundledAsset: "pam:revealBundledAsset",
+  listRemovableDrives: "pam:listRemovableDrives",
+  chooseUsbFolder: "pam:chooseUsbFolder",
+  copyPluginToUsb: "pam:copyPluginToUsb",
   startEngine: "pam:startEngine",
   stopEngine: "pam:stopEngine",
   checkConnection: "pam:checkConnection",

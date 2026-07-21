@@ -1,5 +1,5 @@
-import { access, mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { access, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { basename, dirname, extname, join } from "node:path";
 import {
   CURRENT_FORMAT_VERSION,
   loadFormat,
@@ -42,6 +42,14 @@ export interface CatalogPaths {
   userDevicesDir: string;
   userMappingsDir: string;
 }
+
+/** PAM-21: allowed board-image extensions → MIME type (also the read whitelist). */
+const IMAGE_MIME: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+};
 
 export class Catalog {
   private loaded: LoadResult = { devices: [], mappings: [], issues: [], mappingSources: [], deviceSources: [] };
@@ -91,6 +99,33 @@ export class Catalog {
 
   device(id: string): DeviceDefinition | undefined {
     return this.loaded.devices.find((device) => device.id === id);
+  }
+
+  /**
+   * PAM-21: the board's photo as a data URL, or null when none exists /
+   * unreadable. Discovered by convention (`images/<id>.{png,jpg,jpeg,webp}`
+   * next to the board file) or the device's `image` override. Only a bare
+   * basename with an allowed extension is ever read, always from the board's
+   * own `images/` folder — no read outside it (AC-4).
+   */
+  async deviceImage(id: string): Promise<string | null> {
+    const device = this.device(id);
+    const source = this.deviceSourceById.get(id);
+    if (!device || !source) return null;
+    const imagesDir = join(dirname(source.file), "images");
+    const candidates = device.image ? [device.image] : ["png", "jpg", "jpeg", "webp"].map((ext) => `${id}.${ext}`);
+    for (const name of candidates) {
+      if (basename(name) !== name) continue; // belt-and-braces traversal guard
+      const mime = IMAGE_MIME[extname(name).toLowerCase()];
+      if (!mime) continue;
+      try {
+        const bytes = await readFile(join(imagesDir, name));
+        return `data:${mime};base64,${bytes.toString("base64")}`;
+      } catch {
+        // missing / unreadable — try the next candidate
+      }
+    }
+    return null;
   }
 
   get userMappingsDirPath(): string {
@@ -239,6 +274,49 @@ export class Catalog {
     await this.refresh();
     const entry = this.entries().find((candidate) => candidate.id === id);
     return entry ?? { error: `mapping "${id}" was written but did not load — check the file in the mappings folder` };
+  }
+
+  // ---- PAM-22 delete (user files only) ----
+
+  /**
+   * Delete a USER mapping file. Bundled mappings are templates and can never be
+   * deleted (they'd just reappear). Deleting a user copy that shadows a bundled
+   * mapping un-shadows the bundled one — the intended "reset to bundled".
+   */
+  async deleteMapping(id: string): Promise<{ ok: true } | { error: string }> {
+    const source = this.sourceById.get(id);
+    if (!source) return { error: `mapping "${id}" not found` };
+    if (source.origin !== "user") return { error: "bundled mappings can't be deleted" };
+    try {
+      await unlink(source.file);
+    } catch (error) {
+      return { error: `could not delete the mapping: ${error instanceof Error ? error.message : String(error)}` };
+    }
+    await this.refresh();
+    return { ok: true };
+  }
+
+  /**
+   * Delete a USER board (device definition). Bundled boards can't be deleted.
+   * Refused while any loaded mapping still references it — otherwise those files
+   * would silently turn invalid; the caller surfaces the list to fix first.
+   */
+  async deleteDevice(id: string): Promise<{ ok: true } | { error: string }> {
+    const source = this.deviceSourceById.get(id);
+    if (!source) return { error: `board "${id}" not found` };
+    if (source.origin !== "user") return { error: "bundled boards can't be deleted" };
+    const users = this.loaded.mappings.filter((mapping) => mapping.deviceDefinitionId === id);
+    if (users.length > 0) {
+      const names = users.map((mapping) => mapping.name).join(", ");
+      return { error: `still used by ${users.length} mapping(s): ${names} — delete or retarget those first` };
+    }
+    try {
+      await unlink(source.file);
+    } catch (error) {
+      return { error: `could not delete the board: ${error instanceof Error ? error.message : String(error)}` };
+    }
+    await this.refresh();
+    return { ok: true };
   }
 
   // ---- PAM-6 editor surface ----

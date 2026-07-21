@@ -1,5 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
-import type { Ma3Asset, Ma3Install, Ma3InstallResult, Ma3SetupInfo } from "../../../shared/ipc.js";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type {
+  ConsoleReadable,
+  Ma3Asset,
+  Ma3Install,
+  Ma3InstallResult,
+  Ma3SetupInfo,
+  Notice,
+  RemovableDrive,
+  UsbCopyResult,
+  UsbExportInfo,
+} from "../../../shared/ipc.js";
+import { comparePluginVersions } from "../../../shared/plugin-version.js";
 
 /**
  * PAM-9: the MA3 setup assistant — one-click install of the plugin and the
@@ -233,6 +244,210 @@ function ImportPluginCard() {
   );
 }
 
+/** Filesystem readability hint → LED class + short label (AC-9). */
+function readableHint(readable: ConsoleReadable): { led: string; text: string } {
+  switch (readable) {
+    case "yes":
+      return { led: "ok", text: "FAT32 — console-ready" };
+    case "likely":
+      return { led: "warn", text: "exFAT — usually works, verify on your desk" };
+    case "no":
+      return { led: "err", text: "not FAT32/exFAT — the console likely can't read this stick" };
+    case "unknown":
+      return { led: "", text: "filesystem unknown" };
+  }
+}
+
+function driveLabel(drive: RemovableDrive): string {
+  const gb = drive.capacityBytes ? ` · ${Math.round(drive.capacityBytes / 1e9)} GB` : "";
+  // AC-1: show the volume name AND its mount path (skip the path when the label
+  // already IS the path, e.g. a manually chosen folder).
+  const path = drive.label === drive.id ? "" : ` · ${drive.id}`;
+  return `${drive.label}${gb}${path}`;
+}
+
+/**
+ * PAM-23: copy the plugin + OSC config onto a USB stick for a real console.
+ * Lists removable drives (AC-1), falls back to a folder picker (AC-2), warns on
+ * unreadable filesystems (AC-9), and flags an out-of-date stick (AC-8).
+ */
+function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void }) {
+  const [info, setInfo] = useState<UsbExportInfo | undefined>();
+  const [loadError, setLoadError] = useState<string | undefined>();
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [chosenFolder, setChosenFolder] = useState<RemovableDrive | undefined>();
+  const [busy, setBusy] = useState(false);
+  const [confirmReplace, setConfirmReplace] = useState<{ version?: string } | undefined>();
+  const [result, setResult] = useState<UsbCopyResult | undefined>();
+  const notifiedStale = useRef(new Set<string>());
+
+  const refresh = useCallback(() => {
+    setLoadError(undefined);
+    setResult(undefined);
+    window.pamOsc
+      .listRemovableDrives()
+      .then(setInfo)
+      .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : String(error)));
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  // AC-8: a stick whose plugin is older than the bundle → notification-bar hint (once per drive+version).
+  useEffect(() => {
+    if (!info?.bundledVersion) return;
+    for (const drive of info.drives) {
+      if (drive.existingPluginVersion && comparePluginVersions(drive.existingPluginVersion, info.bundledVersion) < 0) {
+        const key = `${drive.id}@${drive.existingPluginVersion}`;
+        if (notifiedStale.current.has(key)) continue;
+        notifiedStale.current.add(key);
+        pushNotice({
+          severity: "info",
+          source: "USB stick",
+          message: `Plugin update available on "${drive.label}" — bundle ${info.bundledVersion} is newer than ${drive.existingPluginVersion} on the stick.`,
+        });
+      }
+    }
+  }, [info, pushNotice]);
+
+  const allDrives: RemovableDrive[] = [...(info?.drives ?? []), ...(chosenFolder ? [chosenFolder] : [])];
+  const selected = allDrives.find((drive) => drive.id === selectedId);
+
+  const chooseFolder = useCallback(async () => {
+    const picked = await window.pamOsc.chooseUsbFolder();
+    if (picked.status !== "chosen") return;
+    const drive: RemovableDrive = {
+      id: picked.path,
+      label: picked.path,
+      consoleReadable: "unknown",
+      hasExistingPlugin: false,
+    };
+    setChosenFolder(drive);
+    setSelectedId(drive.id);
+  }, []);
+
+  const run = useCallback(
+    async (overwrite: boolean) => {
+      if (!selectedId) return;
+      setBusy(true);
+      setConfirmReplace(undefined);
+      try {
+        const outcome = await window.pamOsc.copyPluginToUsb(selectedId, overwrite);
+        if (outcome.status === "exists") {
+          setConfirmReplace({ version: outcome.existingPluginVersion });
+        } else {
+          setResult(outcome);
+          if (outcome.status === "copied") refresh();
+        }
+      } finally {
+        setBusy(false);
+      }
+    },
+    [selectedId, refresh]
+  );
+
+  const staleSelected =
+    selected?.existingPluginVersion &&
+    info?.bundledVersion &&
+    comparePluginVersions(selected.existingPluginVersion, info.bundledVersion) < 0;
+
+  return (
+    <section className="card" aria-label="Copy to a USB stick">
+      <h2>Copy to a USB stick (for a real console)</h2>
+      <p className="inspector-meta">
+        Copies the plugin{info?.bundledVersion ? <> (version <code>{info.bundledVersion}</code>)</> : null} and the OSC
+        config onto a stick under <code>grandMA3/gma3_library/…</code>, ready to import at the console. GrandMA3 reads
+        <strong> FAT32</strong> sticks reliably.
+      </p>
+
+      {loadError && <p className="empty-state">Couldn’t scan drives: {loadError}</p>}
+
+      {info && info.drives.length === 0 && !chosenFolder && (
+        <p className="empty-state">
+          No USB stick detected. Plug one in and press Refresh, or choose a folder to copy into manually.
+        </p>
+      )}
+
+      {allDrives.length > 0 && (
+        <div className="field">
+          <label htmlFor="usb-drive">Target drive</label>
+          <select id="usb-drive" value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
+            <option value="">— select a drive —</option>
+            {allDrives.map((drive) => (
+              <option key={drive.id} value={drive.id}>
+                {driveLabel(drive)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {selected && (
+        <p className="inspector-meta">
+          <span className={`led ${readableHint(selected.consoleReadable).led}`} aria-hidden="true" />{" "}
+          {readableHint(selected.consoleReadable).text}
+          {selected.consoleReadable === "no" && (
+            <>
+              {" "}
+              — copying is still allowed, but reformat the stick as FAT32 if the console shows nothing.
+            </>
+          )}
+        </p>
+      )}
+      {staleSelected && (
+        <p className="inspector-meta">Update available: this stick has {selected!.existingPluginVersion}.</p>
+      )}
+
+      {result?.status === "copied" && (
+        <div className="device-name">
+          <span className="board">✓ copied to {result.pluginTarget}</span>
+          <span className="board">and {result.oscTarget}</span>
+          <span className="board">
+            At the console: import from <code>{result.consolePath}</code> via the Plugins pool (files are on the stick —
+            navigate there if the list looks empty).
+          </span>
+        </div>
+      )}
+      {result?.status === "error" && (
+        <div className="device-name">
+          <span className="board">failed: {result.error}</span>
+          <span className="board">copy manually — plugin to: {result.pluginTarget}</span>
+          <span className="board">OSC config to: {result.oscTarget}</span>
+        </div>
+      )}
+
+      <div className="section-actions">
+        <button onClick={refresh} disabled={busy}>
+          Refresh
+        </button>
+        <button onClick={() => void chooseFolder()} disabled={busy}>
+          Choose folder …
+        </button>
+        {result?.status === "error" && (
+          // AC-6: let the user reveal the bundled source files for a manual copy.
+          <button onClick={() => void window.pamOsc.revealBundledAsset("plugin")}>Show bundled files …</button>
+        )}
+        {confirmReplace ? (
+          <>
+            <span className="board">Replace {confirmReplace.version ?? "the file on the stick"}?</span>
+            <button className="primary" disabled={busy} onClick={() => void run(true)}>
+              Replace
+            </button>
+            <button disabled={busy} onClick={() => setConfirmReplace(undefined)}>
+              Keep
+            </button>
+          </>
+        ) : (
+          <button className="primary" disabled={busy || !selectedId} onClick={() => void run(false)}>
+            {busy ? "Copying …" : "Copy to USB"}
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 /**
  * Presentation mode (PAM-14): the full MA3 tab renders all three cards; the
  * setup wizard reuses the SAME cards one step at a time — "install" for its
@@ -241,7 +456,16 @@ function ImportPluginCard() {
  */
 export type Ma3SetupMode = "full" | "install" | "osc";
 
-export function Ma3SetupView({ values, mode = "full" }: { values: ConsoleValues; mode?: Ma3SetupMode }) {
+export function Ma3SetupView({
+  values,
+  mode = "full",
+  pushNotice,
+}: {
+  values: ConsoleValues;
+  mode?: Ma3SetupMode;
+  /** Full mode only — lets the USB card raise the AC-8 update notice. */
+  pushNotice?: (notice: Notice) => void;
+}) {
   const [info, setInfo] = useState<Ma3SetupInfo | undefined>();
   const [loadError, setLoadError] = useState<string | undefined>();
 
@@ -273,6 +497,7 @@ export function Ma3SetupView({ values, mode = "full" }: { values: ConsoleValues;
   return (
     <>
       {mode !== "osc" && <InstallCard info={info} onRefresh={refresh} />}
+      {mode === "full" && pushNotice && <UsbExportCard pushNotice={pushNotice} />}
       {mode !== "install" && <OscEntryCard values={values} localIps={info.localIps} />}
       {mode !== "install" && <ImportPluginCard />}
     </>

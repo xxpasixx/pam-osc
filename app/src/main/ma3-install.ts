@@ -35,6 +35,11 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
+// comparePluginVersions moved to shared/plugin-version.ts (node-free, so the
+// renderer can use it too — PAM-9 AC-9 / PAM-23 AC-8). Re-exported for existing
+// main-process callers.
+export { comparePluginVersions } from "../shared/plugin-version.js";
+
 /** First Version="…" in a plugin XML — enough to tell v1 from v2 apart. */
 export async function readPluginVersion(xmlPath: string): Promise<string | undefined> {
   try {

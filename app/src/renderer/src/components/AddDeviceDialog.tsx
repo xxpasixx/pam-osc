@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { BoardInfo, CatalogEntry, InvalidCatalogEntry } from "../../../shared/ipc.js";
+import { BoardThumb } from "./BoardThumb.js";
 
 /**
  * "Add device" (PAM-11 AC-4/AC-7): board first, then one of THAT board's
@@ -56,6 +57,7 @@ export function AddDeviceDialog({
               const count = catalog.filter((entry) => entry.deviceDefinitionId === candidate.id).length;
               return (
                 <button key={candidate.id} className="picker-item" onClick={() => setBoardId(candidate.id)}>
+                  <BoardThumb boardId={candidate.id} size="sm" />
                   <span>
                     {candidate.name}
                     <span className="board">
