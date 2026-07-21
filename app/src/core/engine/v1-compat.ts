@@ -26,6 +26,18 @@ export function relativeDetents(
   return undefined;
 }
 
+/**
+ * PAM-20: signed (two's-complement) relative encoder decode, the Akai scheme
+ * (APC40 Mk2 Communications Protocol v1.2). Not v1 parity — a new mode.
+ *   value 0        → undefined (no change; caller ignores, like relativeDetents)
+ *   1..63          → +1 … +63
+ *   64..127        → −64 … −1   (0x7F = −1, one slow detent)
+ */
+export function signedDetents(value: number): number | undefined {
+  if (value <= 0 || value > 127) return undefined;
+  return value <= 63 ? value : value - 128;
+}
+
 /** v1 utils.mapValue — linear map with clamping to the target range. */
 export function mapValue(value: number, fromLow: number, fromHigh: number, toLow: number, toHigh: number): number {
   const percent = (value - fromLow) / (fromHigh - fromLow);

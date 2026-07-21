@@ -1,6 +1,7 @@
 import type { MidiInputEvent } from "../../transports/midi.js";
 import type { OscMessage } from "../../transports/osc.js";
 import { oscFloat, oscInteger, oscString } from "../../transports/osc.js";
+import { canonicalQuickKey } from "../format/quickkeys.js";
 import { cmdModeActive } from "./cmd-keys.js";
 import type { UnitRuntime } from "./device-manager.js";
 import { sendAttributeLeds, sendButtonFeedback } from "./feedback-out.js";
@@ -8,7 +9,7 @@ import { midiKey, type RoutingEntry } from "./routing-table.js";
 import { accumulatorKey, type RuntimeState } from "./state.js";
 import { handleTimecodePlayPause, handleTimecodeSelect } from "./timecode.js";
 import type { EngineTiming } from "./types.js";
-import { MA3_KNOB_THRESHOLD, PITCH_MAX, relativeDetents } from "./v1-compat.js";
+import { MA3_KNOB_THRESHOLD, PITCH_MAX, relativeDetents, signedDetents } from "./v1-compat.js";
 
 /**
  * MIDI → MA3, the v1 parity table from design.md. Every scaling formula is
@@ -25,6 +26,17 @@ export interface InputContext {
   /** CMD mode (PAM-12): an intercepted executor press enters the serialized queue. */
   enqueueCmdKey: (executor: number) => void;
   log: (line: string) => void;
+}
+
+/**
+ * PAM-18 hardening: keep only the safe QuickKey-code characters ([A-Za-z0-9_],
+ * the canonical catalogue's charset) before the code is embedded in the quoted
+ * `Quickey "pam-osc_<CODE>"` command — an unknown/hand-edited key can then never
+ * break out of the argument. A stripped key simply matches no QuickKey pool
+ * object on the console (a no-op), which is the correct fail-safe.
+ */
+export function safeQuickKeyCode(key: string): string {
+  return key.replace(/[^A-Za-z0-9_]/g, "");
 }
 
 export function handleMidiEvent(context: InputContext, unitRuntime: UnitRuntime, event: MidiInputEvent): void {
@@ -71,12 +83,19 @@ function handleCcEntry(context: InputContext, unitRuntime: UnitRuntime, entry: R
   }
 
   if (control.type !== "encoder") return;
-  const detents = relativeDetents(
-    value,
-    control.capabilities.encoding.increment,
-    control.capabilities.encoding.decrement
-  );
-  if (detents === undefined) return; // outside both ranges — ignored (documented deviation)
+  // PAM-20: pick the decode by the encoder's relative mode. "signed" (Akai)
+  // needs no ranges; "range" (default, X-Touch) uses the increment/decrement
+  // windows the schema guarantees are present for that mode.
+  const encoding = control.capabilities.encoding;
+  let detents: number | undefined;
+  if (encoding.mode === "signed") {
+    detents = signedDetents(value);
+  } else if (encoding.increment && encoding.decrement) {
+    detents = relativeDetents(value, encoding.increment, encoding.decrement);
+  } else {
+    return;
+  }
+  if (detents === undefined) return; // no change / outside both ranges — ignored
 
   if (assignment.action.type === "executor") {
     const executor = assignment.action.number;
@@ -166,10 +185,18 @@ function handleNoteEntry(context: InputContext, unitRuntime: UnitRuntime, entry:
       return;
     }
 
-    case "quickKey":
+    case "quickKey": {
       if (value <= 0) return; // fire on press only (see design notes)
-      context.sendOsc({ address: "/cmd", args: [oscString(`Quickey "pam-osc_${action.key}"`)] });
+      // Resolve mixed-case / legacy spellings (v1 stored "Move", "<<<<", …) to
+      // the canonical code so imported mappings still hit a real pool object on
+      // the console; falls back to the raw value when unknown.
+      const code = canonicalQuickKey(action.key);
+      // PAM-18 hardening: QuickKey codes are [A-Za-z0-9_] (the canonical
+      // catalogue). Strip anything else so a hand-edited/imported key can never
+      // break out of the quoted /cmd argument (e.g. `A" ; Store Show ; …`).
+      context.sendOsc({ address: "/cmd", args: [oscString(`Quickey "pam-osc_${safeQuickKeyCode(code)}"`)] });
       return;
+    }
 
     case "command":
       if (value <= 0) return; // fire on press only (see design notes)
