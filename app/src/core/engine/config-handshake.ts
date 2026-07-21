@@ -37,6 +37,16 @@ import { forceReloadMessage } from "./startup.js";
 
 export const PAM_CONFIG_VERSION = 1;
 
+/**
+ * PAM-16 F2: hard cap on the watch-set size. The payload rides in a single MA3
+ * `GlobalVars` string sent over UDP; an unbounded executor list (pathological
+ * multi-mapping setup) could exceed the variable/datagram budget and fail
+ * silently. 256 executors keeps `e=` well under ~1.5 KB while dwarfing any
+ * realistic mapping. Excess is dropped from the payload; the engine logs it
+ * once at start so the drop is never silent.
+ */
+export const MAX_WATCH_SET = 256;
+
 /** The transient runtime config the app sends the plugin — never persisted. */
 export interface PamConfig {
   /** Watch-set: executor numbers, ascending & deduped (union across mappings). */
@@ -78,8 +88,12 @@ export function buildPamConfig(mappings: readonly Mapping[], fixedPage?: number)
     }
   }
 
+  // F2: cap the watch-set so the serialized payload stays within the plugin's
+  // GlobalVars/UDP budget (the engine warns once at start when this truncates).
+  const sortedExecutors = [...executors].sort((a, b) => a - b).slice(0, MAX_WATCH_SET);
+
   return {
-    executors: [...executors].sort((a, b) => a - b),
+    executors: sortedExecutors,
     sendColors,
     sendNames,
     resendButtons,

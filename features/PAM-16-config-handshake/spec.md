@@ -43,6 +43,7 @@ Today the plugin polls a **hardcoded** set of executor ranges (101–122, 201–
 - **EC-1** — The active mapping uses executors outside the default range (e.g. X-keys / high executor numbers) → the sent set must cover them; the plugin must not silently clamp to the default range once a real config has arrived.
 - **EC-2** — Mapping or settings change while connected → the app pushes an updated config immediately (not only on the next heartbeat), so feedback tracks the change.
 - **EC-3** — Two units / multiple active mappings → the executor sets must union correctly so no mapped executor is dropped.
+- **EC-4** _(delta 2026-07-19, review F2)_ — A pathological active-mapping set produces more executors than fit the plugin's `GlobalVars`/UDP payload budget → the watch-set is capped at `MAX_WATCH_SET` (256) and the cap is **logged once at engine start** (never a silent drop). Realistic mappings sit far below the cap and are unaffected; the serialized payload stays well within one UDP datagram (<1.5 KB).
 
 ## Open Questions
 

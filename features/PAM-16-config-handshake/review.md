@@ -28,3 +28,24 @@ Sink: `config-handshake.ts:112` `Lua 'SetVar(GlobalVars(), "pamConfig", "${paylo
 
 ## Verdict
 All app-verifiable ACs PASS; AC-4/AC-5 + plugin consumption correctly bounded to the onPC session (L3). Lua injection disproven. Two Low hardening notes (F1 sink guard, F2 length cap). Feature **not complete** (L3 pending), stays **Building**; app-side is review-clean.
+
+## Update 2026-07-19 — F2 resolved (app-side)
+
+The watch-set is now capped at `MAX_WATCH_SET` (256) in `buildPamConfig` and the engine logs the cap once at start (`engine.ts` start) — no more silent drop, payload bounded <1.5 KB. Spec delta EC-4. Tests: `config-handshake.test.ts` → "watch-set cap (PAM-16 F2)". Still Building (L3 plugin parser + e2e onPC-pending).
+
+## Update 2026-07-21 — L3 pamConfig parser built (off-console)
+
+The deferred plugin parser is now implemented in `pam-OSC.lua`: `parsePamConfig` reads the combined `pamConfig` string, `applyWatchSet` swaps the executor watch-set (replacing the old hardcoded 101-122/201-222/301-322/401-422/191-198/291-298 range), and `loadConfig` applies it + the feature flags at start and on every `forceReload` (AC-3/AC-4). Falls back to the built-in range + legacy vars when no config is present (AC-5/AC-6).
+
+An OSC probe against onPC confirmed the gap this closes: the old plugin only fed back the hardcoded range, missing the APC40 mapping executors 323-348 / 231-254, and sent no colours. Off-console Lua test `pam-OSC.config.test.lua` (15 checks) covers the parser; a Vitest wrapper (`app/src/pam-osc-lua.test.ts`) runs it in `npm test` when `lua` is present. Plugin bumped to 2.0.0.2.
+
+**Still Building:** live onPC e2e (re-import the plugin, send pamConfig, confirm the watch-set + colours follow the mapping over OSC) — doable without the APC40 board.
+
+## Update 2026-07-21 — onPC VERIFIED ✅ → Approved
+
+Live OSC probe against the running onPC (new plugin v2.0.0.2, app stopped): pushed `pamConfig="v=1;e=501,502,503;c=1;n=1;r=0;t=0;p=0"` + forceReload and observed the feedback stream:
+- Button feedback for **501/502/503** appeared → watch-set applied from `pamConfig` (AC-1);
+- the old hardcoded range (101/201/301/401) **disappeared** → replaced, not appended;
+- **`/Color`** messages arrived → the `sendColors` flag is applied (unblocks PAM-10 colours).
+
+Both halves of the loop are now proven: app-side serialize (config-handshake.test.ts) + plugin-side parse (this probe + off-console Lua test). Verified with a synthetic watch-set via OSC (exact serialize format); the app-drives-it path is the same wire string. Feature moved Building → **Approved**.

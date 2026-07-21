@@ -4,7 +4,7 @@ import type { MidiTransport } from "../../transports/midi.js";
 import type { OscMessage, OscSocket, OscTransport } from "../../transports/osc.js";
 import { formatMidiIn, formatMidiOut, formatOsc } from "./traffic.js";
 import { cancelCmdTimers, enqueueCmdKey, onCmdKeyAck, type CmdKeyContext } from "./cmd-keys.js";
-import { buildPamConfig, serializePamConfig, ConfigSender } from "./config-handshake.js";
+import { buildPamConfig, serializePamConfig, ConfigSender, MAX_WATCH_SET } from "./config-handshake.js";
 import { ConnectionChecker } from "./connection.js";
 import { DeviceManager, type UnitRuntime } from "./device-manager.js";
 import { handleOscMessage, type FeedbackContext } from "./feedback-router.js";
@@ -134,6 +134,21 @@ export class Engine {
         (status) => this.emitter.emit("connection", status),
         (line) => this.log(line)
       );
+
+      // PAM-16 F2: warn once if the watch-set exceeds the cap (buildPamConfig
+      // then drops the excess from the payload — never silently).
+      const watchSet = new Set<number>();
+      for (const unit of units) {
+        for (const assignment of unit.mapping.assignments) {
+          const action = assignment.action;
+          if (action.type === "executor" || action.type === "display") watchSet.add(action.number);
+        }
+      }
+      if (watchSet.size > MAX_WATCH_SET) {
+        this.log(
+          `config: ${watchSet.size} executors requested across active mappings — capping the plugin watch-set to ${MAX_WATCH_SET}; executors beyond that get no feedback (reduce active mappings)`
+        );
+      }
 
       // PAM-16 config handshake: the app tells the plugin exactly which
       // executors to watch and which flags to honor. The payload is derived

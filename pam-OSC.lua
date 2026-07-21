@@ -88,6 +88,71 @@ for _, number in ipairs(executorsToWatch) do
     oldNameValues[number] = ";"
 end
 
+-- PAM-16: parse the app's combined config string, e.g.
+--   "v=1;e=101,102,201;c=1;n=1;r=0;t=0;p=0"
+-- into a table. Fields: v=version, e=executor watch-set (csv), c=sendColors,
+-- n=sendNames, r=resendButtons, t=sendTimecode, p=fixedPage (0 = follow).
+-- Returns nil for an empty/absent string so the caller keeps its defaults
+-- (AC-5/AC-6: old app or no sync yet → the plugin stays on its built-in range).
+local function parsePamConfig(str)
+    if type(str) ~= "string" or str == "" then return nil end
+    local cfg = {
+        version = 0, executors = {}, sendColors = false, sendNames = false,
+        resendButtons = false, sendTimecode = false, fixedPage = 0
+    }
+    for field in string.gmatch(str, "[^;]+") do
+        local key, value = string.match(field, "^(%a+)=(.*)$")
+        if key == "v" then
+            cfg.version = tonumber(value) or 0
+        elseif key == "e" then
+            for num in string.gmatch(value, "[^,]+") do
+                local n = tonumber(num)
+                if n then cfg.executors[#cfg.executors + 1] = n end
+            end
+        elseif key == "c" then cfg.sendColors = (value == "1")
+        elseif key == "n" then cfg.sendNames = (value == "1")
+        elseif key == "r" then cfg.resendButtons = (value == "1")
+        elseif key == "t" then cfg.sendTimecode = (value == "1")
+        elseif key == "p" then cfg.fixedPage = tonumber(value) or 0
+        end
+    end
+    return cfg
+end
+
+-- PAM-16: swap the watch-set to the app's executor list and re-seed the
+-- change-tracking tables (mirrors the default seed above). Reassigning the
+-- old* tables rebinds the shared upvalues the feedback loop reads.
+local function applyWatchSet(list)
+    for i = #executorsToWatch, 1, -1 do executorsToWatch[i] = nil end
+    oldValues = {}
+    oldButtonValues = {}
+    oldColorValues = {}
+    oldNameValues = {}
+    for _, number in ipairs(list) do
+        executorsToWatch[#executorsToWatch + 1] = number
+        oldValues[number] = "000"
+        oldButtonValues[number] = false
+        oldColorValues[number] = "0,0,0,0"
+        oldNameValues[number] = ";"
+    end
+end
+
+-- PAM-16: resolve the live config. Prefer the app's pamConfig (watch-set +
+-- flags); if it is absent/empty, keep the built-in watch-set and fall back to
+-- the legacy individual GlobalVars (backward compatible with an old app).
+local function loadConfig()
+    local cfg = parsePamConfig(GetVar(GlobalVars(), "pamConfig"))
+    if cfg and #cfg.executors > 0 then
+        applyWatchSet(cfg.executors)
+        return cfg.resendButtons, cfg.sendColors, cfg.sendNames, cfg.sendTimecode, cfg.fixedPage
+    end
+    return GetVar(GlobalVars(), "automaticResendButtons") or false,
+        GetVar(GlobalVars(), "sendColors") or false,
+        GetVar(GlobalVars(), "sendNames") or false,
+        GetVar(GlobalVars(), "sendTimecode") or false,
+        GetVar(GlobalVars(), "fixedPageNr") or 0
+end
+
 -- the Speed to check executors
 local tick = 1 / 10 -- 1/10
 local resendTick = 0
@@ -345,11 +410,10 @@ local function createQuickeysIfNotExists()
 end
 
 local function main()
-    local automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
-    local sendColors = GetVar(GlobalVars(), "sendColors") or false
-    local sendNames = GetVar(GlobalVars(), "sendNames") or false
-    local sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
-    local fixedPageNr = GetVar(GlobalVars(), "fixedPageNr") or 0
+    -- PAM-16: watch-set + feature flags come from the app's pamConfig when
+    -- present (loadConfig applies the watch-set as a side effect); otherwise the
+    -- built-in range + legacy GlobalVars stand in.
+    local automaticResendButtons, sendColors, sendNames, sendTimecode, fixedPageNr = loadConfig()
 
     Printf("start pam OSC main() - protocol " .. PLUGIN_PROTOCOL)
     Printf("automaticResendButtons: " .. (automaticResendButtons and "true" or "false"))
@@ -384,11 +448,9 @@ local function main()
 
         if GetVar(GlobalVars(), "forceReload") == true then
             forceReload = true
-            automaticResendButtons = GetVar(GlobalVars(), "automaticResendButtons") or false
-            sendColors = GetVar(GlobalVars(), "sendColors") or false
-            sendNames = GetVar(GlobalVars(), "sendNames") or false
-            sendTimecode = GetVar(GlobalVars(), "sendTimecode") or false
-            fixedPageNr = GetVar(GlobalVars(), "fixedPageNr") or 0
+            -- PAM-16: re-resolve on every forceReload so a re-sync updates the
+            -- watch-set + flags live (AC-3/AC-4).
+            automaticResendButtons, sendColors, sendNames, sendTimecode, fixedPageNr = loadConfig()
             SetVar(GlobalVars(), "forceReload", false)
         end
 
@@ -551,5 +613,11 @@ local function main()
 
 end
 
+
+-- Test hook (never set by MA3): expose the pure config parser so off-console
+-- Lua tests can exercise it without the MA3 API. See pam-OSC.config.test.lua.
+if rawget(_G, "__PAM_OSC_TEST") then
+    _G.__PAM_OSC_TEST = { parsePamConfig = parsePamConfig }
+end
 
 return main

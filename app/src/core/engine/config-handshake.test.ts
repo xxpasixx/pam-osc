@@ -7,6 +7,7 @@ import {
   pamConfigMessage,
   serializePamConfig,
   PAM_CONFIG_VERSION,
+  MAX_WATCH_SET,
 } from "./config-handshake.js";
 
 /** Build a real, defaulted Mapping via the schema (so defaults match production). */
@@ -193,5 +194,27 @@ describe("ConfigSender change-detection (AC-7)", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("watch-set cap (PAM-16 F2)", () => {
+  it(`caps the watch-set at MAX_WATCH_SET (${MAX_WATCH_SET}) keeping the lowest executors`, () => {
+    const assignments = Array.from({ length: MAX_WATCH_SET + 50 }, (_, i) => exec(i + 1)); // 1 … cap+50
+    const config = buildPamConfig([makeMapping({ assignments })]);
+    expect(config.executors).toHaveLength(MAX_WATCH_SET);
+    expect(config.executors[0]).toBe(1);
+    expect(config.executors.at(-1)).toBe(MAX_WATCH_SET); // sorted, lowest kept
+  });
+
+  it("leaves a normal-sized watch-set untouched", () => {
+    const assignments = Array.from({ length: 20 }, (_, i) => exec(i + 1));
+    const config = buildPamConfig([makeMapping({ assignments })]);
+    expect(config.executors).toHaveLength(20);
+  });
+
+  it("keeps the serialized payload comfortably bounded at the cap", () => {
+    const assignments = Array.from({ length: MAX_WATCH_SET + 50 }, (_, i) => exec(i + 1));
+    const payload = serializePamConfig(buildPamConfig([makeMapping({ assignments })]));
+    expect(payload.length).toBeLessThan(1500); // stays within a typical UDP datagram
   });
 });

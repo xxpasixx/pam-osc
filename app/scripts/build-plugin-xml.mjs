@@ -14,8 +14,9 @@ const outFile = resolve(repoRoot, "gma3_library/datapools/plugins/pam-osc.xml");
 
 /** Plugin file version. Bump the last ("mini"/patch) component on EVERY plugin
  *  change so an install version-mismatch is visible; PLUGIN_PROTOCOL only moves
- *  on real protocol breaks. 2.0.0.1: PR #42 EXEC.Object fix (multi-executor). */
-const PLUGIN_VERSION = "2.0.0.1";
+ *  on real protocol breaks. 2.0.0.1: PR #42 EXEC.Object fix (multi-executor).
+ *  2.0.0.2: PAM-16 pamConfig parser (app-driven watch-set + feature flags). */
+const PLUGIN_VERSION = "2.0.0.2";
 const DATA_VERSION = "2.0.2.0";
 const BLOCK_SIZE = 1024;
 
