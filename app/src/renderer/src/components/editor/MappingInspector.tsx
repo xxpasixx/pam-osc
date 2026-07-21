@@ -1,6 +1,6 @@
 import type { Action, Assignment, Control, Feedback } from "../../../../core/format/index.js";
 import type { EditorIssue } from "../../../../core/format/index.js";
-import { QUICKKEYS, QUICKKEY_GROUP_ORDER, isKnownQuickKey } from "../../../../core/format/index.js";
+import { QuickKeySelect } from "./QuickKeySelect.js";
 
 /**
  * Mapping mode inspector (design → Inspector panel): action, options, and
@@ -28,6 +28,7 @@ const FEEDBACK_LABELS: Record<FeedbackType, string> = {
   "always-on": "LED always on",
   "fader-position": "Motor fader follows",
   "encoder-ring": "LED ring shows value",
+  "rgb-color": "RGB: MA3 sequence colour",
 };
 
 function actionTypesFor(control: Control): ActionType[] {
@@ -38,6 +39,8 @@ function actionTypesFor(control: Control): ActionType[] {
 function feedbackTypesFor(control: Control): FeedbackType[] {
   const types: FeedbackType[] = ["none"];
   if (control.type === "button" && control.capabilities.led !== "none") types.push("on-off", "always-on");
+  // PAM-10: RGB pads can reflect the executor's live MA3 colour.
+  if (control.type === "button" && control.capabilities.led === "velocity-colors") types.push("rgb-color");
   if (control.type === "fader" && control.capabilities.motorized) types.push("fader-position");
   if (control.type === "encoder" && control.capabilities.ledRing) types.push("encoder-ring");
   return types;
@@ -76,6 +79,8 @@ function defaultFeedback(type: FeedbackType): Feedback {
       return { type };
     case "encoder-ring":
       return { type };
+    case "rgb-color":
+      return { type, offValue: 0 };
   }
 }
 
@@ -206,30 +211,15 @@ export function MappingInspector({
           {assignment.action.type === "quickKey" && (
             <div
               className="field"
-              title="QuickKey: a fixed GrandMA3 keyboard shortcut (e.g. Store, Clear, Go). The plugin maps each one to its console key — pick the action, no command line needed."
+              title="QuickKey: a fixed GrandMA3 keyboard shortcut (e.g. Store, Clear, Go). The plugin maps each one to its console key — pick the action, no command line needed. Type to search."
             >
               <label htmlFor="action-key">QuickKey (pam-osc_&lt;KEY&gt;)</label>
-              <select
-                id="action-key"
+              {/* AC-1/AC-3: searchable dropdown; an unknown/legacy key stays visible and
+                  flagged inside the picker instead of being silently dropped. */}
+              <QuickKeySelect
                 value={assignment.action.key}
-                onChange={(event) => update({ action: { type: "quickKey", key: event.target.value } })}
-              >
-                {/* AC-3: an empty or unknown/legacy key (v1 import, hand-edited) stays visible
-                    and selectable at the top, flagged — never silently dropped. */}
-                {assignment.action.key === "" && <option value="">— select a key —</option>}
-                {assignment.action.key !== "" && !isKnownQuickKey(assignment.action.key) && (
-                  <option value={assignment.action.key}>unknown: {assignment.action.key}</option>
-                )}
-                {QUICKKEY_GROUP_ORDER.map((group) => (
-                  <optgroup key={group} label={group}>
-                    {QUICKKEYS.filter((qk) => qk.group === group).map((qk) => (
-                      <option key={qk.code} value={qk.code}>
-                        {qk.label}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+                onChange={(key) => update({ action: { type: "quickKey", key } })}
+              />
             </div>
           )}
           {assignment.action.type === "attribute" && (
@@ -388,6 +378,14 @@ export function MappingInspector({
               label="Value"
               value={assignment.feedback.value}
               onChange={(value) => update({ feedback: { type: "always-on", value: value ?? 127 } })}
+            />
+          )}
+          {assignment.feedback.type === "rgb-color" && (
+            <MidiValueField
+              id="fb-offvalue"
+              label="Off value"
+              value={assignment.feedback.offValue}
+              onChange={(offValue) => update({ feedback: { type: "rgb-color", offValue: offValue ?? 0 } })}
             />
           )}
 

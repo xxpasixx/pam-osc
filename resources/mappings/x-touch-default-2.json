@@ -3,7 +3,7 @@
   "id": "x-touch-default-2",
   "name": "X-Touch Default 2",
   "status": "tested",
-  "notes": "Default X-Touch layout 2 (v1 mappings/xTouch2.json): faders on executors 201-208 + main 209, encoders on 301-308, attribute selection on the F-keys, QuickKeys and MA commands with permanently lit LEDs on the master section. Converted from v1. The timecodeSelect button cycles through timecode slots 0-8 on every press (0 = none), exactly as in v1. Encoder push buttons carried executor feedback in v1 that the hardware ignored (no LED there) \u2014 represented here as feedback 'none'. Modifier buttons (encoder fine/rough, attribute select) keep 'on-off' feedback because v1 drove those LEDs locally (toggle state / selected attribute). Note: as in v1, both Fast Fwd (note 92) and Play (note 94) send 'Go+ Timecode' \u2014 kept verbatim from the v1 file. HIGHLIGHT and BLIND use 'on-off' feedback driven by the MA3 master state (/masterEnabled), exactly as in v1.",
+  "notes": "Default X-Touch layout 2 (v1 mappings/xTouch2.json): faders on executors 201-208 + main 209, encoders on 301-308, attribute selection on the F-keys, QuickKeys and MA commands with permanently lit LEDs on the master section. Converted from v1. The timecodeSelect button cycles through timecode slots 0-8 on every press (0 = none), exactly as in v1. Encoder push buttons carried executor feedback in v1 that the hardware ignored (no LED there) — represented here as feedback 'none'. Modifier buttons (encoder fine/rough, attribute select) keep 'on-off' feedback because v1 drove those LEDs locally (toggle state / selected attribute). Note: as in v1, both Fast Fwd (note 92) and Play (note 94) send 'Go+ Timecode' — kept verbatim from the v1 file. HIGHLIGHT and BLIND use 'on-off' feedback driven by the MA3 master state (/masterEnabled), exactly as in v1.",
   "deviceDefinitionId": "x-touch",
   "midiPort": {
     "input": "X-Touch",
@@ -967,7 +967,7 @@
       "controlId": "btn-midi-tracks",
       "action": {
         "type": "quickKey",
-        "key": "Fixture"
+        "key": "FIXTURE"
       },
       "options": {
         "minValue": 100
@@ -981,7 +981,7 @@
       "controlId": "btn-inputs",
       "action": {
         "type": "quickKey",
-        "key": "Channel"
+        "key": "CHANNEL"
       },
       "options": {
         "minValue": 100
@@ -995,7 +995,7 @@
       "controlId": "btn-audio-tracks",
       "action": {
         "type": "quickKey",
-        "key": "Group"
+        "key": "GROUP"
       },
       "options": {
         "minValue": 100
@@ -1009,7 +1009,7 @@
       "controlId": "btn-audio-inst",
       "action": {
         "type": "quickKey",
-        "key": "Preset"
+        "key": "PRESET"
       },
       "options": {
         "minValue": 100
@@ -1023,7 +1023,7 @@
       "controlId": "btn-aux",
       "action": {
         "type": "quickKey",
-        "key": "Sequence"
+        "key": "SEQUENCE"
       },
       "options": {
         "minValue": 100
@@ -1037,7 +1037,7 @@
       "controlId": "btn-buses",
       "action": {
         "type": "quickKey",
-        "key": "Cue"
+        "key": "CUE"
       },
       "options": {
         "minValue": 100
@@ -1079,7 +1079,7 @@
       "controlId": "btn-shift",
       "action": {
         "type": "quickKey",
-        "key": "Esc"
+        "key": "ESC"
       },
       "options": {
         "minValue": 100
@@ -1093,7 +1093,7 @@
       "controlId": "btn-option",
       "action": {
         "type": "quickKey",
-        "key": "Select"
+        "key": "SELECT"
       },
       "options": {
         "minValue": 100
@@ -1107,7 +1107,7 @@
       "controlId": "btn-control",
       "action": {
         "type": "quickKey",
-        "key": "Freeze"
+        "key": "FREEZE"
       },
       "options": {
         "minValue": 100
@@ -1121,7 +1121,7 @@
       "controlId": "btn-alt",
       "action": {
         "type": "quickKey",
-        "key": "Solo"
+        "key": "SOLO"
       },
       "options": {
         "minValue": 100
@@ -1135,7 +1135,7 @@
       "controlId": "btn-read-off",
       "action": {
         "type": "quickKey",
-        "key": "Please"
+        "key": "PLEASE"
       },
       "options": {
         "minValue": 100
@@ -1149,7 +1149,7 @@
       "controlId": "btn-write",
       "action": {
         "type": "quickKey",
-        "key": "Delete"
+        "key": "DELETE"
       },
       "options": {
         "minValue": 100
@@ -1163,7 +1163,7 @@
       "controlId": "btn-trim",
       "action": {
         "type": "quickKey",
-        "key": "Oops"
+        "key": "OOPS"
       },
       "options": {
         "minValue": 100
@@ -1177,7 +1177,7 @@
       "controlId": "btn-touch",
       "action": {
         "type": "quickKey",
-        "key": "Copy"
+        "key": "COPY"
       },
       "options": {
         "minValue": 100
@@ -1191,7 +1191,7 @@
       "controlId": "btn-latch",
       "action": {
         "type": "quickKey",
-        "key": "Move"
+        "key": "MOVE"
       },
       "options": {
         "minValue": 100
@@ -1247,7 +1247,7 @@
       "controlId": "btn-cancel",
       "action": {
         "type": "quickKey",
-        "key": "Stomp"
+        "key": "STOMP"
       },
       "options": {
         "minValue": 100
@@ -1261,7 +1261,7 @@
       "controlId": "btn-enter",
       "action": {
         "type": "quickKey",
-        "key": "Off"
+        "key": "OFF"
       },
       "options": {
         "minValue": 100
@@ -1275,7 +1275,7 @@
       "controlId": "btn-marker",
       "action": {
         "type": "quickKey",
-        "key": "Full"
+        "key": "FULL"
       },
       "options": {
         "minValue": 100
@@ -1289,7 +1289,7 @@
       "controlId": "btn-nudge",
       "action": {
         "type": "quickKey",
-        "key": "Align"
+        "key": "ALIGN"
       },
       "options": {
         "minValue": 100
@@ -1303,7 +1303,7 @@
       "controlId": "btn-cycle",
       "action": {
         "type": "quickKey",
-        "key": "Assign"
+        "key": "ASSIGN"
       },
       "options": {
         "minValue": 100
@@ -1317,7 +1317,7 @@
       "controlId": "btn-drop",
       "action": {
         "type": "quickKey",
-        "key": "Edit"
+        "key": "EDIT"
       },
       "options": {
         "minValue": 100
@@ -1331,7 +1331,7 @@
       "controlId": "btn-replace",
       "action": {
         "type": "quickKey",
-        "key": "Update"
+        "key": "UPDATE"
       },
       "options": {
         "minValue": 100
@@ -1345,7 +1345,7 @@
       "controlId": "btn-click",
       "action": {
         "type": "quickKey",
-        "key": "Store"
+        "key": "STORE"
       },
       "options": {
         "minValue": 100
@@ -1359,7 +1359,7 @@
       "controlId": "btn-solo-global",
       "action": {
         "type": "quickKey",
-        "key": "Clear"
+        "key": "CLEAR"
       },
       "options": {
         "minValue": 100

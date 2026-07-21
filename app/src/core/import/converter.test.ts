@@ -365,7 +365,8 @@ describe("convertV1 mechanics", () => {
     const actions = new Map(mapping.assignments.map((assignment) => [assignment.controlId, assignment]));
     expect(actions.get("btn-led")?.action).toEqual({ type: "command", command: "Go+" });
     expect(actions.get("btn-led")?.options).toEqual({ minValue: 100 });
-    expect(actions.get("btn-dark")?.action).toEqual({ type: "quickKey", key: "Please" });
+    // PAM-18: v1's mixed-case "Please" is normalized to the canonical code.
+    expect(actions.get("btn-dark")?.action).toEqual({ type: "quickKey", key: "PLEASE" });
     expect(actions.get("btn-60")?.action).toEqual({ type: "modifier", modifier: "encoderFine" });
     expect(actions.get("btn-61")?.action).toEqual({
       type: "modifier",

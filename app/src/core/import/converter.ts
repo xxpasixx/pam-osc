@@ -1,5 +1,6 @@
 import type { Control, DeviceDefinition } from "../format/device-definition.js";
 import type { Action, Assignment, Feedback, Mapping } from "../format/mapping.js";
+import { canonicalQuickKey } from "../format/quickkeys.js";
 import type { V1File, V1Section, V1SectionCounts } from "./v1-reader.js";
 import { V1_SECTION_KEYS } from "./v1-reader.js";
 
@@ -398,8 +399,11 @@ function convertAction(
     }
     case "quicKey": {
       const quicKey = entry["quicKey"];
+      // v1 stored mixed-case labels ("Fixture", "Move") and arrow aliases
+      // ("<<<<"); normalize to the canonical pam-osc_<CODE> so imports hit a
+      // real QuickKey pool object on the console (PAM-18).
       return typeof quicKey === "string" && quicKey.length > 0
-        ? { type: "quickKey", key: quicKey }
+        ? { type: "quickKey", key: canonicalQuickKey(quicKey) }
         : invalid(`quicKey is not a non-empty text`);
     }
     case "attribute": {

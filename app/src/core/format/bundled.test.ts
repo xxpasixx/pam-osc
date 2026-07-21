@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { loadFormat } from "./loader.js";
+import { isKnownQuickKey } from "./quickkeys.js";
 
 /**
  * Validates the bundled content in resources/ (AC-1, AC-3): every shipped
@@ -27,17 +28,20 @@ describe("bundled resources", () => {
     expect(result.issues).toEqual([]);
   });
 
-  it("ship the complete inventory: all five v1 board types and all ten default mappings (AC-1, AC-3)", async () => {
+  it("ship the complete inventory: the five v1 board types + APC40 mkII + X-Touch Extender, and their default mappings (AC-1, AC-3)", async () => {
     const result = await loadBundled();
     expect(result.devices.map((device) => device.id).sort()).toEqual([
+      "apc-40-mk2",
       "apc-mini",
       "apc-mini-mk2",
       "launchpad",
       "mpx16",
       "x-touch",
       "x-touch-compact",
+      "x-touch-extender",
     ]);
     expect(result.mappings.map((mapping) => mapping.id).sort()).toEqual([
+      "apc-40-mk2-default-1",
       "apc-mini-default-1",
       "apc-mini-default-2",
       "apc-mini-mk2-controller",
@@ -48,6 +52,8 @@ describe("bundled resources", () => {
       "x-touch-compact-relative-1",
       "x-touch-default-1",
       "x-touch-default-2",
+      "x-touch-extender-default-1",
+      "x-touch-extension-1",
     ]);
   });
 
@@ -94,11 +100,33 @@ describe("bundled resources", () => {
     }
   });
 
-  it("ships every bundled mapping as status 'tested' (PAM-19 AC-4)", async () => {
+  it("ships every hardware-verified bundled mapping as status 'tested' (PAM-19 AC-4)", async () => {
     const result = await loadBundled();
     expect(result.mappings.length).toBeGreaterThan(0);
+    // Newly contributed boards that have not yet been verified on real
+    // hardware ship as 'community' (honest self-declaration) until confirmed.
+    const notYetHardwareVerified = new Set([
+      "apc-40-mk2-default-1",
+      "x-touch-extender-default-1",
+      "x-touch-extension-1",
+    ]);
     for (const mapping of result.mappings) {
-      expect(mapping.status, `${mapping.id} should ship as tested`).toBe("tested");
+      const expected = notYetHardwareVerified.has(mapping.id) ? "community" : "tested";
+      expect(mapping.status, `${mapping.id} should ship as ${expected}`).toBe(expected);
+    }
+  });
+
+  it("every bundled quickKey uses a canonical code (no dead mixed-case/legacy keys) (PAM-18)", async () => {
+    const result = await loadBundled();
+    for (const mapping of result.mappings) {
+      for (const assignment of mapping.assignments) {
+        if (assignment.action.type === "quickKey") {
+          expect(
+            isKnownQuickKey(assignment.action.key),
+            `${mapping.id}: quickKey "${assignment.action.key}" is not a canonical code — the plugin pool has no matching object`,
+          ).toBe(true);
+        }
+      }
     }
   });
 

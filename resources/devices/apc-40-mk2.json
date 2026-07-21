@@ -1,0 +1,2869 @@
+{
+  "formatVersion": 1,
+  "id": "apc-40-mk2",
+  "name": "AKAI APC40 mkII",
+  "notes": "AKAI APC40 mkII, Generic Mode (Mode 0). Verified against the official Akai 'APC40 Mk2 Communications Protocol' (v1.2, 2015) and the manufacturer layout art. The 5x8 clip grid has RGB pads on notes 0-39 addressed by NOTE NUMBER (not channel): note 0 = PAD 1 = TOP-left, incrementing left->right then downward, note 39 = bottom-right. LED colour is a 128-entry velocity palette (5=red, 13=yellow, 21=green #00FF00, 45=blue, 122=Green, 120=Red, 124=Yellow); the MIDI channel of an LED message picks the RGB behaviour (channel 0 = Primary Colour solid). Scene Launch buttons are RGB too. Track button rows (Record Arm 0x30, Solo 0x31, Activator 0x32, Track Select 0x33, Clip Stop 0x34, Crossfader-A|B 0x42) use MIDI channel 0-7 = Track 1-8 (stored as channel 1-8). Bank (Bank Lock) = note 0x67. The Cue Level (CC 0x2F) and Tempo (CC 0x0D) knobs are RELATIVE encoders using the Akai signed scheme (1-63=+, 64-127=-, 0x7F=-1), decoded via encoding.mode 'signed' (PAM-20). The 8 DEVICE CONTROL knobs (CC 16-23) are BANKED by Track Selection (they transmit on the selected track's channel; bound at channel 1 = the Track-1 power-on default). TRACK SELECT (0x33) and MASTER (0x50) send no MIDI in Generic Mode. Transport: Play=0x5B, Record=0x5D, Session Record=0x66 (no dedicated Stop); UP/DOWN/LEFT/RIGHT/SHIFT/TAP/NUDGE have no host LED.",
+  "manufacturer": "AKAI Professional",
+  "ledPalette": "apc40-mk2",
+  "mode": "standard",
+  "defaultMidiChannel": 1,
+  "layout": {
+    "width": 16,
+    "height": 14
+  },
+  "controls": [
+    {
+      "id": "track-knob-1",
+      "label": "Track Knob 1",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 48
+      },
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "track-knob-2",
+      "label": "Track Knob 2",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 49
+      },
+      "position": {
+        "x": 1,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "track-knob-3",
+      "label": "Track Knob 3",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 50
+      },
+      "position": {
+        "x": 2,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "track-knob-4",
+      "label": "Track Knob 4",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 51
+      },
+      "position": {
+        "x": 3,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "track-knob-5",
+      "label": "Track Knob 5",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 52
+      },
+      "position": {
+        "x": 4,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "track-knob-6",
+      "label": "Track Knob 6",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 53
+      },
+      "position": {
+        "x": 5,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "track-knob-7",
+      "label": "Track Knob 7",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 54
+      },
+      "position": {
+        "x": 6,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "track-knob-8",
+      "label": "Track Knob 8",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 55
+      },
+      "position": {
+        "x": 7,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "clip-0",
+      "label": "Clip 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 0
+      },
+      "position": {
+        "x": 0,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-1",
+      "label": "Clip 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 1
+      },
+      "position": {
+        "x": 1,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-2",
+      "label": "Clip 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 2
+      },
+      "position": {
+        "x": 2,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-3",
+      "label": "Clip 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 3
+      },
+      "position": {
+        "x": 3,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-4",
+      "label": "Clip 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 4
+      },
+      "position": {
+        "x": 4,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-5",
+      "label": "Clip 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 5
+      },
+      "position": {
+        "x": 5,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-6",
+      "label": "Clip 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 6
+      },
+      "position": {
+        "x": 6,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-7",
+      "label": "Clip 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 7
+      },
+      "position": {
+        "x": 7,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-8",
+      "label": "Clip 9",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 8
+      },
+      "position": {
+        "x": 0,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-9",
+      "label": "Clip 10",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 9
+      },
+      "position": {
+        "x": 1,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-10",
+      "label": "Clip 11",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 10
+      },
+      "position": {
+        "x": 2,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-11",
+      "label": "Clip 12",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 11
+      },
+      "position": {
+        "x": 3,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-12",
+      "label": "Clip 13",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 12
+      },
+      "position": {
+        "x": 4,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-13",
+      "label": "Clip 14",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 13
+      },
+      "position": {
+        "x": 5,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-14",
+      "label": "Clip 15",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 14
+      },
+      "position": {
+        "x": 6,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-15",
+      "label": "Clip 16",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 15
+      },
+      "position": {
+        "x": 7,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-16",
+      "label": "Clip 17",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 16
+      },
+      "position": {
+        "x": 0,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-17",
+      "label": "Clip 18",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 17
+      },
+      "position": {
+        "x": 1,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-18",
+      "label": "Clip 19",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 18
+      },
+      "position": {
+        "x": 2,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-19",
+      "label": "Clip 20",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 19
+      },
+      "position": {
+        "x": 3,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-20",
+      "label": "Clip 21",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 20
+      },
+      "position": {
+        "x": 4,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-21",
+      "label": "Clip 22",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 21
+      },
+      "position": {
+        "x": 5,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-22",
+      "label": "Clip 23",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 22
+      },
+      "position": {
+        "x": 6,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-23",
+      "label": "Clip 24",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 23
+      },
+      "position": {
+        "x": 7,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-24",
+      "label": "Clip 25",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 24
+      },
+      "position": {
+        "x": 0,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-25",
+      "label": "Clip 26",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 25
+      },
+      "position": {
+        "x": 1,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-26",
+      "label": "Clip 27",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 26
+      },
+      "position": {
+        "x": 2,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-27",
+      "label": "Clip 28",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 27
+      },
+      "position": {
+        "x": 3,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-28",
+      "label": "Clip 29",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 28
+      },
+      "position": {
+        "x": 4,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-29",
+      "label": "Clip 30",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 29
+      },
+      "position": {
+        "x": 5,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-30",
+      "label": "Clip 31",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 30
+      },
+      "position": {
+        "x": 6,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-31",
+      "label": "Clip 32",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 31
+      },
+      "position": {
+        "x": 7,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-32",
+      "label": "Clip 33",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 32
+      },
+      "position": {
+        "x": 0,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-33",
+      "label": "Clip 34",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 33
+      },
+      "position": {
+        "x": 1,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-34",
+      "label": "Clip 35",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 34
+      },
+      "position": {
+        "x": 2,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-35",
+      "label": "Clip 36",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 35
+      },
+      "position": {
+        "x": 3,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-36",
+      "label": "Clip 37",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 36
+      },
+      "position": {
+        "x": 4,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-37",
+      "label": "Clip 38",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 37
+      },
+      "position": {
+        "x": 5,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-38",
+      "label": "Clip 39",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 38
+      },
+      "position": {
+        "x": 6,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "clip-39",
+      "label": "Clip 40",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 39
+      },
+      "position": {
+        "x": 7,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "scene-launch-1",
+      "label": "Scene Launch 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 82
+      },
+      "position": {
+        "x": 8,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "scene-launch-2",
+      "label": "Scene Launch 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 83
+      },
+      "position": {
+        "x": 8,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "scene-launch-3",
+      "label": "Scene Launch 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 84
+      },
+      "position": {
+        "x": 8,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "scene-launch-4",
+      "label": "Scene Launch 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 85
+      },
+      "position": {
+        "x": 8,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "scene-launch-5",
+      "label": "Scene Launch 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 86
+      },
+      "position": {
+        "x": 8,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "velocity-colors"
+      }
+    },
+    {
+      "id": "btn-stop-all",
+      "label": "Stop All Clips",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 81
+      },
+      "position": {
+        "x": 8,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "btn-master-select",
+      "label": "Master Select",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 80
+      },
+      "position": {
+        "x": 8,
+        "y": 8,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "clip-stop-1",
+      "label": "Clip Stop 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 1,
+        "number": 52
+      },
+      "position": {
+        "x": 0,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "clip-stop-2",
+      "label": "Clip Stop 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 2,
+        "number": 52
+      },
+      "position": {
+        "x": 1,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "clip-stop-3",
+      "label": "Clip Stop 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 3,
+        "number": 52
+      },
+      "position": {
+        "x": 2,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "clip-stop-4",
+      "label": "Clip Stop 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 4,
+        "number": 52
+      },
+      "position": {
+        "x": 3,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "clip-stop-5",
+      "label": "Clip Stop 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 5,
+        "number": 52
+      },
+      "position": {
+        "x": 4,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "clip-stop-6",
+      "label": "Clip Stop 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 6,
+        "number": 52
+      },
+      "position": {
+        "x": 5,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "clip-stop-7",
+      "label": "Clip Stop 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 7,
+        "number": 52
+      },
+      "position": {
+        "x": 6,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "clip-stop-8",
+      "label": "Clip Stop 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 8,
+        "number": 52
+      },
+      "position": {
+        "x": 7,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "activator-1",
+      "label": "Activator 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 1,
+        "number": 50
+      },
+      "position": {
+        "x": 0,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "activator-2",
+      "label": "Activator 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 2,
+        "number": 50
+      },
+      "position": {
+        "x": 1,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "activator-3",
+      "label": "Activator 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 3,
+        "number": 50
+      },
+      "position": {
+        "x": 2,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "activator-4",
+      "label": "Activator 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 4,
+        "number": 50
+      },
+      "position": {
+        "x": 3,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "activator-5",
+      "label": "Activator 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 5,
+        "number": 50
+      },
+      "position": {
+        "x": 4,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "activator-6",
+      "label": "Activator 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 6,
+        "number": 50
+      },
+      "position": {
+        "x": 5,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "activator-7",
+      "label": "Activator 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 7,
+        "number": 50
+      },
+      "position": {
+        "x": 6,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "activator-8",
+      "label": "Activator 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 8,
+        "number": 50
+      },
+      "position": {
+        "x": 7,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "track-select-1",
+      "label": "Track Select 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 1,
+        "number": 51
+      },
+      "position": {
+        "x": 0,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader-ab-1",
+      "label": "Crossfader A|B 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 1,
+        "number": 66
+      },
+      "position": {
+        "x": 0.5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "solo-1",
+      "label": "Solo 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 1,
+        "number": 49
+      },
+      "position": {
+        "x": 0,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "rec-arm-1",
+      "label": "Record Arm 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 1,
+        "number": 48
+      },
+      "position": {
+        "x": 0.5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "track-select-2",
+      "label": "Track Select 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 2,
+        "number": 51
+      },
+      "position": {
+        "x": 1,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader-ab-2",
+      "label": "Crossfader A|B 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 2,
+        "number": 66
+      },
+      "position": {
+        "x": 1.5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "solo-2",
+      "label": "Solo 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 2,
+        "number": 49
+      },
+      "position": {
+        "x": 1,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "rec-arm-2",
+      "label": "Record Arm 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 2,
+        "number": 48
+      },
+      "position": {
+        "x": 1.5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "track-select-3",
+      "label": "Track Select 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 3,
+        "number": 51
+      },
+      "position": {
+        "x": 2,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader-ab-3",
+      "label": "Crossfader A|B 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 3,
+        "number": 66
+      },
+      "position": {
+        "x": 2.5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "solo-3",
+      "label": "Solo 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 3,
+        "number": 49
+      },
+      "position": {
+        "x": 2,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "rec-arm-3",
+      "label": "Record Arm 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 3,
+        "number": 48
+      },
+      "position": {
+        "x": 2.5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "track-select-4",
+      "label": "Track Select 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 4,
+        "number": 51
+      },
+      "position": {
+        "x": 3,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader-ab-4",
+      "label": "Crossfader A|B 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 4,
+        "number": 66
+      },
+      "position": {
+        "x": 3.5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "solo-4",
+      "label": "Solo 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 4,
+        "number": 49
+      },
+      "position": {
+        "x": 3,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "rec-arm-4",
+      "label": "Record Arm 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 4,
+        "number": 48
+      },
+      "position": {
+        "x": 3.5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "track-select-5",
+      "label": "Track Select 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 5,
+        "number": 51
+      },
+      "position": {
+        "x": 4,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader-ab-5",
+      "label": "Crossfader A|B 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 5,
+        "number": 66
+      },
+      "position": {
+        "x": 4.5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "solo-5",
+      "label": "Solo 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 5,
+        "number": 49
+      },
+      "position": {
+        "x": 4,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "rec-arm-5",
+      "label": "Record Arm 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 5,
+        "number": 48
+      },
+      "position": {
+        "x": 4.5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "track-select-6",
+      "label": "Track Select 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 6,
+        "number": 51
+      },
+      "position": {
+        "x": 5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader-ab-6",
+      "label": "Crossfader A|B 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 6,
+        "number": 66
+      },
+      "position": {
+        "x": 5.5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "solo-6",
+      "label": "Solo 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 6,
+        "number": 49
+      },
+      "position": {
+        "x": 5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "rec-arm-6",
+      "label": "Record Arm 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 6,
+        "number": 48
+      },
+      "position": {
+        "x": 5.5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "track-select-7",
+      "label": "Track Select 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 7,
+        "number": 51
+      },
+      "position": {
+        "x": 6,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader-ab-7",
+      "label": "Crossfader A|B 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 7,
+        "number": 66
+      },
+      "position": {
+        "x": 6.5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "solo-7",
+      "label": "Solo 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 7,
+        "number": 49
+      },
+      "position": {
+        "x": 6,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "rec-arm-7",
+      "label": "Record Arm 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 7,
+        "number": 48
+      },
+      "position": {
+        "x": 6.5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "track-select-8",
+      "label": "Track Select 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 8,
+        "number": 51
+      },
+      "position": {
+        "x": 7,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader-ab-8",
+      "label": "Crossfader A|B 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 8,
+        "number": 66
+      },
+      "position": {
+        "x": 7.5,
+        "y": 8,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "solo-8",
+      "label": "Solo 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 8,
+        "number": 49
+      },
+      "position": {
+        "x": 7,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "rec-arm-8",
+      "label": "Record Arm 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "channel": 8,
+        "number": 48
+      },
+      "position": {
+        "x": 7.5,
+        "y": 8.5,
+        "width": 0.5,
+        "height": 0.5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-1",
+      "label": "Track Fader 1",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 7
+      },
+      "position": {
+        "x": 0,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-2",
+      "label": "Track Fader 2",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 7
+      },
+      "position": {
+        "x": 1,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-3",
+      "label": "Track Fader 3",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 3,
+        "number": 7
+      },
+      "position": {
+        "x": 2,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-4",
+      "label": "Track Fader 4",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 4,
+        "number": 7
+      },
+      "position": {
+        "x": 3,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-5",
+      "label": "Track Fader 5",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 5,
+        "number": 7
+      },
+      "position": {
+        "x": 4,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-6",
+      "label": "Track Fader 6",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 6,
+        "number": 7
+      },
+      "position": {
+        "x": 5,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-7",
+      "label": "Track Fader 7",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 7,
+        "number": 7
+      },
+      "position": {
+        "x": 6,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-8",
+      "label": "Track Fader 8",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 8,
+        "number": 7
+      },
+      "position": {
+        "x": 7,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "fader-master",
+      "label": "Master Fader",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 14
+      },
+      "position": {
+        "x": 8,
+        "y": 9,
+        "width": 1,
+        "height": 5,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "btn-pan",
+      "label": "Pan",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 87
+      },
+      "position": {
+        "x": 9,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-sends",
+      "label": "Sends",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 88
+      },
+      "position": {
+        "x": 9,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-user",
+      "label": "User",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 89
+      },
+      "position": {
+        "x": 9,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-play",
+      "label": "Play",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 91
+      },
+      "position": {
+        "x": 11,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-record",
+      "label": "Record",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 93
+      },
+      "position": {
+        "x": 12,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-session-record",
+      "label": "Session Record",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 102
+      },
+      "position": {
+        "x": 13,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "tempo-knob",
+      "label": "Tempo",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 13
+      },
+      "position": {
+        "x": 15,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "mode": "signed"
+        }
+      }
+    },
+    {
+      "id": "cue-level",
+      "label": "Cue Level",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 47
+      },
+      "position": {
+        "x": 15,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "mode": "signed"
+        }
+      }
+    },
+    {
+      "id": "btn-metronome",
+      "label": "Metronome",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 90
+      },
+      "position": {
+        "x": 11,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-tap-tempo",
+      "label": "Tap Tempo",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 99
+      },
+      "position": {
+        "x": 12,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "btn-nudge-plus",
+      "label": "Nudge +",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 101
+      },
+      "position": {
+        "x": 11,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "btn-nudge-minus",
+      "label": "Nudge -",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 100
+      },
+      "position": {
+        "x": 12,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "device-knob-1",
+      "label": "Device Knob 1",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 16
+      },
+      "position": {
+        "x": 11,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "device-knob-2",
+      "label": "Device Knob 2",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 17
+      },
+      "position": {
+        "x": 12,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "device-knob-3",
+      "label": "Device Knob 3",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 18
+      },
+      "position": {
+        "x": 13,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "device-knob-4",
+      "label": "Device Knob 4",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 19
+      },
+      "position": {
+        "x": 14,
+        "y": 4,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "device-knob-5",
+      "label": "Device Knob 5",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 20
+      },
+      "position": {
+        "x": 11,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "device-knob-6",
+      "label": "Device Knob 6",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 21
+      },
+      "position": {
+        "x": 12,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "device-knob-7",
+      "label": "Device Knob 7",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 22
+      },
+      "position": {
+        "x": 13,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "device-knob-8",
+      "label": "Device Knob 8",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 23
+      },
+      "position": {
+        "x": 14,
+        "y": 5,
+        "width": 1,
+        "height": 1,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    },
+    {
+      "id": "btn-device-left",
+      "label": "Device Left",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 58
+      },
+      "position": {
+        "x": 11,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-device-right",
+      "label": "Device Right",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 59
+      },
+      "position": {
+        "x": 12,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-bank-left",
+      "label": "Bank Left",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 60
+      },
+      "position": {
+        "x": 13,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-bank-right",
+      "label": "Bank Right",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 61
+      },
+      "position": {
+        "x": 14,
+        "y": 6,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-device-onoff",
+      "label": "Device On/Off",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 62
+      },
+      "position": {
+        "x": 11,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-device-lock",
+      "label": "Device Lock",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 63
+      },
+      "position": {
+        "x": 12,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-clip-device-view",
+      "label": "Clip/Device View",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 64
+      },
+      "position": {
+        "x": 13,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-detail-view",
+      "label": "Detail View",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 65
+      },
+      "position": {
+        "x": 14,
+        "y": 7,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-up",
+      "label": "Up",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 94
+      },
+      "position": {
+        "x": 12,
+        "y": 9,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "btn-left",
+      "label": "Left",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 97
+      },
+      "position": {
+        "x": 11,
+        "y": 10,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "btn-right",
+      "label": "Right",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 96
+      },
+      "position": {
+        "x": 13,
+        "y": 10,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "btn-down",
+      "label": "Down",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 95
+      },
+      "position": {
+        "x": 12,
+        "y": 11,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "btn-shift",
+      "label": "Shift",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 98
+      },
+      "position": {
+        "x": 14,
+        "y": 10,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "none"
+      }
+    },
+    {
+      "id": "btn-bank-lock",
+      "label": "Bank",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 103
+      },
+      "position": {
+        "x": 14,
+        "y": 11,
+        "width": 1,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "crossfader",
+      "label": "Crossfader",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 15
+      },
+      "position": {
+        "x": 11,
+        "y": 13,
+        "width": 3,
+        "height": 1,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": false
+      }
+    }
+  ]
+}

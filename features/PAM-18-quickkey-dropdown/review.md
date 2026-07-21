@@ -23,3 +23,7 @@ The QuickKey `key` flows into `Quickey "pam-osc_${key}"` (`input-router.ts:171`)
 
 ## Verdict
 AC-1–AC-4 PASS, AC-5 correctly deferred. No Critical/High from this build. The feature is **not fully complete** (AC-5 pending onPC), so it stays **Building**; the built UI portion is review-clean.
+
+## Update 2026-07-19 — QuickKey injection closed (app-side)
+
+The QuickKey code is now sanitised to `[A-Za-z0-9_]` before the `/cmd` embed (`input-router.ts` `safeQuickKeyCode`), closing the hand-edited/imported breakout noted above. Spec delta AC-6. Tests: `quickkey-escape.test.ts`. Still Building (AC-5 uninstall onPC-pending).

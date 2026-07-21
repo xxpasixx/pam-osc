@@ -522,7 +522,7 @@
       "controlId": "pad-3-4",
       "action": {
         "type": "quickKey",
-        "key": "<<<<"
+        "key": "GOBACKFAST"
       },
       "options": {
         "minValue": 100
@@ -535,7 +535,7 @@
       "controlId": "pad-4-4",
       "action": {
         "type": "quickKey",
-        "key": ">>>>"
+        "key": "GOFAST"
       },
       "options": {
         "minValue": 100
@@ -665,7 +665,7 @@
       "controlId": "pad-1-2",
       "action": {
         "type": "quickKey",
-        "key": "Set"
+        "key": "SET"
       },
       "options": {
         "minValue": 100

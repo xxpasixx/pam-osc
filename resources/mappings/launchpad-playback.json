@@ -198,7 +198,7 @@
       "controlId": "scene-1",
       "action": {
         "type": "quickKey",
-        "key": "Store"
+        "key": "STORE"
       },
       "options": {
         "minValue": 100
@@ -300,7 +300,7 @@
       "controlId": "scene-2",
       "action": {
         "type": "quickKey",
-        "key": "Clear"
+        "key": "CLEAR"
       },
       "options": {
         "minValue": 100
@@ -402,7 +402,7 @@
       "controlId": "scene-3",
       "action": {
         "type": "quickKey",
-        "key": "Off"
+        "key": "OFF"
       },
       "options": {
         "minValue": 100
@@ -528,7 +528,7 @@
       "controlId": "scene-4",
       "action": {
         "type": "quickKey",
-        "key": "Oops"
+        "key": "OOPS"
       },
       "options": {
         "minValue": 100
@@ -654,7 +654,7 @@
       "controlId": "scene-5",
       "action": {
         "type": "quickKey",
-        "key": "Please"
+        "key": "PLEASE"
       },
       "options": {
         "minValue": 100
@@ -780,7 +780,7 @@
       "controlId": "scene-6",
       "action": {
         "type": "quickKey",
-        "key": "Esc"
+        "key": "ESC"
       },
       "options": {
         "minValue": 100

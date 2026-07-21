@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { QUICKKEYS, QUICKKEY_GROUP_ORDER } from "./quickkeys.js";
+import { QUICKKEYS, QUICKKEY_GROUP_ORDER, canonicalQuickKey, resolveQuickKey } from "./quickkeys.js";
 
 /**
  * PAM-18 (AC-2): the canonical QuickKey catalogue (quickkeys.ts) is the single
@@ -58,5 +58,34 @@ describe("canonical QuickKey catalogue (PAM-18)", () => {
     for (const qk of QUICKKEYS) {
       expect(qk.label.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("resolveQuickKey (PAM-18 — tolerant lookup)", () => {
+  it("resolves an exact canonical code", () => {
+    expect(resolveQuickKey("MOVE")?.code).toBe("MOVE");
+  });
+
+  it("resolves a mixed-case v1 spelling to the canonical code", () => {
+    expect(resolveQuickKey("Move")?.code).toBe("MOVE");
+    expect(resolveQuickKey("store")?.code).toBe("STORE");
+    expect(resolveQuickKey("Please")?.code).toBe("PLEASE");
+    expect(resolveQuickKey("Esc")?.code).toBe("ESC");
+  });
+
+  it("resolves the legacy arrow aliases", () => {
+    expect(resolveQuickKey("<<<<")?.code).toBe("GOBACKFAST");
+    expect(resolveQuickKey(">>>>")?.code).toBe("GOFAST");
+  });
+
+  it("returns undefined for a genuinely unknown key and empty input", () => {
+    expect(resolveQuickKey("EditRecipe Programmer")).toBeUndefined();
+    expect(resolveQuickKey("")).toBeUndefined();
+  });
+
+  it("canonicalQuickKey normalizes known values and passes unknown through unchanged", () => {
+    expect(canonicalQuickKey("Move")).toBe("MOVE");
+    expect(canonicalQuickKey("<<<<")).toBe("GOBACKFAST");
+    expect(canonicalQuickKey("totally-unknown")).toBe("totally-unknown");
   });
 });

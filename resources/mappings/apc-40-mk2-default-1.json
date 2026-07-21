@@ -1,0 +1,1390 @@
+{
+  "formatVersion": 1,
+  "id": "apc-40-mk2-default-1",
+  "name": "APC40 mkII Default (Playback)",
+  "status": "community",
+  "notes": "Default for the AKAI APC40 mkII (Generic Mode). Faders -> executors 201-208 (+ master 209, crossfader 210). Top Track-Control knobs -> executor faders 401-408; Device-Control encoders -> 411-418 (only transmit while Track 1 is the selected device bank). 5x8 RGB clip grid (PAD 1 = top-left) -> executor Keys, top->bottom 341-348 / 331-338 / 321-328 / 311-318 / 301-308, with PAM-10 rgb-color feedback: each pad reflects its executor's live MA3 sequence colour (nearest palette entry), lit while running. Clip Stop mirrors each track fader (201-208); Activator/Solo/Record Arm -> 221-228 / 231-238 / 241-248. Section buttons Device On/Off/Lock, Clip/Device View, Detail View -> executor Keys 251-254; the 4 arrows -> Up/Down (Device) + Prev/Next (Bank). Scene Launch (RGB) = Go/Pause/Go Back/Off/Highlight; Stop All = Escape. Transport: Play=Go, Record=Store, Session=Update, Shift=MA key, Bank=Clear, Up/Down=Page Up/Down, Nudge +/- = Go Fast/Back Fast. Cue Level (signed relative encoder) nudges executor 211. UNMAPPED: Tempo, Track Select/Master (no MIDI in Generic Mode), Crossfader-A|B row, Pan/Sends/User/Metronome/Tap Tempo, transport Left/Right. status=community: NOT yet verified on hardware.",
+  "deviceDefinitionId": "apc-40-mk2",
+  "midiPort": {
+    "input": "APC40 mkII",
+    "output": "APC40 mkII"
+  },
+  "assignments": [
+    {
+      "controlId": "fader-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "fader-master",
+      "action": {
+        "type": "executor",
+        "number": 209
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "crossfader",
+      "action": {
+        "type": "executor",
+        "number": 210
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "track-knob-1",
+      "action": {
+        "type": "executor",
+        "number": 401
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "track-knob-2",
+      "action": {
+        "type": "executor",
+        "number": 402
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "track-knob-3",
+      "action": {
+        "type": "executor",
+        "number": 403
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "track-knob-4",
+      "action": {
+        "type": "executor",
+        "number": 404
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "track-knob-5",
+      "action": {
+        "type": "executor",
+        "number": 405
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "track-knob-6",
+      "action": {
+        "type": "executor",
+        "number": 406
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "track-knob-7",
+      "action": {
+        "type": "executor",
+        "number": 407
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "track-knob-8",
+      "action": {
+        "type": "executor",
+        "number": 408
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "device-knob-1",
+      "action": {
+        "type": "executor",
+        "number": 411
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "device-knob-2",
+      "action": {
+        "type": "executor",
+        "number": 412
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "device-knob-3",
+      "action": {
+        "type": "executor",
+        "number": 413
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "device-knob-4",
+      "action": {
+        "type": "executor",
+        "number": 414
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "device-knob-5",
+      "action": {
+        "type": "executor",
+        "number": 415
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "device-knob-6",
+      "action": {
+        "type": "executor",
+        "number": 416
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "device-knob-7",
+      "action": {
+        "type": "executor",
+        "number": 417
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "device-knob-8",
+      "action": {
+        "type": "executor",
+        "number": 418
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "cue-level",
+      "action": {
+        "type": "executor",
+        "number": 211
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "clip-0",
+      "action": {
+        "type": "executor",
+        "number": 341
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-1",
+      "action": {
+        "type": "executor",
+        "number": 342
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-2",
+      "action": {
+        "type": "executor",
+        "number": 343
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-3",
+      "action": {
+        "type": "executor",
+        "number": 344
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-4",
+      "action": {
+        "type": "executor",
+        "number": 345
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-5",
+      "action": {
+        "type": "executor",
+        "number": 346
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-6",
+      "action": {
+        "type": "executor",
+        "number": 347
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-7",
+      "action": {
+        "type": "executor",
+        "number": 348
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-8",
+      "action": {
+        "type": "executor",
+        "number": 331
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-9",
+      "action": {
+        "type": "executor",
+        "number": 332
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-10",
+      "action": {
+        "type": "executor",
+        "number": 333
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-11",
+      "action": {
+        "type": "executor",
+        "number": 334
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-12",
+      "action": {
+        "type": "executor",
+        "number": 335
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-13",
+      "action": {
+        "type": "executor",
+        "number": 336
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-14",
+      "action": {
+        "type": "executor",
+        "number": 337
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-15",
+      "action": {
+        "type": "executor",
+        "number": 338
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-16",
+      "action": {
+        "type": "executor",
+        "number": 321
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-17",
+      "action": {
+        "type": "executor",
+        "number": 322
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-18",
+      "action": {
+        "type": "executor",
+        "number": 323
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-19",
+      "action": {
+        "type": "executor",
+        "number": 324
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-20",
+      "action": {
+        "type": "executor",
+        "number": 325
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-21",
+      "action": {
+        "type": "executor",
+        "number": 326
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-22",
+      "action": {
+        "type": "executor",
+        "number": 327
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-23",
+      "action": {
+        "type": "executor",
+        "number": 328
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-24",
+      "action": {
+        "type": "executor",
+        "number": 311
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-25",
+      "action": {
+        "type": "executor",
+        "number": 312
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-26",
+      "action": {
+        "type": "executor",
+        "number": 313
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-27",
+      "action": {
+        "type": "executor",
+        "number": 314
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-28",
+      "action": {
+        "type": "executor",
+        "number": 315
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-29",
+      "action": {
+        "type": "executor",
+        "number": 316
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-30",
+      "action": {
+        "type": "executor",
+        "number": 317
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-31",
+      "action": {
+        "type": "executor",
+        "number": 318
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-32",
+      "action": {
+        "type": "executor",
+        "number": 301
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-33",
+      "action": {
+        "type": "executor",
+        "number": 302
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-34",
+      "action": {
+        "type": "executor",
+        "number": 303
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-35",
+      "action": {
+        "type": "executor",
+        "number": 304
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-36",
+      "action": {
+        "type": "executor",
+        "number": 305
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-37",
+      "action": {
+        "type": "executor",
+        "number": 306
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-38",
+      "action": {
+        "type": "executor",
+        "number": 307
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-39",
+      "action": {
+        "type": "executor",
+        "number": 308
+      },
+      "feedback": {
+        "type": "rgb-color",
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-stop-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-stop-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-stop-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-stop-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-stop-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-stop-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-stop-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "clip-stop-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "activator-1",
+      "action": {
+        "type": "executor",
+        "number": 221
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "activator-2",
+      "action": {
+        "type": "executor",
+        "number": 222
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "activator-3",
+      "action": {
+        "type": "executor",
+        "number": 223
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "activator-4",
+      "action": {
+        "type": "executor",
+        "number": 224
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "activator-5",
+      "action": {
+        "type": "executor",
+        "number": 225
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "activator-6",
+      "action": {
+        "type": "executor",
+        "number": 226
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "activator-7",
+      "action": {
+        "type": "executor",
+        "number": 227
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "activator-8",
+      "action": {
+        "type": "executor",
+        "number": 228
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "solo-1",
+      "action": {
+        "type": "executor",
+        "number": 231
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "solo-2",
+      "action": {
+        "type": "executor",
+        "number": 232
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "solo-3",
+      "action": {
+        "type": "executor",
+        "number": 233
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "solo-4",
+      "action": {
+        "type": "executor",
+        "number": 234
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "solo-5",
+      "action": {
+        "type": "executor",
+        "number": 235
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "solo-6",
+      "action": {
+        "type": "executor",
+        "number": 236
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "solo-7",
+      "action": {
+        "type": "executor",
+        "number": 237
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "solo-8",
+      "action": {
+        "type": "executor",
+        "number": 238
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "rec-arm-1",
+      "action": {
+        "type": "executor",
+        "number": 241
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "rec-arm-2",
+      "action": {
+        "type": "executor",
+        "number": 242
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "rec-arm-3",
+      "action": {
+        "type": "executor",
+        "number": 243
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "rec-arm-4",
+      "action": {
+        "type": "executor",
+        "number": 244
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "rec-arm-5",
+      "action": {
+        "type": "executor",
+        "number": 245
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "rec-arm-6",
+      "action": {
+        "type": "executor",
+        "number": 246
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "rec-arm-7",
+      "action": {
+        "type": "executor",
+        "number": 247
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "rec-arm-8",
+      "action": {
+        "type": "executor",
+        "number": 248
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-device-onoff",
+      "action": {
+        "type": "executor",
+        "number": 251
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-device-lock",
+      "action": {
+        "type": "executor",
+        "number": 252
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-clip-device-view",
+      "action": {
+        "type": "executor",
+        "number": 253
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-detail-view",
+      "action": {
+        "type": "executor",
+        "number": 254
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-device-left",
+      "action": {
+        "type": "quickKey",
+        "key": "UP"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "btn-device-right",
+      "action": {
+        "type": "quickKey",
+        "key": "DOWN"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "btn-bank-left",
+      "action": {
+        "type": "quickKey",
+        "key": "PREV"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "btn-bank-right",
+      "action": {
+        "type": "quickKey",
+        "key": "NEXT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "scene-launch-1",
+      "action": {
+        "type": "quickKey",
+        "key": "GO"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 21
+      }
+    },
+    {
+      "controlId": "scene-launch-2",
+      "action": {
+        "type": "quickKey",
+        "key": "PAUSE"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 9
+      }
+    },
+    {
+      "controlId": "scene-launch-3",
+      "action": {
+        "type": "quickKey",
+        "key": "GOBACK"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 45
+      }
+    },
+    {
+      "controlId": "scene-launch-4",
+      "action": {
+        "type": "quickKey",
+        "key": "OFF"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 5
+      }
+    },
+    {
+      "controlId": "scene-launch-5",
+      "action": {
+        "type": "command",
+        "command": "HIGHLIGHT"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 13,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "btn-stop-all",
+      "action": {
+        "type": "quickKey",
+        "key": "ESC"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-play",
+      "action": {
+        "type": "quickKey",
+        "key": "GO"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-record",
+      "action": {
+        "type": "quickKey",
+        "key": "STORE"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-session-record",
+      "action": {
+        "type": "quickKey",
+        "key": "UPDATE"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-shift",
+      "action": {
+        "type": "quickKey",
+        "key": "MA1"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-bank-lock",
+      "action": {
+        "type": "command",
+        "command": "CLEAR"
+      },
+      "options": {
+        "minValue": 100
+      },
+      "feedback": {
+        "type": "always-on",
+        "value": 1
+      }
+    },
+    {
+      "controlId": "btn-up",
+      "action": {
+        "type": "quickKey",
+        "key": "PAGE_UP"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-down",
+      "action": {
+        "type": "quickKey",
+        "key": "PAGE_DOWN"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-nudge-plus",
+      "action": {
+        "type": "quickKey",
+        "key": "GOFAST"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-nudge-minus",
+      "action": {
+        "type": "quickKey",
+        "key": "GOBACKFAST"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    }
+  ]
+}

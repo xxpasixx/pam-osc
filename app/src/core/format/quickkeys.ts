@@ -151,7 +151,47 @@ export const QUICKKEY_BY_CODE: ReadonlyMap<string, QuickKeyDef> = new Map(
   QUICKKEYS.map((qk) => [qk.code, qk]),
 );
 
-/** True if a code is a known, plugin-created QuickKey. */
+/** Case-insensitive lookup by code (v1 mappings stored mixed-case labels like "Move"). */
+const QUICKKEY_BY_UPPER: ReadonlyMap<string, QuickKeyDef> = new Map(
+  QUICKKEYS.map((qk) => [qk.code.toUpperCase(), qk]),
+);
+
+/**
+ * v1 / legacy spellings that are NOT a case variant of a canonical code but still
+ * mean a known hardkey. The v1 config used ASCII arrows for the fast transport
+ * keys; map them onto their canonical codes so old mappings resolve.
+ */
+const QUICKKEY_ALIASES: Record<string, string> = {
+  "<<<<": "GOBACKFAST",
+  ">>>>": "GOFAST",
+};
+
+/** True if a code is a known, plugin-created QuickKey (exact code, case-sensitive). */
 export function isKnownQuickKey(code: string): boolean {
   return QUICKKEY_BY_CODE.has(code);
+}
+
+/**
+ * Resolve any stored/imported key value to its canonical QuickKey — tolerant of
+ * mixed case (v1 stored "Move", "Store", …) and the legacy arrow aliases. Returns
+ * `undefined` for a genuinely unknown key so the caller can flag it (AC-3).
+ *
+ * Used by the editor (to show the real label instead of "unknown") and by the
+ * engine (to send the canonical `pam-osc_<CODE>` so imported v1 mappings still
+ * hit a real pool object on the console).
+ */
+export function resolveQuickKey(value: string): QuickKeyDef | undefined {
+  if (!value) return undefined;
+  const direct = QUICKKEY_BY_CODE.get(value);
+  if (direct) return direct;
+  const upper = value.toUpperCase();
+  const byUpper = QUICKKEY_BY_UPPER.get(upper);
+  if (byUpper) return byUpper;
+  const alias = QUICKKEY_ALIASES[value] ?? QUICKKEY_ALIASES[upper];
+  return alias ? QUICKKEY_BY_CODE.get(alias) : undefined;
+}
+
+/** Canonicalise a key to its exact code, or return the input unchanged if unknown. */
+export function canonicalQuickKey(value: string): string {
+  return resolveQuickKey(value)?.code ?? value;
 }
