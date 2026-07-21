@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "apc-mini-default-2",
   "name": "APC mini Default 2 (Command Section)",
-  "status": "tested",
+  "status": "community",
   "notes": "Converted from v1 mappings/akiApcMini2.json - a QuickKey/command layout that turns the pad grid into a GrandMA3 command section (see img/mappings/akiApcMini2.png). QuickKeys have no feedback path, so those assignments use feedback none; command assignments keep the v1 master-enabled on/off feedback (onValue 127). Executor 209 sits on the shift button (note 98), which has no LED - feedback none (same behaviour as v1, where the feedback note lit nothing).",
   "deviceDefinitionId": "apc-mini",
   "midiPort": {

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "apc-mini-mk2-controller",
   "name": "APC mini mk2 Controller",
-  "status": "tested",
+  "status": "community",
   "notes": "Converted from v1 mappings/akaiApcMini2-Controller.json (layout chart: img/mappings/APCmini.-.grandMA3.-.v4.0 (1).pdf - preset rows, executor rows, fixture-select row, programmer column). The always-on values are RGB palette colour indexes of the mk2 pads. LOST IN CONVERSION (documented here, no data dropped): the v1 entries carried a per-note \"midiChannel\" that v1 used ONLY for the outgoing LED feedback (midiUtils.js sendNoteResponse; input matching ignores the channel) - on the mk2 the feedback channel selects LED brightness. v1 used channel 7 (= 100% solid brightness) for all pads except notes 40-43 (dimmer presets 0%/25%/50%/75%), which used channels 1/2/4/5 (= 10%/25%/65%/75% brightness). The v2 feedback format has no channel field yet, so feedback is sent on the default channel. The shift button (note 122) had an empty v1 quicKey - it sent the literal command 'Quickey \"pam-osc_\"', kept here as a command action; shift has no LED, so its v1 permanentFeedback 127 (no visible effect) is dropped to feedback none.",
   "deviceDefinitionId": "apc-mini-mk2",
   "midiPort": {

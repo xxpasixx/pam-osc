@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "apc-mini-default-1",
   "name": "APC mini Default 1 (Playback)",
-  "status": "tested",
+  "status": "community",
   "notes": "Converted from v1 mappings/akiApcMini1.json. Pad grid: rows 1-2 (top) = executors 410-417 / 310-317 are NOT here - see the v1 layout chart img/mappings/akiApcMini1.png for the intended use (top rows = executors 110-417, bottom rows = 191-298/301-408). LED colours are encoded in the on-off onValue: 3 = red, 5 = yellow, 2 = blinking, 127 = default. Deviations from the v1 file: (1) v1 declared \"mode\": \"mc\" only so LED-off was sent as note-on velocity 0 - the APC mini is not a Mackie Control device and accepts a plain note value 0 the same way, so the device stays in standard mode. (2) v1 assigned executor 209 to note 72, which does not exist on the APC mini hardware (the 9th button above the master fader is the shift button, note 98, as the sibling default-2 mapping uses); the assignment was moved to the shift button. Shift has no LED, so executor 209 gets no feedback (v1 sent its feedback to the non-existent note 72, which also had no visible effect).",
   "deviceDefinitionId": "apc-mini",
   "midiPort": {

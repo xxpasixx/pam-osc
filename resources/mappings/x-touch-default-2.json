@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "x-touch-default-2",
   "name": "X-Touch Default 2",
-  "status": "tested",
+  "status": "community",
   "notes": "Default X-Touch layout 2 (v1 mappings/xTouch2.json): faders on executors 201-208 + main 209, encoders on 301-308, attribute selection on the F-keys, QuickKeys and MA commands with permanently lit LEDs on the master section. Converted from v1. The timecodeSelect button cycles through timecode slots 0-8 on every press (0 = none), exactly as in v1. Encoder push buttons carried executor feedback in v1 that the hardware ignored (no LED there) — represented here as feedback 'none'. Modifier buttons (encoder fine/rough, attribute select) keep 'on-off' feedback because v1 drove those LEDs locally (toggle state / selected attribute). Note: as in v1, both Fast Fwd (note 92) and Play (note 94) send 'Go+ Timecode' — kept verbatim from the v1 file. HIGHLIGHT and BLIND use 'on-off' feedback driven by the MA3 master state (/masterEnabled), exactly as in v1.",
   "deviceDefinitionId": "x-touch",
   "midiPort": {
