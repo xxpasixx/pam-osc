@@ -53,6 +53,10 @@ export const feedbackSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("fader-position") }),
   // LED ring on an encoder shows the value.
   z.strictObject({ type: z.literal("encoder-ring") }),
+  // PAM-10: an RGB button LED reflects the executor's live MA3 appearance
+  // colour (nearest palette entry), lit while the executor runs. The colour
+  // arrives from the plugin; only the off value is configurable.
+  z.strictObject({ type: z.literal("rgb-color"), offValue: midiValueSchema.default(0) }),
 ]);
 
 export const assignmentSchema = z.strictObject({

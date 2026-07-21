@@ -13,6 +13,14 @@ export interface UnitRuntime {
   cache: Map<string, MidiOutputMessage>;
   /** Scribble strip colors, one palette byte per strip index (v1: 8 × "0;0;0;0"). */
   colors: number[];
+  /** PAM-10: per-executor RGB button state (running flag + last colour velocity). */
+  rgb: Map<number, RgbButtonState>;
+}
+
+/** PAM-10: the two async inputs an rgb-color pad combines (running + colour). */
+export interface RgbButtonState {
+  running: boolean;
+  colorVelocity: number;
 }
 
 function defaultCacheKey(message: MidiOutputMessage): string {
@@ -59,7 +67,7 @@ export class DeviceManager {
   /** Binds what is connected now; everything else is picked up by the poll. */
   start(units: Unit[]): void {
     for (const unit of units) {
-      this.units.push({ unit, connection: undefined, cache: new Map(), colors: new Array(8).fill(0) });
+      this.units.push({ unit, connection: undefined, cache: new Map(), colors: new Array(8).fill(0), rgb: new Map() });
     }
     for (const unitRuntime of this.units) {
       this.tryBind(unitRuntime, false);

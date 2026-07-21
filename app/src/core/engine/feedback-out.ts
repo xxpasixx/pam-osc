@@ -1,5 +1,5 @@
 import type { RoutingEntry, Unit } from "./routing-table.js";
-import { sendToUnit, type UnitRuntime } from "./device-manager.js";
+import { sendToUnit, type RgbButtonState, type UnitRuntime } from "./device-manager.js";
 import type { RuntimeState } from "./state.js";
 import { mapValue, scribbleLine } from "./v1-compat.js";
 
@@ -31,6 +31,23 @@ export function sendButtonFeedback(unitRuntime: UnitRuntime, entry: RoutingEntry
     channel: entry.channel,
     note: entry.control.midi.number,
     velocity,
+  });
+}
+
+/**
+ * PAM-10: render an rgb-color pad from its combined state — lit in the mapped
+ * palette velocity while the executor runs, off (offValue) otherwise. Sent on
+ * the control's channel (channel 0 = APC Primary Colour, solid).
+ */
+export function sendRgbColorFeedback(unitRuntime: UnitRuntime, entry: RoutingEntry, state: RgbButtonState): void {
+  if (entry.control.type !== "button" || entry.control.midi.kind !== "note") return;
+  const feedback = entry.assignment.feedback;
+  if (feedback.type !== "rgb-color") return;
+  sendToUnit(unitRuntime, {
+    kind: "note",
+    channel: entry.channel,
+    note: entry.control.midi.number,
+    velocity: state.running ? state.colorVelocity : feedback.offValue,
   });
 }
 

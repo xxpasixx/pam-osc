@@ -75,10 +75,24 @@ export const controlSchema = z.discriminatedUnion("type", [
     ...controlBaseShape,
     type: z.literal("encoder"),
     capabilities: z.strictObject({
-      encoding: z.strictObject({
-        increment: encoderRangeSchema,
-        decrement: encoderRangeSchema,
-      }),
+      // PAM-20: relative decode mode. "range" (default) is the original
+      // X-Touch behaviour driven by increment/decrement windows; "signed" is
+      // the Akai two's-complement scheme (1..63 = +, 64..127 = −) that needs no
+      // ranges. Additive with a default, so existing files load unchanged.
+      encoding: z
+        .strictObject({
+          mode: z.enum(["range", "signed"]).default("range"),
+          increment: encoderRangeSchema.optional(),
+          decrement: encoderRangeSchema.optional(),
+        })
+        .superRefine((encoding, ctx) => {
+          if (encoding.mode === "range") {
+            if (!encoding.increment)
+              ctx.addIssue({ code: "custom", path: ["increment"], message: '"range" encoding requires increment' });
+            if (!encoding.decrement)
+              ctx.addIssue({ code: "custom", path: ["decrement"], message: '"range" encoding requires decrement' });
+          }
+        }),
       // The ring is driven via its own CC number (e.g. X-Touch: encoder on
       // CC 16-23, ring feedback out on CC 48-55), not via a MIDI channel.
       ledRing: z
@@ -112,6 +126,17 @@ export const deviceDefinitionSchema = z
   .strictObject({
     ...envelopeShape,
     manufacturer: z.string().optional(),
+    // PAM-10: name of the LED colour palette for velocity-colours buttons
+    // (resolved by the engine's palette registry). Absent = no colour mapping.
+    ledPalette: z.string().optional(),
+    // PAM-21: optional board photo override — a bare filename with an image
+    // extension, resolved inside the board's images/ folder. The regex bars
+    // path separators and "..", so it can never read outside that folder.
+    // Absent = convention lookup (images/<board-id>.{png,jpg,jpeg,webp}).
+    image: z
+      .string()
+      .regex(/^[A-Za-z0-9._-]+\.(png|jpe?g|webp)$/i, "must be a plain image filename (png/jpg/jpeg/webp)")
+      .optional(),
     mode: z.enum(["standard", "mc"]).default("standard"),
     defaultMidiChannel: midiChannelSchema.default(1),
     layout: z.strictObject({

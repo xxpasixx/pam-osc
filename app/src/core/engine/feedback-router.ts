@@ -1,6 +1,7 @@
 import type { OscMessage } from "../../transports/osc.js";
-import type { UnitRuntime } from "./device-manager.js";
-import { sendButtonFeedback, sendFaderFeedback, sendStripColors, sendStripText } from "./feedback-out.js";
+import type { RgbButtonState, UnitRuntime } from "./device-manager.js";
+import { sendButtonFeedback, sendFaderFeedback, sendRgbColorFeedback, sendStripColors, sendStripText } from "./feedback-out.js";
+import { nearestPaletteVelocity } from "./led-palette.js";
 import { accumulatorKey } from "./state.js";
 import type { RuntimeState } from "./state.js";
 import { handleTimecodeFeedback, handleTimecodeRunning } from "./timecode.js";
@@ -169,9 +170,27 @@ function handleButton(context: FeedbackContext, executor: number, value: unknown
     if (!entries) continue;
     for (const entry of entries) {
       if (entry.control.type !== "button") continue;
-      sendButtonFeedback(unitRuntime, entry, on);
+      // PAM-10: an rgb-color pad combines running (here) with its live colour;
+      // everything else is the plain on/off LED.
+      if (entry.assignment.feedback.type === "rgb-color") {
+        const state = rgbStateFor(unitRuntime, executor);
+        state.running = on;
+        sendRgbColorFeedback(unitRuntime, entry, state);
+      } else {
+        sendButtonFeedback(unitRuntime, entry, on);
+      }
     }
   }
+}
+
+/** PAM-10: get-or-create the per-executor RGB state on a unit. */
+function rgbStateFor(unitRuntime: UnitRuntime, executor: number): RgbButtonState {
+  let state = unitRuntime.rgb.get(executor);
+  if (!state) {
+    state = { running: false, colorVelocity: 0 };
+    unitRuntime.rgb.set(executor, state);
+  }
+  return state;
 }
 
 function handleMasterEnabled(context: FeedbackContext, name: string, value: unknown): void {
@@ -187,20 +206,34 @@ function handleMasterEnabled(context: FeedbackContext, name: string, value: unkn
 
 function handleColor(context: FeedbackContext, executor: number, value: unknown): void {
   if (typeof value !== "string") return;
+  const color = parseColorString(value);
   for (const unitRuntime of context.allUnits()) {
-    const entries = unitRuntime.unit.byDisplayExecutor.get(executor);
-    if (!entries) continue;
-    let changed = false;
-    for (const entry of entries) {
-      if (entry.control.type !== "display") continue;
-      // Defense in depth: the schema bounds index to 0-7, and the frame is
-      // fixed at 8 strips — never grow the array past it.
-      if (entry.control.index >= unitRuntime.colors.length) continue;
-      unitRuntime.colors[entry.control.index] = nearestDisplayColor(parseColorString(value));
-      changed = true;
+    // X-Touch scribble-strip displays (v1).
+    const displays = unitRuntime.unit.byDisplayExecutor.get(executor);
+    if (displays) {
+      let changed = false;
+      for (const entry of displays) {
+        if (entry.control.type !== "display") continue;
+        // Defense in depth: the schema bounds index to 0-7, and the frame is
+        // fixed at 8 strips — never grow the array past it.
+        if (entry.control.index >= unitRuntime.colors.length) continue;
+        unitRuntime.colors[entry.control.index] = nearestDisplayColor(color);
+        changed = true;
+      }
+      // One sysex frame carries all 8 strips (v1) — per device, not global.
+      if (changed) sendStripColors(unitRuntime);
     }
-    // One sysex frame carries all 8 strips (v1) — per device, not global.
-    if (changed) sendStripColors(unitRuntime);
+
+    // PAM-10: RGB button LEDs reflect the executor's live appearance colour.
+    const execEntries = unitRuntime.unit.byExecutor.get(executor);
+    if (execEntries) {
+      for (const entry of execEntries) {
+        if (entry.control.type !== "button" || entry.assignment.feedback.type !== "rgb-color") continue;
+        const state = rgbStateFor(unitRuntime, executor);
+        state.colorVelocity = nearestPaletteVelocity(unitRuntime.unit.device.ledPalette, color);
+        sendRgbColorFeedback(unitRuntime, entry, state);
+      }
+    }
   }
 }
 
