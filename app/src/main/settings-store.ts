@@ -105,6 +105,29 @@ export class SettingsStore {
   }
 
   /**
+   * PAM-34: update preferences are saved outside the Save transaction so a
+   * toggle never restarts the engine. Like the onboarding flag it writes even
+   * on a first run — the user's explicit choice must survive the next launch.
+   */
+  async setUpdatePreferences(updates: { checkAutomatically: boolean; receiveBetas: boolean }): Promise<void> {
+    const next: PersistedSettings = { ...this.current, updates: { ...this.current.updates, ...updates } };
+    await this.write(next);
+    this.current = next;
+    this.persisted = true;
+  }
+
+  /** PAM-34 AC-15: remember (or forget, with undefined) the version to install at the next start. */
+  async setInstallOnNextLaunch(version: string | undefined): Promise<void> {
+    const updates = { ...this.current.updates };
+    if (version === undefined) delete updates.installOnNextLaunch;
+    else updates.installOnNextLaunch = version;
+    const next: PersistedSettings = { ...this.current, updates };
+    await this.write(next);
+    this.current = next;
+    this.persisted = true;
+  }
+
+  /**
    * Window bounds are saved outside the Save transaction (design). While the
    * on-disk file is missing or corrupt (nothing successfully persisted yet),
    * this is a no-op — EC-2: a corrupt file stays untouched until a real Save,

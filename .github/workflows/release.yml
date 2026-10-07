@@ -1,6 +1,6 @@
 name: App Release
 
-# Builds the pam-osc v2 installers (macOS dmg apple-silicon + intel, Windows nsis x64,
+# Builds the pam-osc v2 installers (macOS universal dmg + zip, Windows nsis x64,
 # Linux AppImage x64) and uploads them into a DRAFT GitHub release.
 # Nothing goes public automatically — the maintainer publishes the draft
 # (tick "pre-release" for betas).
@@ -109,13 +109,4 @@ jobs:
             # (Azure Artifact Signing via win.azureSignOptions, or SignPath).
             echo "::warning::Windows build is UNSIGNED"
           fi
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            # One build per arch so the file names say which Mac they are for
-            # (electron-builder's ${arch} would give the less clear arm64/x64).
-            npx electron-builder --mac --arm64 --publish always \
-              -c.mac.artifactName='${productName}-${version}-mac-apple-silicon.${ext}'
-            npx electron-builder --mac --x64 --publish always \
-              -c.mac.artifactName='${productName}-${version}-mac-intel.${ext}'
-          else
-            npx electron-builder ${{ matrix.target }} --publish always
-          fi
+          npx electron-builder ${{ matrix.target }} --publish always

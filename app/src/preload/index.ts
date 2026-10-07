@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { IPC, type PamOscApi } from "../shared/ipc.js";
+import { UPDATE_IPC, type PamOscUpdatesApi } from "../shared/update.js";
 
 /**
  * The narrow bridge (design → IPC contract): exactly the PamOscApi surface,
@@ -69,3 +70,15 @@ const api: PamOscApi = {
 };
 
 contextBridge.exposeInMainWorld("pamOsc", api);
+
+// PAM-34: the updater's own narrow bridge.
+const updates: PamOscUpdatesApi = {
+  getStatus: () => ipcRenderer.invoke(UPDATE_IPC.getStatus),
+  checkNow: () => ipcRenderer.invoke(UPDATE_IPC.checkNow),
+  setPreferences: (preferences) => ipcRenderer.invoke(UPDATE_IPC.setPreferences, preferences),
+  installNow: () => ipcRenderer.invoke(UPDATE_IPC.installNow),
+  scheduleForNextLaunch: () => ipcRenderer.invoke(UPDATE_IPC.scheduleForNextLaunch),
+  openReleasePage: (url) => ipcRenderer.invoke(UPDATE_IPC.openReleasePage, url),
+  onStatus: subscribe(UPDATE_IPC.evStatus),
+};
+contextBridge.exposeInMainWorld("pamOscUpdates", updates);

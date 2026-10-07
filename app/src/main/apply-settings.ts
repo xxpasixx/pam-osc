@@ -78,6 +78,8 @@ export async function applySettings(rawDraft: SettingsDraft, deps: ApplyDeps): P
     ui: deps.settingsStore.settings.ui,
     // PAM-14: a Save mid-wizard must not wipe the onboarding flag.
     onboarding: deps.settingsStore.settings.onboarding,
+    // PAM-34: update preferences are saved separately — a Save must keep them.
+    updates: deps.settingsStore.settings.updates,
     // PAM-16: global fixed executor page (undefined = follow current page).
     fixedPage: draft.fixedPage,
   };

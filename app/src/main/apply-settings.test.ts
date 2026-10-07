@@ -124,6 +124,14 @@ describe("applySettings — the Save transaction (AC-3, AC-6, EC-3)", () => {
     expect(persisted.onboarding).toEqual({ completed: true });
   });
 
+  it("PAM-34: a Save preserves the update preferences", async () => {
+    await store.setUpdatePreferences({ checkAutomatically: false, receiveBetas: true });
+    const result = await applySettings(validDraft(), deps);
+    expect(result.ok).toBe(true);
+    const persisted = JSON.parse(await readFile(settingsFile, "utf8")) as { updates?: unknown };
+    expect(persisted.updates).toEqual({ checkAutomatically: false, receiveBetas: true });
+  });
+
   it("success: mapping files written, engine reconfigured, settings persisted (AC-3)", async () => {
     const result = await applySettings(validDraft(), deps);
     expect(result.ok).toBe(true);

@@ -6,7 +6,7 @@
 
 ## Status: Spec'd
 
-**Created:** 2026-10-07 · **Last Updated:** 2026-10-07
+**Created:** 2026-10-07 · **Last Updated:** 2026-10-07 (delta after the beta.3 UI preview)
 
 > Full spec. The updater downloads and executes code from the internet — treated as
 > risk work: `/design` and `/review` before it goes live.
@@ -57,24 +57,26 @@ a running show.
 - [ ] **AC-3** — Given an update was downloaded, when its integrity check fails (checksum
       mismatch, or on macOS the code signature is not the expected Developer ID), then the
       update is discarded, never installed, and the failure is logged.
-- [ ] **AC-4** — Given the user is on the current version, when they open Settings, then
-      they see the installed version, the result of the last check ("up to date" /
-      "update ready: v…" / "last check failed") and a **Check now** button.
+- [ ] **AC-4** — _(delta 2026-10-07: moved from the Setup view to the app menu)_ Given the
+      app is running, when the user opens the **Help** menu, then it offers **Check for
+      Updates…**, shows the installed version, and a manual check answers with a short
+      dialog ("up to date" / "available — downloading" / "couldn't check: …"). No update
+      card in the Setup view.
 
 ### Installing — never during a show
 
-- [ ] **AC-5** — Given an update has been downloaded, when it is ready, then the app shows
-      a non-blocking notice "Update v… ready" with **Install now** and the hint that it
-      will otherwise install automatically when the app is closed. The notice can be
-      dismissed and does not cover the board editor or status views.
+- [ ] **AC-5** — _(delta 2026-10-07)_ Given an update has been downloaded, when it is ready,
+      then the app shows a slim, non-blocking bar "Update v… is available" with
+      **On next launch** and **Install now**. The bar can be dismissed and does not cover the
+      board editor or status views.
 - [ ] **AC-6** — Given an update is ready, when the user clicks **Install now**, then the
       app asks for confirmation if the bridge is connected/active ("this restarts pam-osc
       and interrupts MIDI ↔ MA3"), and only on confirm quits, installs and relaunches the
       new version.
-- [ ] **AC-7** — Given an update is ready and the user did not click Install now, when the
-      user quits the app normally, then the update installs on quit and the next launch
-      runs the new version. The app **never** quits, restarts or installs on its own
-      without one of these two user actions.
+- [ ] **AC-7** — _(delta 2026-10-07: no more install-on-quit)_ Given an update is ready,
+      when the user quits the app, then **nothing is installed**. The app never quits,
+      restarts or installs without the user clicking Install now (AC-6) or choosing On
+      next launch (AC-15).
 
 ### Channels
 
@@ -106,8 +108,21 @@ a running show.
 ### Control
 
 - [ ] **AC-14** — Given the setting "check for updates automatically", when it is off,
-      then the app makes no update request at all unless the user clicks **Check now**.
-      Both update settings persist with the other App Settings.
+      then the app makes no update request at all unless the user clicks **Check for
+      Updates…**. Both update settings are checkboxes in the **Help** menu _(delta
+      2026-10-07)_ and persist with the other App Settings.
+
+### Install on next launch (delta 2026-10-07)
+
+- [ ] **AC-15** — Given an update is ready, when the user clicks **On next launch**, then the
+      bar reads "Update v… installs on next launch"; at the next start the app installs
+      that version **before the bridge starts** (bar: "Installing update v…"), restarts
+      once and runs the new version. The schedule is forgotten before installing, so a
+      broken update never loops.
+- [ ] **AC-16** — Given a scheduled install at start fails, finds nothing to install, cannot
+      install from this location, or has not restarted the app within 2 minutes, when that
+      happens, then the schedule is cleared, the bridge starts normally and the reason is
+      logged — the user is never left without a running bridge.
 
 ## Out of Scope
 
@@ -161,4 +176,6 @@ a running show.
 | Install only on quit or on explicit click — never self-restart | Live-show safety: a restart interrupts MIDI ↔ MA3 | 2026-10-07 |
 | Beta channel = GitHub "pre-release" flag + Settings toggle; beta installs default to on | Maintainer already sets the flag for betas; testers stay on betas without extra steps | 2026-10-07 |
 | One universal macOS dmg instead of apple-silicon / intel files | Testers picked the wrong file; separate per-arch builds also overwrite each other's macOS update metadata | 2026-10-07 |
+| Updates live in the Help menu, only a slim bar appears when one is available | Updates are not a core feature; the Setup card was visual noise (maintainer, beta.3 preview) | 2026-10-07 |
+| No install on quit — "On next launch" instead | Closing after a show and reopening must not be slowed down by a surprise install; the user decides (maintainer) | 2026-10-07 |
 | "Check for updates automatically" defaults to on | The feature is pointless if off by default; only GitHub is contacted, and it can be switched off | 2026-10-07 |

@@ -1,0 +1,21 @@
+/* PAM-34 update notice (kept out of styles.css). */
+
+.update-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--accent);
+  font-size: 13px;
+}
+
+.update-bar .grow {
+  flex: 1;
+}
+
+.update-dismiss {
+  padding: 2px 8px;
+  font-size: 16px;
+  line-height: 1;
+}

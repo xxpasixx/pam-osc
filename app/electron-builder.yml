@@ -25,9 +25,18 @@ publish:
   repo: pam-osc
   releaseType: draft
 mac:
-  # No fixed arch: CI builds arm64 and x64 separately (release.yml) so each
-  # dmg gets a readable name (apple-silicon / intel). Local builds = host arch.
-  target: dmg
+  # PAM-34: ONE universal build (runs natively on Apple Silicon and Intel) —
+  # one download for every Mac and one update feed (latest-mac.yml). The zip
+  # is what the macOS updater installs; the dmg is for people.
+  target:
+    - target: dmg
+      arch: universal
+    - target: zip
+      arch: universal
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  # The MIDI module ships prebuilt per-arch binaries (midi-darwin-arm64/-x64)
+  # in both slices — identical files the universal merge may keep as-is.
+  x64ArchFiles: "**/node_modules/@julusian/midi/prebuilds/midi-darwin-*/*.node"
   category: public.app-category.music
   icon: build/icon-mac.png
   hardenedRuntime: true

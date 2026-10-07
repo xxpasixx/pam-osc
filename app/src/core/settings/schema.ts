@@ -42,12 +42,23 @@ export const persistedSettingsSchema = z.strictObject({
   // Global, not per mapping, so two active mappings can't demand different
   // pages. Additive & optional — an older file simply lacks it; no bump.
   fixedPage: z.number().int().min(1).max(9999).optional(),
+  // PAM-34: update preferences. Additive & optional — absent fields fall back
+  // to the derived defaults in core/update/policy.ts; no format bump.
+  updates: z
+    .strictObject({
+      checkAutomatically: z.boolean().optional(),
+      receiveBetas: z.boolean().optional(),
+      // Version the user chose to install at the next start ("On next launch").
+      installOnNextLaunch: z.string().min(1).max(64).optional(),
+    })
+    .optional(),
 });
 
 export type ConsoleSettings = z.infer<typeof consoleSettingsSchema>;
 export type PersistedSettings = z.infer<typeof persistedSettingsSchema>;
 export type WindowBounds = z.infer<typeof windowBoundsSchema>;
 export type Onboarding = z.infer<typeof onboardingSchema>;
+export type StoredUpdatePreferences = NonNullable<PersistedSettings["updates"]>;
 
 /**
  * PAM-14 AC-1/AC-2: the wizard auto-opens until the user finishes or skips it.
