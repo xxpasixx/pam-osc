@@ -25,9 +25,9 @@ publish:
   repo: pam-osc
   releaseType: draft
 mac:
-  target:
-    - target: dmg
-      arch: [arm64, x64]
+  # No fixed arch: CI builds arm64 and x64 separately (release.yml) so each
+  # dmg gets a readable name (apple-silicon / intel). Local builds = host arch.
+  target: dmg
   category: public.app-category.music
   icon: build/icon-mac.png
   hardenedRuntime: true
