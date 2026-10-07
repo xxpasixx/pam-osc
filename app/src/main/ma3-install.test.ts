@@ -2,7 +2,13 @@ import { mkdtemp, mkdir, readFile, rm, writeFile, chmod } from "node:fs/promises
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { detectMa3Installs, installFile, ma3BaseCandidates, readPluginVersion } from "./ma3-install.js";
+import {
+  detectMa3Installs,
+  installFile,
+  ma3BaseCandidates,
+  readPluginVersion,
+  writeGeneratedOscConfig,
+} from "./ma3-install.js";
 
 /** PAM-9 AC-1/2/3: detection, install, overwrite protection, error paths. */
 
@@ -117,5 +123,32 @@ describe("readPluginVersion", () => {
     await writeFile(file, XML_V2);
     expect(await readPluginVersion(file)).toBe("2.0.0.0");
     expect(await readPluginVersion(join(dir, "missing.xml"))).toBeUndefined();
+  });
+});
+
+describe("writeGeneratedOscConfig (PAM-35 AC-5)", () => {
+  it("writes the config for the given values and installFile copies it into an MA3 library", async () => {
+    const generatedDir = join(await tempDir(), "generated", "osc");
+    const generated = await writeGeneratedOscConfig(generatedDir, {
+      feedbackIp: "192.168.1.20",
+      sendPort: 8000,
+      receivePort: 8001,
+    });
+    if ("error" in generated) throw new Error(generated.error);
+    const library = join(await tempDir(), "gma3_library", "inout", "osc");
+    expect(await installFile(generated.file, library, false)).toMatchObject({ status: "installed" });
+    const installed = await readFile(join(library, "pam-osc.xml"), "utf8");
+    expect(installed).toContain(
+      'Name="pam-osc" Guid="39 E2 33 AB 04 A1 10 02 EE 69 B1 C0 70 6B 97 47" DestinationIP="192.168.1.20"'
+    );
+    expect(installed).toContain('Port="8001"');
+    expect(installed).toContain('Port="8000"');
+  });
+
+  it("rejects invalid values without writing anything", async () => {
+    const generatedDir = join(await tempDir(), "generated");
+    const result = await writeGeneratedOscConfig(generatedDir, { feedbackIp: 'x"/>', sendPort: 1, receivePort: 2 });
+    expect(result).toHaveProperty("error");
+    await expect(readFile(join(generatedDir, "pam-osc.xml"), "utf8")).rejects.toThrow();
   });
 });

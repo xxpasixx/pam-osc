@@ -1443,3 +1443,78 @@ button.learning {
   border-color: var(--err);
   background: rgba(255, 93, 93, 0.12);
 }
+
+/* PAM-35: setup flow in testable order */
+.guide-heading {
+  margin: 8px 0 -4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.guide-heading:first-child {
+  margin-top: 0;
+}
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+.choice.selected {
+  border-color: var(--accent);
+}
+
+.choice input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.choice > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.field-hint {
+  color: var(--warn);
+  font-size: 12px;
+}
+
+.field.feedback-ip {
+  max-width: 420px;
+  margin-top: 6px;
+}
+
+.live-check {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.advanced > section.card {
+  margin-top: 10px;
+}
+
+.wizard-success.warn {
+  border-color: var(--warn);
+}
+
+.choice-hint {
+  color: var(--text-dim);
+  font-size: 12px;
+}

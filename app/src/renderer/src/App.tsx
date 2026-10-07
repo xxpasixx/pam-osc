@@ -63,6 +63,9 @@ export function App() {
   // PAM-14: the first-run wizard. Opened once at mount when onboarding isn't
   // complete (AC-1), and re-openable from the tab bar afterwards (AC-2).
   const [wizardOpen, setWizardOpen] = useState(false);
+  // PAM-35 AC-5: the user's pick of this computer's address for the generated
+  // OSC config — lifted here so it survives wizard steps and tab switches.
+  const [feedbackIpChoice, setFeedbackIpChoice] = useState<string | undefined>();
   const appliedRef = useRef<SettingsDraft | undefined>(undefined);
 
   // Notices deliberately stay out: adopting a post-save snapshot would
@@ -166,6 +169,10 @@ export function App() {
 
   const pushError = useCallback((message: string) => {
     setNotices((current) => [...current, { severity: "error", message }]);
+  }, []);
+
+  const pushNotice = useCallback((notice: Notice) => {
+    setNotices((current) => [...current, notice]);
   }, []);
 
   // PAM-14 (AC-2/AC-7): finishing or skipping the wizard persists the flag so
@@ -488,19 +495,24 @@ export function App() {
         {noticesLayer}
         <SetupWizard
           consoleSettings={draft.console}
+          activeMappings={draft.activeMappings}
+          catalog={snapshot.catalog}
+          midiPorts={midiPorts}
+          devices={devices}
           fieldErrors={fieldErrors}
-          activeMappingCount={draft.activeMappings.length}
           engineState={engineState}
           connection={connection}
           saving={saving}
           engineBusy={engineBusy}
-          hasConsoleErrors={fieldErrors.some((error) => error.field.startsWith("console."))}
+          feedbackIpChoice={feedbackIpChoice}
+          onFeedbackIpChoice={setFeedbackIpChoice}
+          pushNotice={pushNotice}
           onConsoleChange={(console) => updateDraft((current) => ({ ...current, console }))}
+          onActiveMappingsChange={(activeMappings) => updateDraft((current) => ({ ...current, activeMappings }))}
           onAddController={() => setDialogOpen(true)}
           onImportV1={() => void startImportV1()}
           onApply={save}
           onStartEngine={startEngine}
-          onCheck={() => void window.pamOsc.checkConnection()}
           onFinish={() => void closeWizardCompleted()}
           onSkip={() => void closeWizardCompleted()}
           onOpenDiagnostics={() => {
@@ -579,7 +591,19 @@ export function App() {
           </>
         )}
         {tab === "ma3" && (
-          <Ma3SetupView values={draft.console} pushNotice={(notice) => setNotices((current) => [...current, notice])} />
+          <Ma3SetupView
+            values={draft.console}
+            pushNotice={pushNotice}
+            feedbackIpChoice={feedbackIpChoice}
+            onFeedbackIpChoice={setFeedbackIpChoice}
+            check={{
+              engineState,
+              connection,
+              activeMappingCount: snapshot.settings.activeMappings.length,
+              busy: engineBusy,
+              onStartEngine: startEngine,
+            }}
+          />
         )}
         {tab === "setup" && (
           <>

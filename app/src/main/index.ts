@@ -19,6 +19,7 @@ import {
   installFile,
   ma3BaseCandidates,
   readPluginVersion,
+  writeGeneratedOscConfig,
 } from "./ma3-install.js";
 import { consoleImportPath, listRemovableDrives, usbTargetDirs } from "./usb-export.js";
 import { MidiLearn } from "./midi-learn.js";
@@ -128,6 +129,7 @@ async function main(): Promise<void> {
         diagnosing = false;
       });
   };
+  let lastLoggedConnection: string | undefined;
   const resetPortDiagnosis = () => {
     portDiagnosis = undefined;
     send(IPC.evPortDiagnosis, undefined);
@@ -141,7 +143,10 @@ async function main(): Promise<void> {
     },
     onConnection: (status) => {
       if (status.state === "unreachable" && portDiagnosis === undefined) runPortDiagnosis();
-      sessionLog.log(`console ${status.state}`);
+      // Quiet live polling (PAM-35 AC-8) repeats the same result every few
+      // seconds — the session log records changes only.
+      if (status.state !== lastLoggedConnection) sessionLog.log(`console ${status.state}`);
+      lastLoggedConnection = status.state;
       send(IPC.evConnection, status);
     },
     onConsoleState: (state) => send(IPC.evConsoleState, state),
@@ -275,24 +280,34 @@ async function main(): Promise<void> {
   const bundledOscXml = app.isPackaged
     ? join(process.resourcesPath, "resources", "osc", "pam-osc.xml")
     : resolve(app.getAppPath(), "../gma3_library/inout/osc/pam-osc.xml");
+  // PAM-35 AC-5: the OSC config is generated from the user's live values into
+  // userData and copied from there — the same installFile() path (exists /
+  // replace confirm / manual-copy source) as the bundled plugin.
+  const generatedOscDir = join(userData, "generated", "osc");
+  const generateOscConfig = async (rawOsc: unknown): Promise<string | { error: string }> => {
+    const generated = await writeGeneratedOscConfig(generatedOscDir, rawOsc);
+    if ("error" in generated) return generated;
+    const { feedbackIp, sendPort, receivePort } = generated.values;
+    sessionLog.log(`generated OSC config: feedback to ${feedbackIp}:${receivePort}, console listens on ${sendPort}`);
+    return generated.file;
+  };
   const detectInstalls = () =>
     detectMa3Installs(
       ma3BaseCandidates(process.platform, process.env as Record<string, string | undefined>, homedir())
     );
-  // Non-internal IPv4 addresses — the OSC destination IP(s) shown in the guide (AC-5).
-  const localIps = () =>
+  // Non-internal IPv4 addresses + netmask — the OSC destination candidates (AC-5, PAM-35 AC-5).
+  const localAddresses = () =>
     Object.values(networkInterfaces())
       .flatMap((addresses) => addresses ?? [])
       .filter((address) => address.family === "IPv4" && !address.internal)
-      .map((address) => address.address);
+      .map((address) => ({ address: address.address, netmask: address.netmask }));
 
   handle(IPC.getMa3Setup, async () => ({
     installs: await detectInstalls(),
     bundledVersion: await readPluginVersion(bundledPluginXml),
-    hasBundledOscConfig: (await stat(bundledOscXml).catch(() => undefined)) !== undefined,
-    localIps: localIps(),
+    localAddresses: localAddresses(),
   }));
-  handle(IPC.installMa3Asset, async (_event, rawBase, rawAsset, rawOverwrite) => {
+  handle(IPC.installMa3Asset, async (_event, rawBase, rawAsset, rawOverwrite, rawOsc) => {
     const base = String(rawBase);
     const asset = rawAsset === "osc" ? "osc" : "plugin";
     // Only bases this app itself detected are valid targets — the renderer
@@ -301,8 +316,20 @@ async function main(): Promise<void> {
     if (!install) {
       return { status: "error", error: "unknown MA3 folder — reopen the setup guide", target: base };
     }
-    const source = asset === "osc" ? bundledOscXml : bundledPluginXml;
     const targetDir = asset === "osc" ? install.oscDir : install.pluginsDir;
+    let source = bundledPluginXml;
+    if (asset === "osc") {
+      const generated = await generateOscConfig(rawOsc);
+      if (typeof generated !== "string") {
+        return {
+          status: "error",
+          error: generated.error,
+          source: generatedOscDir,
+          target: join(targetDir, "pam-osc.xml"),
+        };
+      }
+      source = generated;
+    }
     const result = await installFile(source, targetDir, rawOverwrite === true);
     sessionLog.log(
       result.status === "installed"
@@ -311,8 +338,11 @@ async function main(): Promise<void> {
     );
     return result;
   });
-  handle(IPC.revealBundledAsset, (_event, rawAsset) => {
-    shell.showItemInFolder(rawAsset === "osc" ? bundledOscXml : bundledPluginXml);
+  handle(IPC.revealBundledAsset, async (_event, rawAsset) => {
+    if (rawAsset !== "osc") return shell.showItemInFolder(bundledPluginXml);
+    // The last generated OSC config (PAM-35) — the bundled default otherwise.
+    const generated = join(generatedOscDir, "pam-osc.xml");
+    shell.showItemInFolder((await stat(generated).catch(() => undefined)) ? generated : bundledOscXml);
   });
 
   // ---- PAM-23 USB plugin export ----
@@ -335,7 +365,7 @@ async function main(): Promise<void> {
     pickedUsbFolders.add(dir);
     return { status: "chosen", path: dir };
   });
-  handle(IPC.copyPluginToUsb, async (_event, rawDriveId, rawOverwrite) => {
+  handle(IPC.copyPluginToUsb, async (_event, rawDriveId, rawOverwrite, rawOsc) => {
     const driveId = String(rawDriveId);
     const overwrite = rawOverwrite === true;
     const { pluginsDir, oscDir } = usbTargetDirs(driveId);
@@ -362,12 +392,17 @@ async function main(): Promise<void> {
         };
       }
     }
-    // Nothing to protect (or the user confirmed) — copy both.
+    // Nothing to protect (or the user confirmed) — copy both. The OSC config is
+    // generated for the remote console first (PAM-35 AC-5).
+    const generatedOsc = await generateOscConfig(rawOsc);
+    if (typeof generatedOsc !== "string") {
+      return { status: "error", error: generatedOsc.error, pluginTarget, oscTarget };
+    }
     const pluginResult = await installFile(bundledPluginXml, pluginsDir, true);
     if (pluginResult.status === "error") {
       return { status: "error", error: pluginResult.error, pluginTarget, oscTarget };
     }
-    const oscResult = await installFile(bundledOscXml, oscDir, true);
+    const oscResult = await installFile(generatedOsc, oscDir, true);
     if (oscResult.status === "error") {
       return { status: "error", error: oscResult.error, pluginTarget, oscTarget };
     }
@@ -713,9 +748,13 @@ async function main(): Promise<void> {
     return error ? { ok: false, error } : { ok: true };
   });
   handle(IPC.stopEngine, () => engineHost.stop());
-  handle(IPC.checkConnection, () => {
-    resetPortDiagnosis(); // a re-check earns a fresh diagnosis if it fails again
-    engineHost.checkConnection();
+  handle(IPC.checkConnection, (_event, rawOptions) => {
+    // PAM-35 AC-8: the setup guide's live polling is quiet — it keeps the
+    // existing diagnosis instead of re-running it every few seconds.
+    const quiet =
+      typeof rawOptions === "object" && rawOptions !== null && (rawOptions as { quiet?: unknown }).quiet === true;
+    if (!quiet) resetPortDiagnosis(); // a re-check earns a fresh diagnosis if it fails again
+    engineHost.checkConnection({ quiet });
   });
   handle(IPC.runOutputTest, (_event, mappingId) => engineHost.outputTest(String(mappingId)));
 

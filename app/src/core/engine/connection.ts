@@ -19,6 +19,8 @@ export class ConnectionChecker {
   private pluginPongReceived = false;
   private pluginProtocol: number | undefined;
   private attempt = 0;
+  /** Last evaluated result — quiet checks only log when it changes (PAM-35 AC-8). */
+  private lastResult: ConnectionStatus["state"] | undefined;
   private evaluateTimer: ReturnType<typeof setTimeout> | undefined;
   private retryTimer: ReturnType<typeof setTimeout> | undefined;
   private stopped = false;
@@ -45,15 +47,19 @@ export class ConnectionChecker {
   /**
    * Manual re-check (PAM-4 AC-3): drop any pending timers, reset the retry
    * budget and ping right away — also revives a checker that gave up.
+   *
+   * `quiet` (PAM-35 AC-8) is the setup guide's live polling: no "checking"
+   * status in between (the shown result must not flicker) and the log only
+   * records a result that differs from the previous one.
    */
-  checkNow(): void {
+  checkNow(options: { quiet?: boolean } = {}): void {
     if (this.evaluateTimer) clearTimeout(this.evaluateTimer);
     if (this.retryTimer) clearTimeout(this.retryTimer);
     this.evaluateTimer = undefined;
     this.retryTimer = undefined;
     this.stopped = false;
     this.attempt = 0;
-    this.sendPing();
+    this.sendPing(options.quiet === true);
   }
 
   onConnectionPong(): void {
@@ -66,23 +72,29 @@ export class ConnectionChecker {
     this.pluginProtocol = version;
   }
 
-  private sendPing(): void {
+  private sendPing(quiet = false): void {
     if (this.stopped) return;
     this.connectionPongReceived = false;
     this.pluginPongReceived = false;
     this.attempt += 1;
-    this.emit({ state: "checking", attempt: this.attempt, gaveUp: false });
-    this.log(`checking connection to GrandMA3 (attempt ${this.attempt}) ...`);
+    if (!quiet) {
+      this.emit({ state: "checking", attempt: this.attempt, gaveUp: false });
+      this.log(`checking connection to GrandMA3 (attempt ${this.attempt}) ...`);
+    }
 
     // v1's exact ping pair.
     this.sendOsc({ address: "/cmd", args: [oscString("Lua '" + CONNECTION_PONG_LUA + "'")] });
     this.sendOsc({ address: "/cmd", args: [oscString(`Lua 'SetVar(GlobalVars(), "pamPing", true)'`)] });
 
-    this.evaluateTimer = setTimeout(() => this.evaluate(), this.timing.pingTimeoutMs);
+    this.evaluateTimer = setTimeout(() => this.evaluate(quiet), this.timing.pingTimeoutMs);
   }
 
-  private evaluate(): void {
+  private evaluate(quiet: boolean): void {
     if (this.stopped) return;
+    const log = (state: ConnectionStatus["state"], line: string) => {
+      if (!quiet || state !== this.lastResult) this.log(line);
+      this.lastResult = state;
+    };
 
     if (this.connectionPongReceived && this.pluginPongReceived) {
       // Hard version check (PAM-12 AC-7): a wrong protocol is a terminal
@@ -95,21 +107,23 @@ export class ConnectionChecker {
           gaveUp: true,
           pluginProtocol: this.pluginProtocol,
         });
-        this.log(
+        log(
+          "plugin-outdated",
           `the pam-osc plugin answered with protocol ${this.pluginProtocol}, this app needs ${EXPECTED_PLUGIN_PROTOCOL} — ` +
             "update the plugin on the console (setup assistant), basic bridging keeps working"
         );
         return;
       }
       this.emit({ state: "connected", attempt: this.attempt, gaveUp: false, pluginProtocol: this.pluginProtocol });
-      this.log("OK — GrandMA3 is reachable and the pam-osc plugin is running");
+      log("connected", "OK — GrandMA3 is reachable and the pam-osc plugin is running");
       return; // v1 stops checking once everything is fine
     }
 
     const state = this.connectionPongReceived ? ("plugin-missing" as const) : ("unreachable" as const);
     const gaveUp = this.attempt >= this.timing.pingMaxRetries;
     this.emit({ state, attempt: this.attempt, gaveUp });
-    this.log(
+    log(
+      state,
       state === "plugin-missing"
         ? "GrandMA3 is reachable, but the pam-osc plugin did not answer — start the 'pam-osc Start Stop' plugin on the console"
         : "no response from GrandMA3 — check console IP/port, the MA3 OSC settings, and your firewall"

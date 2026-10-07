@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { ActiveMappingDraft } from "../../core/settings/schema.js";
 import type { CatalogEntry } from "../../shared/ipc.js";
-import { activateCatalogEntry, shouldAutoOpenWizard, shouldAutoStartEngine } from "./wizard-logic.js";
+import type { ConnectionStatus } from "../../core/engine/types.js";
+import {
+  activateCatalogEntry,
+  checkReadout,
+  consoleRoute,
+  controllersReady,
+  inputPortConnected,
+  shouldAutoOpenWizard,
+  shouldAutoStartEngine,
+  shouldPollConnection,
+  targetReached,
+} from "./wizard-logic.js";
 
 /**
  * PAM-14 (BUG-2): the wizard's decision logic. There is no renderer/component
@@ -57,24 +68,116 @@ describe("activateCatalogEntry — completed v1 import yields an active mapping 
   });
 });
 
-describe("shouldAutoStartEngine — auto-start guard on the verify step (AC-8)", () => {
+describe("shouldAutoStartEngine — auto-start guard on a live-check step (AC-8, PAM-35 AC-8)", () => {
   it("starts when on the verify step, engine stopped, and a mapping is active", () => {
-    expect(shouldAutoStartEngine({ onVerifyStep: true, engineState: "stopped", activeMappingCount: 1 })).toBe(true);
+    expect(shouldAutoStartEngine({ onCheckStep: true, engineState: "stopped", activeMappingCount: 1 })).toBe(true);
   });
 
   it("does NOT start when not on the verify step", () => {
-    expect(shouldAutoStartEngine({ onVerifyStep: false, engineState: "stopped", activeMappingCount: 1 })).toBe(false);
+    expect(shouldAutoStartEngine({ onCheckStep: false, engineState: "stopped", activeMappingCount: 1 })).toBe(false);
   });
 
   it("does NOT start when no mapping is active", () => {
-    expect(shouldAutoStartEngine({ onVerifyStep: true, engineState: "stopped", activeMappingCount: 0 })).toBe(false);
+    expect(shouldAutoStartEngine({ onCheckStep: true, engineState: "stopped", activeMappingCount: 0 })).toBe(false);
   });
 
   it("does NOT start when the engine is already running", () => {
-    expect(shouldAutoStartEngine({ onVerifyStep: true, engineState: "running", activeMappingCount: 1 })).toBe(false);
+    expect(shouldAutoStartEngine({ onCheckStep: true, engineState: "running", activeMappingCount: 1 })).toBe(false);
   });
 
   it("does NOT start while the engine is already starting", () => {
-    expect(shouldAutoStartEngine({ onVerifyStep: true, engineState: "starting", activeMappingCount: 1 })).toBe(false);
+    expect(shouldAutoStartEngine({ onCheckStep: true, engineState: "starting", activeMappingCount: 1 })).toBe(false);
+  });
+});
+
+// ---- PAM-35 ----
+
+const status = (state: ConnectionStatus["state"]): ConnectionStatus => ({ state, attempt: 1, gaveUp: false });
+
+describe("consoleRoute — where GrandMA3 runs (PAM-35 AC-3)", () => {
+  it("loopback is this computer, anything else the network", () => {
+    expect(consoleRoute("127.0.0.1")).toBe("this-computer");
+    expect(consoleRoute("localhost")).toBe("this-computer");
+    expect(consoleRoute("192.168.1.50")).toBe("network");
+    expect(consoleRoute("")).toBe("network");
+  });
+});
+
+describe("targetReached — staged checks (PAM-35 AC-6/AC-7)", () => {
+  it("'reachable' is reached as soon as the console answers, plugin or not", () => {
+    expect(targetReached("reachable", status("plugin-missing"))).toBe(true);
+    expect(targetReached("reachable", status("connected"))).toBe(true);
+    expect(targetReached("reachable", status("plugin-outdated"))).toBe(true);
+    expect(targetReached("reachable", status("unreachable"))).toBe(false);
+    expect(targetReached("reachable", status("checking"))).toBe(false);
+    expect(targetReached("reachable", undefined)).toBe(false);
+  });
+
+  it("'connected' needs the plugin with the right protocol", () => {
+    expect(targetReached("connected", status("connected"))).toBe(true);
+    expect(targetReached("connected", status("plugin-missing"))).toBe(false);
+    expect(targetReached("connected", status("plugin-outdated"))).toBe(false);
+  });
+});
+
+describe("shouldPollConnection — live re-check (PAM-35 AC-8)", () => {
+  const base = { live: true, engineState: "running" as const, target: "reachable" as const };
+  it("polls while live, running and not yet reached", () => {
+    expect(shouldPollConnection({ ...base, connection: status("unreachable") })).toBe(true);
+  });
+  it("stops once the target is reached, when not live, or when the bridge is not running", () => {
+    expect(shouldPollConnection({ ...base, connection: status("plugin-missing") })).toBe(false);
+    expect(shouldPollConnection({ ...base, live: false, connection: status("unreachable") })).toBe(false);
+    expect(shouldPollConnection({ ...base, engineState: "stopped", connection: undefined })).toBe(false);
+  });
+});
+
+describe("controller step (PAM-35 AC-2)", () => {
+  const mapping = { id: "x", input: "X-Touch", output: "X-Touch" };
+  it("knows whether the picked input port is present", () => {
+    expect(inputPortConnected(mapping, ["X-Touch"])).toBe(true);
+    expect(inputPortConnected(mapping, ["X-Touch 1"])).toBe(false);
+    expect(inputPortConnected({ ...mapping, input: "" }, [""])).toBe(false);
+  });
+  it("Next needs at least one controller, each with an input port picked", () => {
+    expect(controllersReady([mapping])).toBe(true);
+    expect(controllersReady([])).toBe(false);
+    expect(controllersReady([mapping, { ...mapping, id: "y", input: "" }])).toBe(false);
+  });
+});
+
+describe("checkReadout (PAM-35 AC-6/AC-7, EC-1)", () => {
+  it("'console answers, plugin not yet' is success for the OSC step but a warning for the plugin step", () => {
+    const osc = checkReadout({
+      target: "reachable",
+      engineState: "running",
+      connection: status("plugin-missing"),
+      activeMappingCount: 1,
+    });
+    expect(osc).toMatchObject({ led: "ok", reached: true });
+    const plugin = checkReadout({
+      target: "connected",
+      engineState: "running",
+      connection: status("plugin-missing"),
+      activeMappingCount: 1,
+    });
+    expect(plugin).toMatchObject({ led: "warn", reached: false });
+  });
+
+  it("explains that nothing can be checked without a controller (EC-1)", () => {
+    const readout = checkReadout({
+      target: "reachable",
+      engineState: "stopped",
+      connection: undefined,
+      activeMappingCount: 0,
+    });
+    expect(readout.reached).toBe(false);
+    expect(readout.text).toMatch(/No controller selected/);
+  });
+
+  it("shows checking while the bridge starts", () => {
+    expect(
+      checkReadout({ target: "connected", engineState: "starting", connection: undefined, activeMappingCount: 1 }).led
+    ).toBe("checking");
   });
 });

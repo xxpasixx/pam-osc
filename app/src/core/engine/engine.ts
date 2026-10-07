@@ -234,9 +234,9 @@ export class Engine {
    * up. Ignored while the startup animation still runs: the check starts
    * right afterwards anyway.
    */
-  checkConnection(): void {
+  checkConnection(options: { quiet?: boolean } = {}): void {
     if (!this.running || !this.animationDone) return;
-    this.connectionChecker?.checkNow();
+    this.connectionChecker?.checkNow(options);
   }
 
   /**

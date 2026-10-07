@@ -1,4 +1,6 @@
+import type { ConnectionStatus } from "../../core/engine/types.js";
 import type { ActiveMappingDraft } from "../../core/settings/schema.js";
+import { isThisComputer } from "../../shared/feedback-ip.js";
 import type { EngineState } from "../../shared/ipc.js";
 
 /**
@@ -36,14 +38,128 @@ export function activateCatalogEntry(activeMappings: ActiveMappingDraft[], entry
 }
 
 /**
- * AC-8: reaching the verify step auto-starts the bridge so a first-run user
- * never has to discover the Status tab — but only when the engine is idle AND
- * something is bound to bridge.
+ * AC-8 (PAM-35 AC-8): showing a live-check step auto-starts the bridge so a
+ * first-run user never has to discover the Status tab — but only when the
+ * engine is idle AND something is bound to bridge.
  */
 export function shouldAutoStartEngine(input: {
-  onVerifyStep: boolean;
+  onCheckStep: boolean;
   engineState: EngineState;
   activeMappingCount: number;
 }): boolean {
-  return input.onVerifyStep && input.engineState === "stopped" && input.activeMappingCount > 0;
+  return input.onCheckStep && input.engineState === "stopped" && input.activeMappingCount > 0;
+}
+
+// ---- PAM-35: setup in testable order ----
+
+/** Where GrandMA3 runs, derived from the console address (AC-3). */
+export type ConsoleRoute = "this-computer" | "network";
+
+export function consoleRoute(address: string): ConsoleRoute {
+  return isThisComputer(address) ? "this-computer" : "network";
+}
+
+/**
+ * The two staged checks (AC-6/AC-7): "reachable" = the console answers (both
+ * OSC entries work, plugin not needed); "connected" = the plugin answers too.
+ */
+export type CheckTarget = "reachable" | "connected";
+
+export function targetReached(target: CheckTarget, connection: ConnectionStatus | undefined): boolean {
+  if (!connection) return false;
+  if (target === "connected") return connection.state === "connected";
+  return (
+    connection.state === "plugin-missing" || connection.state === "connected" || connection.state === "plugin-outdated"
+  );
+}
+
+/** AC-8: keep polling while the step is shown, the bridge runs and the target isn't reached yet. */
+export function shouldPollConnection(input: {
+  live: boolean;
+  engineState: EngineState;
+  target: CheckTarget;
+  connection: ConnectionStatus | undefined;
+}): boolean {
+  return input.live && input.engineState === "running" && !targetReached(input.target, input.connection);
+}
+
+/** AC-2: a chosen controller's input port is present on this computer right now. */
+export function inputPortConnected(mapping: ActiveMappingDraft, inputs: string[]): boolean {
+  return mapping.input !== "" && inputs.includes(mapping.input);
+}
+
+/** AC-2: Next needs ≥ 1 controller and every one of them with an input port picked. */
+export function controllersReady(activeMappings: ActiveMappingDraft[]): boolean {
+  return activeMappings.length > 0 && activeMappings.every((mapping) => mapping.input !== "");
+}
+
+export interface CheckReadout {
+  led: "" | "ok" | "warn" | "err" | "checking";
+  text: string;
+  reached: boolean;
+}
+
+/** The step-specific reading of the shared connection state (AC-6/AC-7, EC-1). */
+export function checkReadout(input: {
+  target: CheckTarget;
+  engineState: EngineState;
+  connection: ConnectionStatus | undefined;
+  activeMappingCount: number;
+}): CheckReadout {
+  const { target, engineState, connection, activeMappingCount } = input;
+  if (engineState === "stopped") {
+    return activeMappingCount === 0
+      ? {
+          led: "",
+          text: "No controller selected — the check needs a running bridge. Pick a controller first.",
+          reached: false,
+        }
+      : { led: "", text: "The bridge is not running.", reached: false };
+  }
+  if (engineState === "starting" || !connection || connection.state === "checking") {
+    return { led: "checking", text: "Checking the connection …", reached: false };
+  }
+  const state = connection.state;
+  if (target === "reachable") {
+    if (state === "plugin-missing") {
+      return { led: "ok", text: "The console answers — OSC works. Next: start the plugin.", reached: true };
+    }
+    if (state === "connected") {
+      return { led: "ok", text: "The console answers and the pam-osc plugin is already running.", reached: true };
+    }
+    if (state === "plugin-outdated") {
+      return {
+        led: "ok",
+        text: "The console answers — OSC works. The plugin on it is outdated; the next step updates it.",
+        reached: true,
+      };
+    }
+    return {
+      led: "err",
+      text: "No answer from the console yet — this re-checks every few seconds while you set it up.",
+      reached: false,
+    };
+  }
+  if (state === "connected") {
+    return { led: "ok", text: "Connected — the console answers and the pam-osc plugin is running.", reached: true };
+  }
+  if (state === "plugin-missing") {
+    return {
+      led: "warn",
+      text: "The console answers, but the plugin isn’t running yet — run “pam-osc Start Stop” on the console.",
+      reached: false,
+    };
+  }
+  if (state === "plugin-outdated") {
+    return {
+      led: "err",
+      text: "The plugin on the console is outdated — import the current pam-osc plugin and restart it.",
+      reached: false,
+    };
+  }
+  return {
+    led: "err",
+    text: "No answer from the console — check the OSC entries from the step before, the interface and the firewall.",
+    reached: false,
+  };
 }

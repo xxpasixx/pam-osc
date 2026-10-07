@@ -1,7 +1,8 @@
 import { constants } from "node:fs";
-import { access, copyFile, mkdir, readFile } from "node:fs/promises";
+import { access, copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Ma3Install, Ma3InstallResult } from "../shared/ipc.js";
+import { buildOscConfigXml, parseOscConfigValues, type OscConfigValues } from "../shared/osc-config.js";
 
 /**
  * PAM-9: detect local GrandMA3/onPC installations and install the bundled
@@ -124,4 +125,21 @@ export async function installFile(
       target,
     };
   }
+}
+
+/**
+ * PAM-35 AC-5: validate untrusted OSC values and write the generated OSC
+ * config to `<dir>/pam-osc.xml` — the source installFile() then copies into an
+ * onPC library or onto a stick (same exists/replace/manual-copy rules).
+ */
+export async function writeGeneratedOscConfig(
+  dir: string,
+  rawValues: unknown
+): Promise<{ file: string; values: OscConfigValues } | { error: string }> {
+  const values = parseOscConfigValues(rawValues);
+  if ("error" in values) return values;
+  await mkdir(dir, { recursive: true });
+  const file = join(dir, "pam-osc.xml");
+  await writeFile(file, buildOscConfigXml(values), "utf8");
+  return { file, values };
 }

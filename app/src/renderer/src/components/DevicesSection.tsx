@@ -8,7 +8,7 @@ import type { CatalogEntry, FieldError, MidiPortList } from "../../../shared/ipc
  * (design → Devices section; AC-2, AC-5, AC-7, EC-1).
  */
 
-function PortPicker({
+export function PortPicker({
   id,
   value,
   ports,

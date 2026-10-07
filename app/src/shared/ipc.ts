@@ -8,6 +8,8 @@ import type { ConnectionStatus, ConsoleState, DeviceStatus, TrafficDirection } f
 import type { DeviceDefinition, EditorIssue, Mapping, MappingStatus } from "../core/format/index.js";
 import type { ImportSummary, V1SectionCounts } from "../core/import/index.js";
 import type { SettingsDraft } from "../core/settings/schema.js";
+import type { LocalAddress } from "./feedback-ip.js";
+import type { OscConfigValues } from "./osc-config.js";
 
 export type EngineState = "stopped" | "starting" | "running";
 
@@ -202,10 +204,9 @@ export interface Ma3SetupInfo {
   installs: Ma3Install[];
   /** Version of the plugin the app ships. */
   bundledVersion: string | undefined;
-  /** True when the app bundles an OSC-config file to install. */
-  hasBundledOscConfig: boolean;
-  /** Non-internal IPv4 addresses of this machine — the OSC destination IP(s). */
-  localIps: string[];
+  /** Non-internal IPv4 addresses of this machine (+ netmask) — the OSC
+   *  destination candidates; PAM-35 picks the one on the console's subnet. */
+  localAddresses: LocalAddress[];
 }
 
 export interface Notice {
@@ -323,17 +324,19 @@ export interface PamOscApi {
   importDeviceFile(): Promise<ImportShareOutcome>;
   exportSupportPackage(): Promise<ExportFileResult>;
   getMa3Setup(): Promise<Ma3SetupInfo>;
-  installMa3Asset(base: string, asset: Ma3Asset, overwrite: boolean): Promise<Ma3InstallResult>;
+  /** PAM-35 AC-5: the OSC config is generated from `osc` (required for asset "osc"). */
+  installMa3Asset(base: string, asset: Ma3Asset, overwrite: boolean, osc?: OscConfigValues): Promise<Ma3InstallResult>;
   revealBundledAsset(asset: Ma3Asset): Promise<void>;
   /** PAM-23: list connected removable drives + the bundled version (AC-1). */
   listRemovableDrives(): Promise<UsbExportInfo>;
   /** PAM-23: native folder-picker fallback when no drive is detected (AC-2). */
   chooseUsbFolder(): Promise<ChooseUsbFolderResult>;
-  /** PAM-23: copy the bundled plugin + OSC config to a stick (AC-3/AC-5/AC-6/AC-10). */
-  copyPluginToUsb(driveId: string, overwrite: boolean): Promise<UsbCopyResult>;
+  /** PAM-23: copy the plugin + an OSC config generated from `osc` (PAM-35 AC-5) to a stick (AC-3/AC-5/AC-6/AC-10). */
+  copyPluginToUsb(driveId: string, overwrite: boolean, osc: OscConfigValues): Promise<UsbCopyResult>;
   startEngine(): Promise<{ ok: boolean; error?: string }>;
   stopEngine(): Promise<void>;
-  checkConnection(): Promise<void>;
+  /** `quiet` (PAM-35 AC-8): live polling — no "checking" flicker, no fresh port diagnosis, no log spam. */
+  checkConnection(options?: { quiet?: boolean }): Promise<void>;
   runOutputTest(mappingId: string): Promise<{ ok: boolean; error?: string }>;
   onConnection(listener: (status: ConnectionStatus) => void): () => void;
   onConsoleState(listener: (state: ConsoleState) => void): () => void;

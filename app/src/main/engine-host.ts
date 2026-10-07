@@ -20,7 +20,7 @@ import type { EngineState } from "../shared/ipc.js";
 export interface EngineLike {
   start(config: EngineConfig): Promise<void>;
   stop(): Promise<void>;
-  checkConnection(): void;
+  checkConnection(options?: { quiet?: boolean }): void;
   outputTest(mappingId: string): Promise<{ ok: true } | { ok: false; error: string }>;
   on<E extends keyof EngineEvents>(event: E, listener: EngineEvents[E]): unknown;
 }
@@ -133,9 +133,9 @@ export class EngineHost {
   }
 
   /** Manual re-check passthrough (PAM-4 AC-3) — no-op while stopped. */
-  checkConnection(): void {
+  checkConnection(options: { quiet?: boolean } = {}): void {
     if (this.state !== "running") return;
-    this.engine.checkConnection();
+    this.engine.checkConnection(options);
   }
 
   /** On-demand output test passthrough (PAM-4 AC-4) — resolves on the engine's real ack (PAM-17). */

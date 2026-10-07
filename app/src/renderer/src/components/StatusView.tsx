@@ -12,9 +12,10 @@ import type { CatalogEntry, EngineState, PortDiagnosis } from "../../../shared/i
  * output tests. Everything actionable — no terminal required.
  */
 
+// PAM-35 AC-10: the two-entry console setup as the MA3 guide describes it.
 const UNREACHABLE_HINTS = [
   "Check the console IP and the send/receive ports under Setup.",
-  "In the MA3 OSC settings, enable an entry named “pam-osc” (or line 2): destination = this computer's IP, port = the send port, and “Send” switched on.",
+  "On the console (MENU → In & Out → OSC), pick the right network card under Interface and check both entries: one receiving on the send port with “Receive” and “Receive Command” on, and one named exactly “pam-osc” sending to this computer on the receive port with only “Send Command” on. The MA3 setup guide writes this config for you.",
   "Check the firewall on both machines — OSC is UDP and must pass in both directions.",
 ];
 
@@ -125,7 +126,7 @@ function ConnectionCard({
           ))}
         </ul>
       )}
-      {(connection?.state === "plugin-missing" || connection?.state === "plugin-outdated") && !stopped && (
+      {hints.length > 0 && !stopped && (
         <div className="section-actions">
           <button onClick={onOpenGuide}>Open MA3 setup guide</button>
         </div>

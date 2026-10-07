@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { pickFeedbackIp, resolveFeedbackIp, type FeedbackIpPick } from "../../../shared/feedback-ip.js";
 import type {
   ConsoleReadable,
   Ma3Asset,
@@ -10,20 +11,42 @@ import type {
   UsbCopyResult,
   UsbExportInfo,
 } from "../../../shared/ipc.js";
+import { isPort, type OscConfigValues } from "../../../shared/osc-config.js";
 import { comparePluginVersions } from "../../../shared/plugin-version.js";
+import { consoleRoute } from "../wizard-logic.js";
+import { ConnectionCheck, type CheckContext } from "./ConnectionCheck.js";
 
 /**
  * PAM-9: the MA3 setup assistant — one-click install of the plugin and the
  * OSC config into detected local onPC installations (AC-1/2/3), the USB route
- * for real consoles (AC-4), and the step-by-step console guide with the
- * user's live values (AC-5). Values come from the current settings draft —
- * editing Setup updates the guide immediately.
+ * for real consoles (AC-4, PAM-23), and the console guide with the user's live
+ * values (AC-5). Values come from the current settings draft — editing Setup
+ * updates the guide immediately.
+ *
+ * PAM-35: ordered the way it can be verified — 1 copy the files, 2 OSC on the
+ * console (check: the console answers), 3 import & start the plugin (check:
+ * connected). The OSC config is generated for the user's setup (AC-5).
  */
 
 interface ConsoleValues {
   address: string;
   sendPort: number;
   receivePort: number;
+}
+
+/** The values the generated OSC config is written with — or why it can't be (AC-5). */
+type OscTarget = { values: OscConfigValues } | { problem: string };
+
+function oscTargetFor(values: ConsoleValues, feedbackIp: string | undefined): OscTarget {
+  if (!isPort(values.sendPort) || !isPort(values.receivePort)) {
+    return { problem: "Fix the ports under Setup first — the OSC config needs both." };
+  }
+  if (!feedbackIp) {
+    return {
+      problem: "This computer has no network address — connect it to the console network, then press Refresh.",
+    };
+  }
+  return { values: { feedbackIp, sendPort: values.sendPort, receivePort: values.receivePort } };
 }
 
 /** One install action (plugin or OSC config) as a row with its own busy/result/replace state. */
@@ -34,6 +57,7 @@ function InstallRow({
   present,
   presentDetail,
   bundledLabel,
+  osc,
   onDone,
 }: {
   install: Ma3Install;
@@ -42,18 +66,22 @@ function InstallRow({
   present: boolean;
   presentDetail: string;
   bundledLabel: string;
+  /** Required for the OSC config (PAM-35 AC-5); a problem disables the row. */
+  osc?: OscTarget;
   onDone: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [confirmReplace, setConfirmReplace] = useState<{ version?: string } | undefined>();
   const [result, setResult] = useState<Ma3InstallResult | undefined>();
+  const problem = osc && "problem" in osc ? osc.problem : undefined;
+  const oscValues = osc && "values" in osc ? osc.values : undefined;
 
   const run = useCallback(
     async (overwrite: boolean) => {
       setBusy(true);
       setConfirmReplace(undefined);
       try {
-        const outcome = await window.pamOsc.installMa3Asset(install.base, asset, overwrite);
+        const outcome = await window.pamOsc.installMa3Asset(install.base, asset, overwrite, oscValues);
         if (outcome.status === "exists") {
           setConfirmReplace({ version: outcome.installedVersion });
         } else {
@@ -64,7 +92,7 @@ function InstallRow({
         setBusy(false);
       }
     },
-    [install.base, asset, onDone]
+    [install.base, asset, oscValues, onDone]
   );
 
   return (
@@ -77,6 +105,7 @@ function InstallRow({
       <div className="device-name">
         {label}
         <span className="board">{present ? presentDetail : "not installed yet"}</span>
+        {problem && <span className="board">{problem}</span>}
         {result?.status === "installed" && <span className="board">✓ installed to {result.target}</span>}
         {result?.status === "error" && (
           <>
@@ -101,7 +130,7 @@ function InstallRow({
           <button onClick={() => setConfirmReplace(undefined)}>Keep</button>
         </>
       ) : (
-        <button disabled={busy} onClick={() => void run(false)}>
+        <button disabled={busy || problem !== undefined} onClick={() => void run(false)}>
           {busy ? "Installing …" : present ? "Reinstall" : "Install"}
         </button>
       )}
@@ -109,29 +138,90 @@ function InstallRow({
   );
 }
 
-function InstallCard({ info, onRefresh }: { info: Ma3SetupInfo; onRefresh: () => void }) {
+/** AC-5: what the generated OSC config contains, and which address of this computer it sends feedback to. */
+function OscTargetCard({
+  values,
+  pick,
+  feedbackIp,
+  onChoose,
+  onRefresh,
+}: {
+  values: ConsoleValues;
+  pick: FeedbackIpPick;
+  feedbackIp: string | undefined;
+  onChoose: (ip: string) => void;
+  onRefresh: () => void;
+}) {
   return (
-    <section className="card" aria-label="Install the console files">
-      <h2>Step 1 — Install the console files</h2>
+    <section className="card" aria-label="OSC config for your setup">
+      <h2>OSC config for your setup</h2>
       <p className="inspector-meta">
-        pam-osc ships plugin version <code>{info.bundledVersion ?? "unknown"}</code>
-        {info.hasBundledOscConfig && <> and a ready-made OSC config</>}. GrandMA3 imports these from{" "}
-        <code>gma3_library/datapools/plugins</code> and <code>gma3_library/inout/osc</code>.
+        pam-osc writes the console’s OSC config for you: the console listens on port <code>{values.sendPort}</code> and
+        sends its feedback to{" "}
+        {feedbackIp ? (
+          <code>
+            {feedbackIp}:{values.receivePort}
+          </code>
+        ) : (
+          "this computer"
+        )}
+        . Change the console address or ports under Setup and the config follows.
+      </p>
+      {pick.reason === "this-computer" && (
+        <p className="inspector-meta">GrandMA3 runs on this computer, so the feedback goes to 127.0.0.1.</p>
+      )}
+      {pick.reason === "none" && (
+        <>
+          <p className="empty-state">
+            This computer has no network address — connect it to the console network, then press Refresh.
+          </p>
+          <div className="section-actions">
+            <button onClick={onRefresh}>Refresh</button>
+          </div>
+        </>
+      )}
+      {pick.reason !== "this-computer" && pick.reason !== "none" && (
+        <div className="field feedback-ip">
+          <label htmlFor="feedback-ip">This computer’s address on the console network</label>
+          <select id="feedback-ip" value={feedbackIp ?? ""} onChange={(event) => onChoose(event.target.value)}>
+            {pick.candidates.map((candidate) => (
+              <option key={candidate} value={candidate}>
+                {candidate}
+              </option>
+            ))}
+          </select>
+          {pick.reason === "ambiguous" && (
+            <span className="field-hint">
+              Several network cards could reach the console — make sure this is the one on the console network.
+            </span>
+          )}
+          {pick.reason === "no-subnet-match" && (
+            <span className="field-hint">
+              None of this computer’s addresses is on the console’s network ({values.address}) — check the console IP
+              under Setup, or pick the address that reaches the console.
+            </span>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function InstallCard({ info, osc, onRefresh }: { info: Ma3SetupInfo; osc: OscTarget; onRefresh: () => void }) {
+  return (
+    <section className="card" aria-label="onPC on this computer">
+      <h2>onPC on this computer</h2>
+      <p className="inspector-meta">
+        One click copies the plugin (version <code>{info.bundledVersion ?? "unknown"}</code>) and the OSC config for
+        your setup into onPC’s library — GrandMA3 imports them from <code>gma3_library/datapools/plugins</code> and{" "}
+        <code>gma3_library/inout/osc</code>.
       </p>
 
       {info.installs.length === 0 && (
-        <>
-          <p className="empty-state">
-            No GrandMA3 onPC installation was found on this machine — use the USB route for a console:
-          </p>
-          <ol className="guide-steps">
-            <li>
-              Click “Show plugin file” below and copy <code>pam-osc.xml</code> onto a USB stick into{" "}
-              <code>gma3_library/datapools/plugins/</code> (create it if needed).
-            </li>
-            <li>Plug the stick into the console — continue with step 2.</li>
-          </ol>
-        </>
+        <p className="empty-state">
+          No GrandMA3 onPC installation found on this computer. Start onPC once (it creates its library folder) and
+          press Refresh — or use a USB stick or folder.
+        </p>
       )}
 
       {info.installs.map((install) => (
@@ -146,103 +236,23 @@ function InstallCard({ info, onRefresh }: { info: Ma3SetupInfo; onRefresh: () =>
             bundledLabel={`version ${info.bundledVersion ?? "the bundled one"}`}
             onDone={onRefresh}
           />
-          {info.hasBundledOscConfig && (
-            <InstallRow
-              install={install}
-              asset="osc"
-              label="OSC config (creates the OSC entry)"
-              present={install.hasOscConfig}
-              presentDetail="OSC config present"
-              bundledLabel="the bundled OSC config"
-              onDone={onRefresh}
-            />
-          )}
+          <InstallRow
+            install={install}
+            asset="osc"
+            label="OSC config (generated for your setup)"
+            present={install.hasOscConfig}
+            presentDetail="an OSC config is there — Reinstall writes one for your current settings"
+            bundledLabel="one for your current settings"
+            osc={osc}
+            onDone={onRefresh}
+          />
         </div>
       ))}
 
       <div className="section-actions">
+        <button onClick={onRefresh}>Refresh</button>
         <button onClick={() => void window.pamOsc.revealBundledAsset("plugin")}>Show plugin file …</button>
-        {info.hasBundledOscConfig && (
-          <button onClick={() => void window.pamOsc.revealBundledAsset("osc")}>Show OSC config …</button>
-        )}
       </div>
-    </section>
-  );
-}
-
-function OscEntryCard({ values, localIps }: { values: ConsoleValues; localIps: string[] }) {
-  const sameMachine = values.address === "127.0.0.1" || values.address === "localhost";
-  const destinationIps = sameMachine ? ["127.0.0.1 (onPC on this machine)"] : localIps;
-  return (
-    <section className="card" aria-label="Set up the OSC entries">
-      <h2>Step 2 — Set up OSC in GrandMA3</h2>
-      <p className="inspector-meta">
-        Open <strong>Menu → In &amp; Out → OSC</strong>. First pick the correct network card in the{" "}
-        <strong>Interface</strong> list (the one on the console/pam-osc network). pam-osc needs <strong>two</strong>{" "}
-        entries — one to receive commands, one to send feedback.
-      </p>
-      <h3 style={{ margin: "10px 0 2px" }}>Receive entry (name doesn’t matter)</h3>
-      <ol className="guide-steps">
-        <li>
-          Port <code>{values.sendPort}</code> — where pam-osc sends its commands (the send port in Setup).
-        </li>
-        <li>
-          Turn <strong>Receive</strong> and <strong>Receive Command</strong> on.
-        </li>
-      </ol>
-      <h3 style={{ margin: "12px 0 2px" }}>Send entry (name must be exactly “pam-osc”)</h3>
-      <ol className="guide-steps">
-        <li>
-          Name it exactly <code>pam-osc</code> — the plugin finds the feedback entry by this name.
-        </li>
-        <li>
-          Destination IP:{" "}
-          {destinationIps.length > 0 ? (
-            destinationIps.map((ip, index) => (
-              <span key={ip}>
-                {index > 0 && " or "}
-                <code>{ip}</code>
-              </span>
-            ))
-          ) : (
-            <em>no network address found — connect this machine to the console network first</em>
-          )}{" "}
-          (this computer, where pam-osc runs).
-        </li>
-        <li>
-          Destination port <code>{values.receivePort}</code> — where pam-osc listens for feedback (the receive port in
-          Setup).
-        </li>
-        <li>
-          Turn only <strong>Send Command</strong> on.
-        </li>
-      </ol>
-      <p className="inspector-meta">
-        pam-osc currently talks to the console at <code>{values.address}</code> — change it under Setup and this guide
-        updates with it. If you imported the OSC config in step 1, check both entries carry these values.
-      </p>
-    </section>
-  );
-}
-
-function ImportPluginCard() {
-  return (
-    <section className="card" aria-label="Import and start the plugin">
-      <h2>Step 3 — Import &amp; start the plugin</h2>
-      <ol className="guide-steps">
-        <li>
-          Open a <strong>Plugins pool</strong> window on the console, edit an empty slot and choose{" "}
-          <strong>Import</strong>.
-        </li>
-        <li>
-          Pick <code>pam-osc</code> from the list (installed in step 1) and import both plugins.
-        </li>
-        <li>
-          Run <strong>“pam-osc Start Stop”</strong> once per session — the “pam-osc Settings” plugin configures colors,
-          names and more.
-        </li>
-        <li>Check the Status tab here: the connection check should report the plugin as running.</li>
-      </ol>
     </section>
   );
 }
@@ -272,9 +282,10 @@ function driveLabel(drive: RemovableDrive): string {
 /**
  * PAM-23: copy the plugin + OSC config onto a USB stick for a real console.
  * Lists removable drives (AC-1), falls back to a folder picker (AC-2), warns on
- * unreadable filesystems (AC-9), and flags an out-of-date stick (AC-8).
+ * unreadable filesystems (AC-9), and flags an out-of-date stick (AC-8). The OSC
+ * config is generated for the remote console (PAM-35 AC-5).
  */
-function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void }) {
+function UsbExportCard({ pushNotice, osc }: { pushNotice: (notice: Notice) => void; osc: OscTarget }) {
   const [info, setInfo] = useState<UsbExportInfo | undefined>();
   const [loadError, setLoadError] = useState<string | undefined>();
   const [selectedId, setSelectedId] = useState<string>("");
@@ -283,6 +294,8 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
   const [confirmReplace, setConfirmReplace] = useState<{ version?: string } | undefined>();
   const [result, setResult] = useState<UsbCopyResult | undefined>();
   const notifiedStale = useRef(new Set<string>());
+  const problem = "problem" in osc ? osc.problem : undefined;
+  const oscValues = "values" in osc ? osc.values : undefined;
 
   const refresh = useCallback(() => {
     setLoadError(undefined);
@@ -332,11 +345,11 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
 
   const run = useCallback(
     async (overwrite: boolean) => {
-      if (!selectedId) return;
+      if (!selectedId || !oscValues) return;
       setBusy(true);
       setConfirmReplace(undefined);
       try {
-        const outcome = await window.pamOsc.copyPluginToUsb(selectedId, overwrite);
+        const outcome = await window.pamOsc.copyPluginToUsb(selectedId, overwrite, oscValues);
         if (outcome.status === "exists") {
           setConfirmReplace({ version: outcome.existingPluginVersion });
         } else {
@@ -347,7 +360,7 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
         setBusy(false);
       }
     },
-    [selectedId, refresh]
+    [selectedId, oscValues, refresh]
   );
 
   const staleSelected =
@@ -356,8 +369,8 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
     comparePluginVersions(selected.existingPluginVersion, info.bundledVersion) < 0;
 
   return (
-    <section className="card" aria-label="Copy to a USB stick">
-      <h2>Copy to a USB stick (for a real console)</h2>
+    <section className="card" aria-label="Copy to a USB stick or folder">
+      <h2>USB stick or folder (console or another computer)</h2>
       <p className="inspector-meta">
         Copies the plugin
         {info?.bundledVersion ? (
@@ -366,12 +379,13 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
             (version <code>{info.bundledVersion}</code>)
           </>
         ) : null}{" "}
-        and the OSC config onto a stick under <code>grandMA3/gma3_library/…</code>, ready to import at the console.
-        GrandMA3 reads
-        <strong> FAT32</strong> sticks reliably.
+        and the OSC config for your setup onto a stick under <code>grandMA3/gma3_library/…</code>, ready to import at
+        the console. GrandMA3 reads <strong>FAT32</strong> sticks reliably. For onPC on another computer, choose a
+        shared folder instead.
       </p>
 
       {loadError && <p className="empty-state">Couldn’t scan drives: {loadError}</p>}
+      {problem && <p className="empty-state">{problem}</p>}
 
       {info && info.drives.length === 0 && !chosenFolder && (
         <p className="empty-state">
@@ -411,8 +425,9 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
           <span className="board">✓ copied to {result.pluginTarget}</span>
           <span className="board">and {result.oscTarget}</span>
           <span className="board">
-            At the console: import from <code>{result.consolePath}</code> via the Plugins pool (files are on the stick —
-            navigate there if the list looks empty).
+            At the console: the plugin is in <code>{result.consolePath}</code> (Plugins pool → Import), the OSC config
+            in <code>grandMA3/gma3_library/inout/osc</code> (MENU → In &amp; Out → OSC). Navigate there if a list looks
+            empty.
           </span>
         </div>
       )}
@@ -437,7 +452,7 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
         )}
         {confirmReplace ? (
           <>
-            <span className="board">Replace {confirmReplace.version ?? "the file on the stick"}?</span>
+            <span className="board">Replace {confirmReplace.version ?? "the files on the stick"}?</span>
             <button className="primary" disabled={busy} onClick={() => void run(true)}>
               Replace
             </button>
@@ -446,7 +461,7 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
             </button>
           </>
         ) : (
-          <button className="primary" disabled={busy || !selectedId} onClick={() => void run(false)}>
+          <button className="primary" disabled={busy || !selectedId || !oscValues} onClick={() => void run(false)}>
             {busy ? "Copying …" : "Copy to USB"}
           </button>
         )}
@@ -455,23 +470,124 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
   );
 }
 
+/** AC-6: import the generated config first; the hand-made entries are the fallback. */
+function OscCard({
+  values,
+  pick,
+  feedbackIp,
+  check,
+}: {
+  values: ConsoleValues;
+  pick: FeedbackIpPick;
+  feedbackIp: string | undefined;
+  check?: { live: boolean; context: CheckContext };
+}) {
+  const destination = feedbackIp ?? (pick.candidates.length > 0 ? pick.candidates.join(" or ") : undefined);
+  return (
+    <section className="card" aria-label="OSC entries on the console">
+      <h2>OSC entries on the console</h2>
+      <ol className="guide-steps">
+        <li>
+          On the console, open <strong>MENU → In &amp; Out → OSC</strong> and pick the network card in the{" "}
+          <strong>Interface</strong> list — the one on the network with this computer.
+        </li>
+        <li>
+          <strong>Import</strong> the OSC config <code>pam-osc</code> you copied over — it creates both entries with
+          your values.
+        </li>
+        <li>
+          Check that both entries are there: one listening on port <code>{values.sendPort}</code>, and one named{" "}
+          <code>pam-osc</code> sending to <code>{destination ?? "this computer"}</code> on port{" "}
+          <code>{values.receivePort}</code>.
+        </li>
+      </ol>
+      <details className="advanced">
+        <summary>Set the two entries up by hand instead</summary>
+        <h3 style={{ margin: "10px 0 2px" }}>Receive entry (name doesn’t matter)</h3>
+        <ol className="guide-steps">
+          <li>
+            Port <code>{values.sendPort}</code> — where pam-osc sends its commands (the send port in Setup).
+          </li>
+          <li>
+            Turn <strong>Receive</strong> and <strong>Receive Command</strong> on.
+          </li>
+        </ol>
+        <h3 style={{ margin: "12px 0 2px" }}>Send entry (name must be exactly “pam-osc”)</h3>
+        <ol className="guide-steps">
+          <li>
+            Name it exactly <code>pam-osc</code> — the plugin finds the feedback entry by this name.
+          </li>
+          <li>
+            Destination IP:{" "}
+            {destination ? (
+              <code>{destination}</code>
+            ) : (
+              <em>no network address found — connect this computer to the console network first</em>
+            )}{" "}
+            (this computer, where pam-osc runs).
+          </li>
+          <li>
+            Destination port <code>{values.receivePort}</code> — where pam-osc listens for feedback (the receive port in
+            Setup).
+          </li>
+          <li>
+            Turn only <strong>Send Command</strong> on.
+          </li>
+        </ol>
+      </details>
+      {check && <ConnectionCheck target="reachable" live={check.live} context={check.context} />}
+    </section>
+  );
+}
+
+/** AC-7: import + start the plugin, then the "connected" check. */
+function PluginCard({ check }: { check?: { live: boolean; context: CheckContext } }) {
+  return (
+    <section className="card" aria-label="Plugin on the console">
+      <h2>Plugin on the console</h2>
+      <ol className="guide-steps">
+        <li>
+          Open a <strong>Plugins</strong> pool window on the console, edit an empty slot and choose{" "}
+          <strong>Import</strong>.
+        </li>
+        <li>
+          Pick <code>pam-osc</code> (the plugin you copied over) and import both plugins.
+        </li>
+        <li>
+          Run <strong>“pam-osc Start Stop”</strong> — once per session. “pam-osc Settings” configures colors, names and
+          more.
+        </li>
+      </ol>
+      {check && <ConnectionCheck target="connected" live={check.live} context={check.context} />}
+    </section>
+  );
+}
+
 /**
- * Presentation mode (PAM-14): the full MA3 tab renders all three cards; the
- * setup wizard reuses the SAME cards one step at a time — "install" for its
- * install step, "osc" for the console-OSC step. One data path (getMa3Setup),
- * no forked components.
+ * Presentation mode: the full MA3 tab renders all three numbered steps; the
+ * setup wizard reuses the SAME cards one step at a time — "files", "osc",
+ * "plugin" (PAM-14, reordered by PAM-35). One data path (getMa3Setup), no
+ * forked components.
  */
-export type Ma3SetupMode = "full" | "install" | "osc";
+export type Ma3SetupMode = "full" | "files" | "osc" | "plugin";
 
 export function Ma3SetupView({
   values,
   mode = "full",
   pushNotice,
+  feedbackIpChoice,
+  onFeedbackIpChoice,
+  check,
 }: {
   values: ConsoleValues;
   mode?: Ma3SetupMode;
-  /** Full mode only — lets the USB card raise the AC-8 update notice. */
-  pushNotice?: (notice: Notice) => void;
+  /** Lets the USB card raise the PAM-23 AC-8 update notice. */
+  pushNotice: (notice: Notice) => void;
+  /** The user's pick of this computer's address (lifted to App so it survives step changes). */
+  feedbackIpChoice: string | undefined;
+  onFeedbackIpChoice: (ip: string) => void;
+  /** Live-check context (PAM-35 AC-8) — the OSC and plugin steps show their check below. */
+  check?: CheckContext;
 }) {
   const [info, setInfo] = useState<Ma3SetupInfo | undefined>();
   const [loadError, setLoadError] = useState<string | undefined>();
@@ -501,12 +617,60 @@ export function Ma3SetupView({
     );
   if (!info) return <p className="empty-state">Looking for GrandMA3 installations …</p>;
 
+  const pick = pickFeedbackIp(values.address, info.localAddresses);
+  const feedbackIp = resolveFeedbackIp(pick, feedbackIpChoice);
+  const osc = oscTargetFor(values, feedbackIp);
+  const onThisComputer = consoleRoute(values.address) === "this-computer";
+  const full = mode === "full";
+
+  const oscTarget = (
+    <OscTargetCard
+      values={values}
+      pick={pick}
+      feedbackIp={feedbackIp}
+      onChoose={onFeedbackIpChoice}
+      onRefresh={refresh}
+    />
+  );
+  const installCard = <InstallCard info={info} osc={osc} onRefresh={refresh} />;
+  const usbCard = <UsbExportCard pushNotice={pushNotice} osc={osc} />;
+  // AC-4 / AC-9: the route that fits the console address comes first.
+  const [primary, secondary] = onThisComputer ? [installCard, usbCard] : [usbCard, installCard];
+  const secondaryLabel = onThisComputer
+    ? "Use a USB stick or folder instead"
+    : "Install into onPC on this computer instead";
+
   return (
     <>
-      {mode !== "osc" && <InstallCard info={info} onRefresh={refresh} />}
-      {mode === "full" && pushNotice && <UsbExportCard pushNotice={pushNotice} />}
-      {mode !== "install" && <OscEntryCard values={values} localIps={info.localIps} />}
-      {mode !== "install" && <ImportPluginCard />}
+      {full && <h2 className="guide-heading">Step 1 — Copy the files to GrandMA3</h2>}
+      {(full || mode === "files") && (
+        <>
+          {oscTarget}
+          {primary}
+          {full ? (
+            secondary
+          ) : (
+            <details className="advanced">
+              <summary>{secondaryLabel}</summary>
+              {secondary}
+            </details>
+          )}
+        </>
+      )}
+
+      {full && <h2 className="guide-heading">Step 2 — Set up OSC on the console</h2>}
+      {(full || mode === "osc") && (
+        <OscCard
+          values={values}
+          pick={pick}
+          feedbackIp={feedbackIp}
+          // In the full tab, the plugin step's check polls for both (connected implies reachable).
+          check={check ? { live: mode === "osc", context: check } : undefined}
+        />
+      )}
+
+      {full && <h2 className="guide-heading">Step 3 — Import &amp; start the plugin</h2>}
+      {(full || mode === "plugin") && <PluginCard check={check ? { live: true, context: check } : undefined} />}
     </>
   );
 }
