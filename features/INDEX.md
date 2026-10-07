@@ -52,12 +52,13 @@
 | PAM-31 | Configurable encoder-resolution factor — modifier action gets optional `factor` (default 10), multiple fine/rough buttons switch resolutions (LED = active factor); relative mapping ships ÷2/×2 + ÷10/×10 on the Layer-A side buttons                                                    | P1       | PAM-2, PAM-30               | Approved  | [PAM-31](PAM-31-encoder-resolution-buttons/)       | 2026-07-27 |
 | PAM-32 | MA3 Lua API deprecation — `HasActivePlayback` → `IsRunningPlayback` with 2.x fallback; fixes the deprecation flood that starved the pluginPong ("plugin not running" while running)                                                       | P1       | PAM-2, PAM-16               | Approved | [PAM-32](PAM-32-ma3-lua-api-deprecation/)          | 2026-09-10 |
 | PAM-33 | Scribble-strip line order — option to flip the X-Touch / Extender display lines (cue name on top, sequence name below; today fixed: sequence top, cue bottom). Community feature request | P2       | PAM-2, PAM-1                | Roadmap  | —                                                  | 2026-10-07 |
+| PAM-35 | Setup flow in testable order — wizard + MA3 tab reordered (controller → where is MA3 → copy files → OSC → plugin), staged live checks after each console step, OSC config generated per setup (incl. remote console via USB), corrected Status hints | P1       | PAM-14, PAM-9, PAM-23, PAM-4 | Spec'd   | [PAM-35](PAM-35-setup-flow-order/)                 | 2026-10-07 |
 
 <!-- Add features above this line -->
 
 **Recommended build order:** PAM-1 → PAM-2 → PAM-3 → PAM-4 → PAM-5 = MVP release, then PAM-6/PAM-7 (P1), then P2. New onboarding/plugin cluster (P1): PAM-13 + PAM-16 together (both regenerate the plugin) → PAM-14 (wizard, reuses PAM-9) → PAM-15 (later, best-effort re-arm).
 
-## Next Available ID: PAM-34
+## Next Available ID: PAM-36
 
 ## Operations
 
