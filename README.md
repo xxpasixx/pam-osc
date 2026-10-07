@@ -1,19 +1,89 @@
-# pam-osc
+<div align="center">
 
-Control GrandMA3 with MIDI devices over Open Stage Control and a plugin to get feedback for motorized faders and button lights.
+<img src="img/design/pam-osc-title-card-v2.0.png" alt="pam-osc — grandMA MIDI bridge" width="720">
 
-## pam-osc v2 beta
+### Turn affordable MIDI controllers into real GrandMA3 control surfaces.
 
-v2 is a standalone desktop app (macOS, Windows, Linux) — no Open Stage Control needed. Download it from the [Releases](https://github.com/xxpasixx/pam-osc/releases) page (beta builds are marked _Pre-release_). v1.4 stays available and keeps working; you can switch back at any time.
+Faders, encoders and buttons drive the executors on your current page — and the console talks back:
+motor faders follow the show, LEDs mirror running sequences, displays show sequence, cue and color.
 
-| System              | File                                    |
-| ------------------- | --------------------------------------- |
-| macOS Apple Silicon | `pam-osc-<version>-mac-arm64.dmg`       |
-| macOS Intel         | `pam-osc-<version>-mac-x64.dmg`         |
-| Windows             | `pam-osc-<version>-win-x64.exe`         |
-| Linux               | `pam-osc-<version>-linux-x86_64.AppImage` |
+[![Latest release](https://img.shields.io/github/v/release/xxpasixx/pam-osc?include_prereleases&label=release&color=ffc400)](https://github.com/xxpasixx/pam-osc/releases)
+[![CI](https://github.com/xxpasixx/pam-osc/actions/workflows/ci.yml/badge.svg?branch=v2)](https://github.com/xxpasixx/pam-osc/actions/workflows/ci.yml)
+[![License: GPL-3.0](https://img.shields.io/github/license/xxpasixx/pam-osc?color=blue)](LICENSE)
+[![Discord](https://img.shields.io/badge/chat-Discord-5865F2?logo=discord&logoColor=white)](https://discord.gg/4dcKjTH9Pm)
+![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 
-### Installing an unsigned beta build
+[**Download**](https://github.com/xxpasixx/pam-osc/releases) · [**Discord**](https://discord.gg/4dcKjTH9Pm) · [**Report a bug**](https://github.com/xxpasixx/pam-osc/issues) · [**Changelog**](CHANGELOG.md)
+
+</div>
+
+---
+
+## 🎬 See it in action
+
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=GCBT6tBH6DE" target="_blank">
+    <img src="https://img.youtube.com/vi/GCBT6tBH6DE/maxresdefault.jpg" alt="pam-osc demo video on YouTube" width="640">
+  </a>
+  <br>
+  <sub>▶ Click to watch the demo on YouTube</sub>
+</div>
+
+## ✨ Why pam-osc?
+
+MA hardware wings are great — and expensive. pam-osc gives pre-programmers, churches, small venues and freelancers **real tactile control with feedback** on hardware that costs a fraction of that.
+
+- 🎚️ **Motor fader feedback** — faders follow page changes and playback in real time (full 14-bit resolution)
+- 💡 **LED & color feedback** — buttons light up for running sequences; RGB pads show the sequence color
+- 🖥️ **Scribble-strip displays** — sequence, cue and color on X-Touch displays
+- 🎛️ **WYSIWYG playback** — executes what you see in the playback window (Master, Speed, Temp, Flash, …)
+- ⌨️ **Commands, attributes & QuickKeys** — map any button to an MA3 command, encoder attribute or QuickKey
+- 🔒 **DeskLock aware** — input is blocked while the console is locked; motor faders reset on unlock
+- 🩺 **Built-in diagnostics** — connection check, plugin check, port diagnosis and a MIDI test mode, right in the app
+
+## 🚀 pam-osc v2 — now a standalone app (beta)
+
+v2 is a native desktop app for **macOS, Windows and Linux** — **no Open Stage Control, no terminal**. Download, open, enter the console IP, pick your device — done.
+
+- **Setup wizard** that walks you from first launch to a moving fader
+- **Visual mapping editor** — see your board in 2D, remap controls, add buttons/faders/encoders
+- **Share mappings** with the community via export/import; **v1 mappings import** automatically
+- **MA3 setup assistant** — installs the plugin into your local MA3 folder or exports it to a USB stick
+- **Support package** — one click bundles everything we need to help you on Discord
+
+> [!NOTE]
+> v2 is in **beta**. v1.4 stays available and keeps working — you can switch back at any time.
+
+### 📸 Screenshots
+
+<p align="center">
+  <img src="img/v2/editor-apc40.png" alt="Visual mapping editor with the AKAI APC40 mkII board layout" width="860">
+  <br><sub><b>Visual mapping editor</b> — every control of your board in 2D, click to assign executors, commands or QuickKeys</sub>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="img/v2/editor-x-touch-compact.png" alt="Mapping editor with a selected fader on the X-Touch Compact"><br><sub><b>Assign in seconds</b> — pick a control, choose the MA3 action and its feedback</sub></td>
+    <td width="50%"><img src="img/v2/status.png" alt="Status view with console connected, two bound devices and live traffic log"><br><sub><b>Status at a glance</b> — console &amp; plugin check, bound devices, live MIDI/OSC traffic</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="img/v2/setup.png" alt="Setup view with console IP, ports and two active devices"><br><sub><b>Simple setup</b> — console IP, ports and as many boards as you like</sub></td>
+    <td width="50%"><img src="img/v2/setup-wizard.png" alt="First-run setup wizard, step 2: pick your controller"><br><sub><b>First-run wizard</b> — from launch to a moving fader, step by step</sub></td>
+  </tr>
+</table>
+
+### Download
+
+Grab the latest build from the [**Releases**](https://github.com/xxpasixx/pam-osc/releases) page (beta builds are marked _Pre-release_). Available for:
+
+- 🍎 **macOS** — Apple Silicon and Intel
+- 🪟 **Windows** — 64-bit
+- 🐧 **Linux** — AppImage (x86_64)
+
+<details>
+<summary><b>Installing an unsigned beta build</b> (macOS / Windows warnings)</summary>
+
+<br>
 
 The beta builds are not yet code-signed, so your system will warn you once. This is expected — the warnings disappear once signing is in place.
 
@@ -24,77 +94,94 @@ The beta builds are not yet code-signed, so your system will warn you once. This
 - **Windows:** when SmartScreen shows "Windows protected your PC", click **More info → Run anyway**.
 - **Linux:** make the AppImage executable (`chmod +x pam-osc-*.AppImage`) and start it.
 
-Please report beta problems on [Discord](https://discord.gg/4dcKjTH9Pm) or as a [GitHub issue](https://github.com/xxpasixx/pam-osc/issues) — the app's support package (Status tab) helps a lot.
+</details>
 
-The rest of this README describes **v1.4** (Open Stage Control).
+## 🎹 Supported hardware
 
-## Features
+These boards ship with the app — pick one and go. Any other MIDI controller can be added with the visual editor.
 
-- **MIDI Control:** Send fader, encoder, and button values to GrandMA3 executors on the current page
-- **WYSIWYG Playback:** Executes what you see in the playback window (configurable: Master, Speed, Temp, Flash, etc.)
-- **Motorized Fader Feedback:** Real-time position feedback for motorized faders
-- **Command Integration:** Send commands, control attributes, and execute QuickKeys (automatically created)
-- **LED Feedback:** Button LED feedback for running sequences, highlights, and more
-- **Visual Displays:** Show current sequence, cue, and color appearance on xTouch LED displays
-- **Desk Lock Protection:** Input is blocked when GrandMA3 is in DeskLock mode; motorized faders automatically reset upon unlock
-- **Enhanced Encoder Support:** Works with encoder commands and allows different actions when the **MA** button is pressed
-- **Connection Check:** Automatic ping on startup that tells you whether GrandMA3 is reachable and whether the pam-osc plugin is running
-- **MIDI Output Test:** A short startup animation (LED running light + a wave through the motor faders) on every device, so you can verify the MIDI connection at a glance
+| Board                                         | Bundled mappings                                   | Status       |
+| --------------------------------------------- | -------------------------------------------------- | ------------ |
+| Behringer X-Touch Compact                     | Default 1                                          | ✅ tested    |
+| Behringer X-Touch Compact (MC mode)           | Playback 1                                         | ✅ tested    |
+| Behringer X-Touch Compact (relative encoders) | Relative 1                                         | 🧪 community |
+| Behringer X-Touch                             | Default 1 · Default 2 · Extension (exec 209–217)   | 🧪 community |
+| Behringer X-Touch Extender                    | Default 1 (exec 201–208)                           | 🧪 community |
+| Behringer X32 Compact (DAW Remote, MIDI CC)   | Default 1                                          | 🧪 community |
+| AKAI APC40 mkII                               | Default (Playback)                                 | 🧪 community |
+| AKAI APC mini                                 | Default 1 (Playback) · Default 2 (Command Section) | 🧪 community |
+| AKAI APC mini mk2                             | Controller                                         | 🧪 community |
+| Akai MPX16                                    | Default 1                                          | 🧪 community |
+| Novation Launchpad                            | Playback · TriFlats                                | 🧪 community |
+| Novation Launchpad Mini MK3                   | — (board only, build your own mapping)             | 🧪 community |
 
-All changes per release: [CHANGELOG.md](CHANGELOG.md)
+✅ **tested** — verified hands-on with real hardware and GrandMA3 · 🧪 **community** — works for its author / ported from v1, not yet fully verified in v2. Tried one? Tell us on Discord so we can mark it tested.
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=GCBT6tBH6DE
-" target="_blank"><img src="http://img.youtube.com/vi/GCBT6tBH6DE/0.jpg" 
-alt="Youtube Video" width="240" height="180" border="10" /></a>
+Your board isn't listed? Build a mapping in the editor and share it on [Discord](https://discord.gg/4dcKjTH9Pm) — community mappings are very welcome.
 
-## Can I use this on a live show?
+## 🧩 How it works
 
-If you want to use this in a production environment, ensure you have thoroughly tested it in your specific setup before using it.
+```
+ MIDI controller  ──MIDI──▶  pam-osc app  ──OSC/UDP──▶  GrandMA3 (console or onPC)
+                 ◀─feedback─            ◀──feedback───  pam-OSC Lua plugin
+```
 
-This software was primarily developed for pre-programming sessions and is provided "as-is" without warranty of any kind.
+The app translates MIDI into OSC for the console. A small Lua plugin on the GrandMA3 side sends the feedback back (fader positions, running sequences, names, colors). Tested with GrandMA3 **2.x**.
 
-**Disclaimer:** The author assumes no liability or responsibility for any issues, malfunctions, or damages that may occur during live shows or production use. Use at your own risk.
+## ⚠️ Can I use this on a live show?
 
-Tested with Grandma3 Version **2.3.1.1**
+pam-osc was primarily developed for **pre-programming sessions**. If you want to use it in a production environment, test it thoroughly in your specific setup first.
 
-## How to Setup
+The software is provided "as-is" without warranty of any kind. The author assumes no liability for issues, malfunctions or damages during live shows or production use. **Use at your own risk.**
 
-[Setup Instructions](https://github.com/xxpasixx/pam-osc/wiki/Setup)
+## 💬 Help & community
 
-### MA3 OSC entry
+- **Questions & setup help:** [Discord](https://discord.gg/4dcKjTH9Pm)
+- **Bugs & feature requests:** [GitHub Issues](https://github.com/xxpasixx/pam-osc/issues) — attach the app's support package (Status tab), it helps a lot
+- **What changed:** [CHANGELOG.md](CHANGELOG.md)
 
-Name the OSC entry in the MA3 OSC settings `pam-osc` — pam-osc then finds it no matter which line it is in. Without that name, line **2** is used (like in the setup guide).
+## 🛠️ Contributing
 
-Since v1.4, fader values are exchanged in the MA3-native **0-100** range — you no longer need to change the fader range to 127 in the MA3 OSC settings, just leave it at the default.
+Contributions are welcome — new device mappings, bug fixes, translations of setup docs, testing on hardware you own.
 
-Something is not working ?
+```sh
+git clone https://github.com/xxpasixx/pam-osc.git
+cd pam-osc && git checkout v2
+cd app && npm install
+npm run dev        # start the app with hot reload
+npm test           # unit + integration tests (virtual MIDI ports, fake MA3)
+```
 
-Check the terminal where Open Stage Control is running: on startup, pam-osc pings the console and tells you whether GrandMA3 is reachable and whether the pam-osc plugin is running — including hints on what to check (send option, MA3 OSC settings, firewall). The check retries every 30 seconds until the connection works.
+Development of v2 happens on the `v2` branch — please open pull requests against `v2`. `main` holds the stable v1.
 
-If no response arrives, pam-osc also checks its local OSC input port and names the program that blocks it (e.g. `UDP port 8080 is already used by "QLab"`), or tells you when the port is fine and the problem is more likely the MA3 destination settings or a firewall.
+## 📜 v1.4 (Open Stage Control)
 
-Also watch your MIDI device on startup: pam-osc plays a short animation (a running light across the LEDs and a wave through the motor faders, about 3.5 seconds). If nothing lights up, the problem is on the MIDI side (device name or connection). If the animation plays but nothing else works, the problem is on the OSC/MA3 side.
+<details>
+<summary>Documentation for the legacy v1.4 setup</summary>
 
-Please make sure you followed all the steps correctly. If something still doesn't work, you can get help on our [Discord](https://discord.gg/4dcKjTH9Pm)
+<br>
 
-## QuickKeys (changed in v1.4)
+v1.4 runs as a module inside [Open Stage Control](https://openstagecontrol.ammd.net/). Follow the [Setup Instructions](https://github.com/xxpasixx/pam-osc/wiki/Setup) in the wiki. Tested with GrandMA3 **2.3.1.1**.
 
-Buttons mapped with `quicKey` now trigger QuickKeys named `pam-osc_<KEY>` (e.g. `pam-osc_CLEAR`). The pam-osc plugin creates these automatically in the QuickKey pool when it starts on the console (starting at slot 1000, skipping occupied slots). The created QuickKeys are stored in your showfile.
+**MA3 OSC entry** — name the OSC entry in the MA3 OSC settings `pam-osc`; pam-osc then finds it no matter which line it is in. Without that name, line **2** is used (like in the setup guide). Since v1.4, fader values use the MA3-native **0-100** range — leave the fader range at its default.
 
-**Breaking change:** Run the updated Lua plugin (v1.4) on the console at least once before using the new module version — otherwise QuickKey buttons will do nothing.
+**Troubleshooting** — check the terminal where Open Stage Control is running: on startup, pam-osc pings the console and tells you whether GrandMA3 is reachable and whether the plugin is running, with hints on what to check (send option, MA3 OSC settings, firewall). The check retries every 30 seconds. If no response arrives, pam-osc checks its local OSC input port and names the program blocking it (e.g. `UDP port 8080 is already used by "QLab"`).
 
-## Known Limitations
+Also watch your MIDI device on startup: pam-osc plays a short animation (running light across the LEDs, a wave through the motor faders, ~3.5 s). Nothing lights up → MIDI side (device name or connection). Animation plays but nothing else works → OSC/MA3 side.
 
-Currently it is only possible to give Midi Feedback for Channel 1.
+**QuickKeys (changed in v1.4)** — buttons mapped with `quicKey` trigger QuickKeys named `pam-osc_<KEY>` (e.g. `pam-osc_CLEAR`). The plugin creates them automatically in the QuickKey pool on startup (from slot 1000, skipping occupied slots); they are stored in your showfile. **Breaking change:** run the v1.4 Lua plugin on the console at least once before using the new module version — otherwise QuickKey buttons do nothing.
 
-## Found an Issue ?
+**Known limitation** — MIDI feedback only works on channel 1.
 
-Issues could happen. Please create a [Ticket](https://github.com/xxpasixx/pam-osc/issues) if you find something.
+</details>
 
-## Upcoming things
+## 📄 License
 
-- more predefined Devices
-- colored button feedback
-- add for LED Feedback: Freeze, Prvw, Fixture, Channel, Edit, Update, Align, At, Clear
-- Dynamic Attribute Encoder https://forum.malighting.com/forum/thread/9089-get-encoder-pool-in-lua-plugin
-- Show PageID instead of Timecode Slot on the XTouch
+pam-osc is free software under the [GNU GPL-3.0](LICENSE).
+
+<div align="center">
+<br>
+<img src="img/design/pam-osc-icon-mac-512.png" alt="" width="48">
+<br>
+<sub>Made with ❤️ for the lighting community · If pam-osc helps you, give it a ⭐</sub>
+</div>
