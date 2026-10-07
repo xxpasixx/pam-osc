@@ -34,8 +34,8 @@ jobs:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -58,16 +58,27 @@ jobs:
           - os: ubuntu-latest
             target: --linux
     runs-on: ${{ matrix.os }}
+    env:
+      HAS_MAC_CERT: ${{ secrets.MAC_CSC_LINK != '' }}
     defaults:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: app/package-lock.json
+      # Import the Developer ID cert into a temp keychain ourselves —
+      # electron-builder's own keychain handling (CSC_LINK) fails on the
+      # GitHub macOS runners (set-key-partition-list: SecKeychainUnlock).
+      - name: Import macOS signing certificate
+        if: runner.os == 'macOS' && env.HAS_MAC_CERT == 'true'
+        uses: apple-actions/import-codesign-certs@v7
+        with:
+          p12-file-base64: ${{ secrets.MAC_CSC_LINK }}
+          p12-password: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
       - name: ALSA headers (native MIDI module)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev
@@ -78,16 +89,14 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAC_CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
-          MAC_CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           if [[ "$RUNNER_OS" == "macOS" ]]; then
-            if [[ -n "$MAC_CSC_LINK" ]]; then
-              # electron-builder signs with CSC_* and notarizes when APPLE_* are set.
-              export CSC_LINK="$MAC_CSC_LINK" CSC_KEY_PASSWORD="$MAC_CSC_KEY_PASSWORD"
+            if [[ "$HAS_MAC_CERT" == "true" ]]; then
+              # electron-builder auto-discovers the imported Developer ID
+              # identity and notarizes when APPLE_* are set.
               echo "macOS: signing + notarizing"
             else
               export CSC_IDENTITY_AUTO_DISCOVERY=false
