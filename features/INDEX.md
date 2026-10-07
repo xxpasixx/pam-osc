@@ -55,12 +55,13 @@
 | PAM-34 | In-app auto-update — electron-updater against GitHub Releases; checks in the background, never installs during a show (install on quit / on click), beta channel opt-in; needs signed mac builds + a single latest-mac.yml | P1       | PAM-8                       | Approved | [PAM-34](PAM-34-auto-update/)                      | 2026-10-07 |
 | PAM-35 | Setup flow in testable order — wizard + MA3 tab reordered (controller → where is MA3 → copy files → OSC → plugin), staged live checks after each console step, OSC config generated per setup (incl. remote console via USB), corrected Status hints | P1       | PAM-14, PAM-9, PAM-23, PAM-4 | Building | [PAM-35](PAM-35-setup-flow-order/)                 | 2026-10-07 |
 | PAM-36 | MA3 Setup tab as a live checklist — one row per step with LED + what the app sees, auto-ticks (onPC files, console answers, plugin running), only the next open step expanded; wizard unchanged | P1       | PAM-35                      | Approved | [PAM-36](PAM-36-ma3-setup-checklist/)              | 2026-10-07 |
+| PAM-37 | Tray mode & launch at login — closing the window keeps the bridge running in the tray/menu bar (status + Open/Start-Stop/Quit), opt-in start at login (hidden, bridge auto-starts); single instance | P1       | PAM-3, PAM-4, PAM-34         | Spec'd   | [PAM-37](PAM-37-tray-mode-launch-at-login/)        | 2026-10-07 |
 
 <!-- Add features above this line -->
 
 **Recommended build order:** PAM-1 → PAM-2 → PAM-3 → PAM-4 → PAM-5 = MVP release, then PAM-6/PAM-7 (P1), then P2. New onboarding/plugin cluster (P1): PAM-13 + PAM-16 together (both regenerate the plugin) → PAM-14 (wizard, reuses PAM-9) → PAM-15 (later, best-effort re-arm).
 
-## Next Available ID: PAM-37
+## Next Available ID: PAM-38
 
 ## Operations
 
