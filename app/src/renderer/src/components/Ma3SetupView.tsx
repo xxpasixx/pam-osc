@@ -594,6 +594,8 @@ export function Ma3SetupView({
   const [info, setInfo] = useState<Ma3SetupInfo | undefined>();
   // PAM-36 BUG-2: last connection result that wasn't "checking".
   const settledRef = useRef<CheckContext["connection"]>(undefined);
+  // Forget it whenever the bridge isn't running — a restart must not show the old run (review BUG-5).
+  if (check?.engineState !== "running") settledRef.current = undefined;
   const settled = settledConnection(check?.connection, settledRef.current);
   if (check?.connection && check.connection.state !== "checking") settledRef.current = check.connection;
   const [loadError, setLoadError] = useState<string | undefined>();

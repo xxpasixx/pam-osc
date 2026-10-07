@@ -80,3 +80,41 @@ This is a UI-only feature in the renderer: no new IPC, no file or network access
 
 - **ACs:** 5/6 passed (AC-1, AC-3, AC-4, AC-5, AC-6), 1 failed (AC-2) · **PAM-35 regression:** AC-4/5/6/8/9 hold; the visibility of PAM-35 AC-7's update hint suffers from BUG-1 · **Bugs:** 4 (0 C / 1 H / 1 M / 2 L) · **Security:** pass
 - **Ship:** NO. BUG-1 is probably a one-line fix (plus a test) and blocks Approved. BUG-2 should be fixed in the same pass. BUG-3/4 can follow. Not yet checked in a running app with onPC.
+
+---
+
+## Re-review — 2026-10-07 (commit `6cffdab`)
+
+**Where tested:** `vitest run ma3-checklist.test.ts wizard-logic.test.ts` (2 files, 32 tests, green; 4 new) and `tsc --noEmit` (clean). Full suite not re-run. Static review of `git show 6cffdab`. **Still not tried in a running app or against onPC.**
+
+### Fix verification
+
+- [x] **BUG-1 fixed.** `consoleAnswers` now includes `plugin-outdated` (`ma3-checklist.ts:30-33`). The plugin step names the outdated plugin ("import the new one and restart it"). Tested: remote + `plugin-outdated` gives `done, done, open`, with the plugin step expanded. **AC-2 now passes.** The PAM-35 AC-7 update hint is in the expanded step again.
+- [x] **BUG-2 fixed.** `settledConnection` keeps the last result that wasn't `checking`. `Ma3SetupView` holds it in a `useRef`, which is updated during render. That is idempotent, so StrictMode's double render is harmless. The hook is called before the early returns, so hook order is stable. Only the checklist derivation uses the settled value. `ConnectionCheck` still gets the raw `check.connection`, so its readout behaves exactly as in PAM-35.
+- [x] **BUG-3 fixed as scoped.** An onPC plugin older than the bundled version keeps step 1 open, with "The plugin in onPC (x) is outdated — update it to y". This holds even when the console answers. Tested. `outdated.installedVersion` and `bundledVersion` are both defined whenever that branch runs, because `isCurrent` treats undefined as current. Counting an unreadable version as current was accepted by the maintainer.
+- [x] **BUG-4 fixed.**
+  - Each row now has a visually hidden status word (Done / To do / Waiting).
+  - `aria-controls` points at the body `id`.
+  - The `h2` is a direct card child again, so it gets the `section.card > h2` style. The progress counter is absolutely positioned and is a `role="status"` live region.
+  - Copy: "No onPC installation found — use a USB stick or folder", and a waiting step 2 now says "After step 1".
+  - Not adding `role="heading"` inside the row button is correct, since a heading role isn't allowed inside a button.
+  - `.visually-hidden` is a new global class with no collisions.
+
+### New findings (non-blocking)
+
+**BUG-5: a stale result can show as "done" for one check right after a bridge restart**
+
+- **Severity:** Low
+- **Where:** `Ma3SetupView.tsx:596-598`
+- **Details:** `settledRef` is never cleared when the bridge stops or restarts. After a stop → start (for example after changing the console IP), the first non-quiet check emits `checking`. During that time `settledConnection` returns the *previous run's* result, so the checklist can show "All set" for about 3 s until the real answer arrives. While the bridge is stopped the `engineState === "running"` gate still holds, so the spirit of AC-2 is only bent in that short window after a restart. Suggested fix: clear the ref whenever `engineState !== "running"`.
+
+**BUG-6: an outdated onPC plugin file keeps step 1 open even when the console is connected**
+
+- **Severity:** Low
+- **Where:** `ma3-checklist.ts:48, 50-55`
+- **Details:** `outdated` doesn't look at the live connection. Example: the onPC folder holds an old plugin file, but a current plugin is running on the console (imported some other way, or from a second onPC version without `pam-osc.xml`). The state is then `connected` with the right protocol, yet step 1 stays open and expanded and the counter reads "2 of 3 done". This is arguably the honest reading, because the file *is* outdated. Still, it nags on a setup that works. One option: only open step 1 when the console isn't `connected`, or show it as done with an update note.
+
+### Re-review verdict
+
+- **ACs:** 6/6 passed · **PAM-35 regression:** AC-4/5/6/8/9 hold, AC-7 hint visible again · **Open bugs:** 2 (0 C / 0 H / 0 M / 2 L, both non-blocking) · **Security:** pass
+- **Ship:** **Approved for beta.4.** No Critical, High or Medium bugs remain. BUG-5 and BUG-6 can follow. Do a quick visual check in the running app before the release (progress counter position, collapsing). It hasn't been tried in a running app yet.

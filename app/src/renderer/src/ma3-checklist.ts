@@ -47,7 +47,8 @@ export function ma3Checklist({ info, onThisComputer, engineState, connection }: 
   // with the old one (review BUG-3) — the update lives in step 1.
   const outdated = info.installs.find((install) => install.hasPamOsc && !isCurrent(install.installedVersion));
   let files: ChecklistStep;
-  if (onThisComputer && !current && outdated) {
+  // …unless the console already runs a current plugin: the setup works (review BUG-6).
+  if (onThisComputer && !current && outdated && !connected) {
     files = {
       id: "files",
       status: "open",

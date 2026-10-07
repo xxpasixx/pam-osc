@@ -115,4 +115,14 @@ describe("PAM-36 MA3 checklist", () => {
     expect(settledConnection(checking, undefined)).toBe(checking);
     expect(settledConnection(connected, undefined)).toBe(connected);
   });
+
+  it("review BUG-6: an old onPC file doesn't reopen step 1 when the console runs a current plugin", () => {
+    const steps = ma3Checklist({
+      info: info([{ hasPamOsc: true, hasOscConfig: true, installedVersion: "2.0.0.1" }]),
+      onThisComputer: true,
+      engineState: "running",
+      connection: { state: "connected", attempt: 1, gaveUp: false },
+    });
+    expect(statuses(steps)).toEqual(["done", "done", "done"]);
+  });
 });

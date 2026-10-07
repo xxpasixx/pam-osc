@@ -54,7 +54,7 @@
 | PAM-33 | Scribble-strip line order — option to flip the X-Touch / Extender display lines (cue name on top, sequence name below; today fixed: sequence top, cue bottom). Community feature request | P2       | PAM-2, PAM-1                | Roadmap  | —                                                  | 2026-10-07 |
 | PAM-34 | In-app auto-update — electron-updater against GitHub Releases; checks in the background, never installs during a show (install on quit / on click), beta channel opt-in; needs signed mac builds + a single latest-mac.yml | P1       | PAM-8                       | Approved | [PAM-34](PAM-34-auto-update/)                      | 2026-10-07 |
 | PAM-35 | Setup flow in testable order — wizard + MA3 tab reordered (controller → where is MA3 → copy files → OSC → plugin), staged live checks after each console step, OSC config generated per setup (incl. remote console via USB), corrected Status hints | P1       | PAM-14, PAM-9, PAM-23, PAM-4 | Building | [PAM-35](PAM-35-setup-flow-order/)                 | 2026-10-07 |
-| PAM-36 | MA3 Setup tab as a live checklist — one row per step with LED + what the app sees, auto-ticks (onPC files, console answers, plugin running), only the next open step expanded; wizard unchanged | P1       | PAM-35                      | Building | [PAM-36](PAM-36-ma3-setup-checklist/)              | 2026-10-07 |
+| PAM-36 | MA3 Setup tab as a live checklist — one row per step with LED + what the app sees, auto-ticks (onPC files, console answers, plugin running), only the next open step expanded; wizard unchanged | P1       | PAM-35                      | Approved | [PAM-36](PAM-36-ma3-setup-checklist/)              | 2026-10-07 |
 
 <!-- Add features above this line -->
 
