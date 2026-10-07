@@ -37,6 +37,10 @@ win:
       arch: [x64]
   icon: build/icon-win.png
 linux:
+  # Derived default would be "@pam-oscapp" (from the scoped package name) —
+  # the "@" is rejected as a file path.
+  executableName: pam-osc
+  syncDesktopName: true
   target:
     - target: AppImage
       arch: [x64]

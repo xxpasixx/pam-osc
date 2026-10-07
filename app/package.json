@@ -5,6 +5,10 @@
   "type": "module",
   "description": "pam-osc v2 desktop app — MIDI to GrandMA3 OSC bridge",
   "license": "GPL-3.0",
+  "author": {
+    "name": "xxpasixx",
+    "email": "62435140+xxpasixx@users.noreply.github.com"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
