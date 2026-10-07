@@ -329,6 +329,30 @@ describe("PAM-34 UpdateService", () => {
     expect(service.installingAtLaunch).toBe(false);
   });
 
+  it("AC-16: launch install abandons when nothing is offered, on null, or where it can't install", async () => {
+    const notAvailable = setup({ launchInstall: "2.0.0-beta.4" });
+    notAvailable.updater.checkResult = () => notAvailable.updater.emit("update-not-available", { version: "2.0.0-beta.3" });
+    notAvailable.service.start();
+    expect(notAvailable.abandoned).toHaveLength(1);
+
+    const nullResult = setup({ launchInstall: "2.0.0-beta.4" });
+    nullResult.updater.checkForUpdates = () => Promise.resolve(null);
+    nullResult.service.start();
+    await Promise.resolve();
+    expect(nullResult.abandoned).toHaveLength(1);
+
+    const fallback = setup({ launchInstall: "2.0.0-beta.4", appPath: "/Volumes/pam-osc/pam-osc.app" });
+    fallback.updater.checkResult = () => fallback.updater.emit("update-available", { version: "2.0.0-beta.4" });
+    fallback.service.start();
+    expect(fallback.abandoned).toHaveLength(1);
+    expect(fallback.updater.downloads).toBe(0);
+
+    const older = setup({ version: "2.0.0-beta.4", launchInstall: "2.0.0-beta.5" });
+    older.updater.checkResult = () => older.updater.emit("update-available", { version: "2.0.0-beta.4" });
+    older.service.start();
+    expect(older.abandoned).toHaveLength(1);
+  });
+
   it("dev builds never touch the updater", async () => {
     const { updater, service, timeouts } = setup({ supported: false });
     service.start();

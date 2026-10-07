@@ -120,3 +120,62 @@ Risk work: the app downloads and runs code.
 
 - **Bugs open:** 0 C / 0 H / 0 M / 2 L residual (BUG-2 macOS edge, BUG-1 transient-error wording) + 2 L accepted (BUG-6, BUG-7). Security residuals from the first review are unchanged (Windows/Linux unsigned → release-publishing rights = client code execution; GitHub account 2FA + SHA-pinned actions recommended).
 - **Status:** **Approved** for the release test. **Before Live:** the "verify on release" items — beta.3 → beta.4 on macOS (universal dmg/zip, Squirrel install-on-quit + Install now), Windows (NSIS install-on-quit, unsigned), Linux (AppImage); check that the release contains `latest-mac.yml` / `latest.yml` / `latest-linux.yml` and the `…-mac-universal.*` names (AC-11, AC-12, AC-13, EC-1).
+
+## Re-review 2 (next-launch rework) — 2026-10-07 (commit 70601c8)
+
+**Tested:** `git diff 11d5a4c..70601c8` against the spec delta (AC-4, AC-5, AC-7, AC-14 edited, AC-15, AC-16 new). Targeted Vitest (`updater.test.ts`, `core/update`, `apply-settings.test.ts`, `settings-store.test.ts`): 48/48 green. `tsc --noEmit` clean. The launch-install path was read against the electron-updater 6.8.9 sources (`AppUpdater`, `BaseUpdater`, `MacUpdater`).
+
+### Focus checks
+
+| # | Question | Result |
+| --- | --- | --- |
+| 1 | Can the bridge stay un-started? | **No dead end found.** Older or equal offered version: `isUpdateAvailable` uses semver `eq`/`lt` with `allowDowngrade=false`, so it emits `update-not-available`, which abandons. `handleAvailable` also guards a not-newer version. Error event, rejection, `null` result and fallback all abandon (idempotent via the `launching` guard). The 120 s timer is a backstop for anything else and is deliberately not cleared by `quitAndInstall`. Cache hit in a fresh process: `executeDownload` → `validateDownloadedPath` → `done(false)` still runs `taskOptions.done`. On Win/Linux that is `BaseUpdater` → `dispatchUpdateDownloaded` with `installerPath` set, so `install()` works. On macOS it is `updateDownloaded` → proxy server → `dispatchUpdateDownloaded`. `quitAndInstall` then sees `squirrelDownloadedUpdate=false` and calls `nativeUpdater.checkForUpdates()` against the live proxy. A native error re-emits `error`, and `launching` is still set, so it abandons. Works. |
+| 2 | Install loop at start | **None.** `handleDownloaded` awaits `setInstallOnNextLaunch(undefined)` (temp + rename) before `quitAndInstall`. The `pendingLaunchInstall` version guard stops a retry even if a stale write re-added the flag. |
+| 3 | Stale flag | Cleared when the scheduled version is not newer than the running one (packaged only). The double call is mostly harmless, see BUG-11. |
+| 4 | BUG-2 interplay | Betas off while `ready`+`scheduled` with a pre-release clears the schedule (awaited) and goes `idle` (tested). The earlier **macOS BUG-2 residual is now resolved**: with `autoInstallOnAppQuit=false`, `MacUpdater.updateDownloaded` never calls `nativeUpdater.checkForUpdates()`, so Squirrel stages nothing before an explicit `quitAndInstall`. |
+| 5 | Menu | Checkboxes rebuild via `persist` → `onPreferencesChanged` → `rebuildMenu()`. Dialog texts are fine. Minor issues: BUG-10, BUG-12. |
+| 6 | Settings merge | `setUpdatePreferences` now spreads `this.current.updates`, so `installOnNextLaunch` survives a toggle. `apply-settings` copies the whole `updates` block. Schema: `z.string().min(1).max(64)`, inside a strict object. |
+| 7 | `PAM_UPDATE_PREVIEW` | Gated by `!app.isPackaged`, and the service is `supported=false` in dev. It cannot trigger in packaged builds. |
+
+### New findings
+
+**BUG-8: A manual Start or Save during the launch install, followed by an abandon, double-starts the engine and desyncs its state**
+- **Severity:** Medium
+- **Where:** `app/src/main/index.ts:203-212` (`autoStartFromSaved`), `:795`
+- The renderer stays interactive while the bar reads "Installing update …" (up to 120 s). If the user clicks Start (or Save in Setup) and the install is then abandoned, `autoStartFromSaved()` calls `engineHost.autoStart` on a running engine. `startWith` sets `starting` and resets the live status, then `engine.start` throws "already running", and the catch sets the host state to `stopped` while the engine keeps running. Result: a false error notice, a UI showing a stopped bridge that is actually running, and Start failing again. It also starts from `loaded.settings` (the start-up snapshot), not from what the user just saved. Fix: in `autoStartFromSaved`, return early when `engineHost.snapshot().engineState !== "stopped"`, and use `settingsStore.settings`.
+- Same window, also Low: if the user started the bridge manually and the install succeeds, the app restarts without the AC-6 confirmation. The bar text announces it, so this is acceptable.
+
+**BUG-9: macOS — a native `update-downloaded` that arrives after the 120 s timeout still restarts the app while the bridge runs**
+- **Severity:** Low
+- **Where:** `app/src/main/updater.ts:265` (timer) with `MacUpdater.quitAndInstall`, which registers a permanent `nativeUpdater.on("update-downloaded", handleUpdateDownloaded)`
+- If Squirrel's fetch, verification and unzip of the local proxy file outlast the timeout, the code abandons and starts the bridge. Squirrel can still finish afterwards and call `nativeUpdater.quitAndInstall()`, an unconfirmed restart during a possible show. Unlikely (a local file, normally seconds), and Win/Linux are not affected (`install()` is synchronous). Mitigation options: a longer timeout once `quitAndInstall` has been called, or an `onLaunchInstallAbandoned`-time log line. Worth noting for the macOS release test.
+
+**BUG-10: Menu checkboxes act on preferences captured at menu-build time**
+- **Severity:** Low
+- **Where:** `app/src/main/update-wiring.ts:181-184`
+- `setPreference` spreads the `preferences` read when the menu was built. Two toggles before the rebuild (the persist write is still in flight) send stale values, and the second can revert the first. A write failure also leaves an unhandled rejection with the checkbox already flipped. Fix: read `service.status().preferences` inside `setPreference`.
+
+**BUG-11: `launchInstallFor` runs twice; in the stale case it can start two unserialized writes to the same temp file**
+- **Severity:** Low
+- **Where:** `app/src/main/index.ts:215`, `app/src/main/update-wiring.ts:33` and `:77`; `settings-store.ts:156-161` (fixed `settings.json.tmp`, no write queue)
+- When no autostart is awaited between the two calls (first run or no mappings), the second call may still see the flag and issue a second `void` write. A concurrent rename can then fail with ENOENT, an unhandled rejection. The content is identical, so no data loss. Fix: compute it once in `index.ts` and pass it into `startUpdates`.
+
+**BUG-12: The manual-check dialog for `ready` points to a notice that may be gone**
+- **Severity:** Low (copy/UX)
+- **Where:** `app/src/main/update-wiring.ts:152-156`
+- "Use the notice at the top: Install now, or On next launch". The bar may be dismissed, and dismissal is renderer state with no way back. When scheduled, the bar has no "On next launch" button either. Suggestion: un-dismiss on a manual check, and use scheduled-aware text ("installs on next launch").
+
+**Notes (no bug):**
+- The launch install accepts any newer offered version, so a newer beta.5 published in between installs instead of the scheduled beta.4. That is reasonable, but the AC-15 wording says "installs that version".
+- With auto-check off, the launch install still contacts GitHub. This is fine: it follows an explicit user choice (AC-14 spirit).
+- Pre-PAM-34 builds (≤ beta.2) and beta.3 reject a `settings.json` that still carries `installOnNextLaunch` (the strict `updates` object; BUG-7 family). This only matters when someone rolls back while a schedule is pending.
+- Test gaps: the abandon paths for `update-not-available`, an older offered version, fallback and a `null` result are untested (only error and timeout are covered). There are no `settings-store` tests for `setInstallOnNextLaunch`, or for `setUpdatePreferences` preserving it.
+
+### AC delta check
+
+AC-4 pass (Help menu, version, dialog) · AC-5 pass · AC-7 pass, on macOS too · AC-14 pass · AC-15 pass in code; the restart needs release verification · AC-16 pass, with the BUG-8 edge case.
+
+### Verdict (re-review 2)
+
+- **Bugs:** 0 C / 0 H / 1 M (BUG-8) / 4 L (BUG-9 to BUG-12). The live-show rule holds. No path leaves the bridge permanently un-started, and there is no install loop.
+- **Status:** **OK for the beta.4 release test.** BUG-8 should be fixed before Live (a two-line guard). The release test must also cover "On next launch" → restart on macOS (Squirrel via the proxy in a fresh process), Windows (NSIS from cache) and Linux (AppImage), plus an abandon case (e.g. offline at start → bridge starts).

@@ -148,7 +148,7 @@ export function BoardCanvas({
   return (
     <div className="board-scroll" ref={containerRef}>
       <div
-        className="board"
+        className="board-canvas"
         role="listbox"
         aria-label="Board layout"
         tabIndex={0}

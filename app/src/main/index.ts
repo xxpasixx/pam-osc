@@ -205,11 +205,14 @@ async function main(): Promise<void> {
   });
 
   // AC-4: valid persisted settings → the engine starts before the window.
+  // Reads the CURRENT settings and skips a running engine: after an abandoned
+  // launch install (PAM-34 AC-16) the user may already have saved or started
+  // the bridge during the wait (review BUG-8).
   const autoStartFromSaved = async () => {
-    if (loaded.firstRun || loaded.settings.activeMappingIds.length === 0) return;
-    const error = await engineHost.autoStart(
-      engineConfigFrom(loaded.settings.console, loaded.settings.activeMappingIds, loaded.settings.fixedPage)
-    );
+    const saved = settingsStore.settings;
+    if (!settingsStore.hasPersisted || saved.activeMappingIds.length === 0) return;
+    if (engineHost.snapshot().engineState !== "stopped") return;
+    const error = await engineHost.autoStart(engineConfigFrom(saved.console, saved.activeMappingIds, saved.fixedPage));
     if (error) {
       pushNotice({ severity: "error", message: `engine did not start with the saved settings: ${error}` });
       runPortDiagnosis(); // a blocked receive port is the classic cause (AC-2)
@@ -217,7 +220,8 @@ async function main(): Promise<void> {
   };
   // PAM-34 AC-15: an update scheduled for this start installs first — the
   // bridge only starts if that install is abandoned (AC-16).
-  if (!launchInstallFor(settingsStore)) await autoStartFromSaved();
+  const launchInstall = launchInstallFor(settingsStore); // computed once (review BUG-11)
+  if (!launchInstall) await autoStartFromSaved();
 
   const midiPorts = new MidiPortLister(easymidiTransport, (ports) => {
     midiLearn.onPortsChanged(ports); // a vanished port ends a learn session
@@ -831,6 +835,7 @@ async function main(): Promise<void> {
     settingsStore,
     log: (line) => sessionLog.log(line),
     onPreferencesChanged: () => rebuildMenu(),
+    launchInstall,
     onLaunchInstallAbandoned: () => void autoStartFromSaved(),
   });
   rebuildMenu();

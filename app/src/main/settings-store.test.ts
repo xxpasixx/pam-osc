@@ -95,6 +95,21 @@ describe("SettingsStore (AC-1, AC-4, EC-2)", () => {
     expect(loaded.settings.onboarding).toBeUndefined();
   });
 
+  it("PAM-34: the launch-install schedule and the preferences don't overwrite each other", async () => {
+    const store = new SettingsStore(dir);
+    await store.load();
+    await store.setInstallOnNextLaunch("2.0.0-beta.4");
+    await store.setUpdatePreferences({ checkAutomatically: false, receiveBetas: true });
+    expect(store.settings.updates).toEqual({
+      installOnNextLaunch: "2.0.0-beta.4",
+      checkAutomatically: false,
+      receiveBetas: true,
+    });
+    await store.setInstallOnNextLaunch(undefined);
+    const reloaded = await new SettingsStore(dir).load();
+    expect(reloaded.settings.updates).toEqual({ checkAutomatically: false, receiveBetas: true });
+  });
+
   it("PAM-14: setOnboardingCompleted persists the flag and survives a reload", async () => {
     const store = new SettingsStore(dir);
     await store.load();

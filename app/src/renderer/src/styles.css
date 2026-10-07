@@ -31,7 +31,7 @@ body {
   /* Text is selectable by default (PAM-17 AC-5): diagnostic values — console
      IP, error messages, the port-diagnosis line, the traffic log — must be
      copyable. user-select: none is scoped to the drag/canvas surfaces only
-     (see .board / .board-control). */
+     (see .board-canvas / .board-control). */
 }
 
 .app {
@@ -938,7 +938,9 @@ dialog .error {
   background: var(--bg);
 }
 
-.board {
+/* Editor canvas. Its own class: ".board" is the dim sub-line under a device
+   name (device rows, pickers, dialogs) and must not inherit this grid. */
+.board-canvas {
   position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -951,7 +953,7 @@ dialog .error {
   user-select: none;
 }
 
-.board:focus-visible {
+.board-canvas:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

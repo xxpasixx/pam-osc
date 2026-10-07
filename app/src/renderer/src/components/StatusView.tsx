@@ -240,7 +240,7 @@ export function StatusView(props: {
         <h2>Support</h2>
         <p className="inspector-meta">
           One .zip with all boards, mappings, the settings, and the latest session log — attach it when reporting a
-          problem, or keep it as a backup of your setup (PAM-7 AC-10).
+          problem, or keep it as a backup of your setup.
         </p>
         <div className="section-actions">
           <button onClick={props.onExportSupportPackage}>Export support package …</button>

@@ -40,6 +40,8 @@ export function startUpdates(deps: {
   log: (line: string) => void;
   /** The Help menu shows the preference checkboxes — rebuild it when they change. */
   onPreferencesChanged: () => void;
+  /** AC-15: from launchInstallFor(), computed once at start-up. */
+  launchInstall: string | undefined;
   /** AC-16: called when a scheduled launch install did not happen — start the bridge. */
   onLaunchInstallAbandoned: () => void;
 }): UpdateService {
@@ -74,7 +76,7 @@ export function startUpdates(deps: {
       deps.onPreferencesChanged();
     },
     persistLaunchInstall: (version) => deps.settingsStore.setInstallOnNextLaunch(version),
-    launchInstall: launchInstallFor(deps.settingsStore),
+    launchInstall: deps.launchInstall,
     onLaunchInstallAbandoned: deps.onLaunchInstallAbandoned,
     location: () => ({
       platform: process.platform,
@@ -178,9 +180,16 @@ export function updatesMenuItems(
   const status = service?.status();
   const supported = status?.supported === true;
   const preferences = status?.preferences;
+  // Read the preferences at click time, not menu-build time (review BUG-10).
   const setPreference = (key: "checkAutomatically" | "receiveBetas", value: boolean) => {
-    if (!service || !preferences) return;
-    void service.setPreferences({ ...preferences, [key]: value });
+    if (!service) return;
+    service.setPreferences({ ...service.status().preferences, [key]: value }).catch((error: unknown) => {
+      void dialog.showMessageBox({
+        type: "warning",
+        message: "Couldn't save the update setting.",
+        detail: error instanceof Error ? error.message : String(error),
+      });
+    });
   };
   return [
     {
@@ -194,9 +203,26 @@ export function updatesMenuItems(
           show({ type: "info", message: "Updates are disabled in development builds." });
           return;
         }
-        void service.checkNow().then(() => {
+        void service.checkNow().then(async () => {
           const status = service.status();
-          show({ type: "info", ...describeResult(status.state, status.installedVersion) });
+          const state = status.state;
+          // Ready: offer the choice right here — the bar may have been dismissed (review BUG-12).
+          if (state.kind === "ready") {
+            const window = getWindow();
+            const options: Electron.MessageBoxOptions = {
+              type: "info",
+              message: `pam-osc ${state.version} is ready to install.`,
+              detail: "Installing restarts pam-osc and briefly interrupts MIDI ↔ MA3.",
+              buttons: state.scheduled ? ["Install now", "Later"] : ["Install now", "On next launch", "Later"],
+              defaultId: state.scheduled ? 1 : 2,
+              cancelId: state.scheduled ? 1 : 2,
+            };
+            const { response } = window ? await dialog.showMessageBox(window, options) : await dialog.showMessageBox(options);
+            if (response === 0) service.installNow();
+            else if (response === 1 && !state.scheduled) await service.scheduleForNextLaunch();
+            return;
+          }
+          show({ type: "info", ...describeResult(state, status.installedVersion) });
         });
       },
     },
