@@ -19,6 +19,8 @@ import { EditorView, type EditorTarget } from "./components/editor/EditorView.js
 import { ImportV1Dialog, type ImportFlow } from "./components/ImportV1Dialog.js";
 import { Ma3SetupView } from "./components/Ma3SetupView.js";
 import { NoticesArea } from "./components/NoticesArea.js";
+import { UpdateBar } from "./components/UpdateBar.js";
+import { UpdateSection } from "./components/UpdateSection.js";
 import { SetupWizard } from "./components/SetupWizard.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { StatusView } from "./components/StatusView.js";
@@ -516,6 +518,7 @@ export function App() {
   return (
     <div className="app">
       <StatusBar engineState={engineState} connection={connection} />
+      <UpdateBar engineState={engineState} />
       {noticesLayer}
       <nav className="tabs" role="tablist" aria-label="Views">
         <button
@@ -616,6 +619,7 @@ export function App() {
                 }));
               }}
             />
+            <UpdateSection />
           </>
         )}
         {tab === "boards" && (

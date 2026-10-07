@@ -1,0 +1,44 @@
+/* PAM-34 update notice + settings section (kept out of styles.css). */
+
+.update-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--accent);
+  font-size: 13px;
+}
+
+.update-bar .grow,
+.update-section-row .grow {
+  flex: 1;
+}
+
+.update-dismiss {
+  padding: 2px 8px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.update-section-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.update-section-row code {
+  font-family: var(--mono);
+}
+
+.update-section-state {
+  color: var(--text-dim);
+}
+
+.update-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}

@@ -25,6 +25,7 @@ import { MidiLearn } from "./midi-learn.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
 import { SessionLog } from "./session-log.js";
+import { startUpdates } from "./update-wiring.js";
 import { SettingsStore } from "./settings-store.js";
 import { importShareFile } from "./share-files.js";
 import { writeSupportPackage } from "./support-package.js";
@@ -780,6 +781,9 @@ async function main(): Promise<void> {
   } else {
     await window.loadFile(join(import.meta.dirname, "../renderer/index.html"));
   }
+
+  // PAM-34: after the window is up — never delays start-up, never the engine.
+  startUpdates({ getWindow: () => window, settingsStore, log: (line) => sessionLog.log(line) });
 
   // The bridge is the app: closing the window stops the engine and quits
   // (a background/tray mode is a later feature — see docs/ideas.md).
