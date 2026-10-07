@@ -7,7 +7,7 @@
 
 ## Status: Spec'd
 
-**Created:** 2026-07-19 · **Last Updated:** 2026-07-19
+**Created:** 2026-07-19 · **Last Updated:** 2026-10-07
 
 ## Why
 
@@ -30,6 +30,7 @@ As mappings get shared in the community (PAM-7), users need to know at a glance 
 - [ ] **AC-4** — Given the bundled mappings that ship with the app (the v1-supported boards), then they carry status `tested` (maintainer-verified). _(Judgment call — confirm.)_
 - [ ] **AC-5** — Given a shared mapping is imported (PAM-7), then the status stored in the file is preserved and shown as-is — a `tested` badge on an imported mapping is that author's own claim; a shared file with no status defaults to `community`. _(Judgment call — confirm.)_
 - [ ] **AC-6** — Given a v1 mapping is imported (PAM-5), then the converted mapping defaults to `draft` (the conversion is unverified until the user checks it on hardware).
+- [ ] **AC-7** _(delta 2026-10-07)_ — The status enum gains a fourth value, **`untested`** (complete, but not yet verified on real hardware) — `draft` / `untested` / `community` / `tested`, each with its own badge and selectable in the editor. Bundled mappings not hardware-verified ship as `untested` (replaces `community` for them — `community` is reserved for mappings shared by other users); hardware-verified bundled mappings stay `tested`.
 
 ## Out of Scope
 
@@ -46,7 +47,8 @@ As mappings get shared in the community (PAM-7), users need to know at a glance 
 
 ### Product Decisions
 
-| Decision                                        | Rationale                                                        | Date       |
-| ----------------------------------------------- | ---------------------------------------------------------------- | ---------- |
-| Status is self-declared local metadata          | No accounts/server (data-model); trust is conveyed, not enforced | 2026-07-19 |
-| Additive field, default `draft`, no format bump | Backward compatible — old files simply read as draft             | 2026-07-19 |
+| Decision                                        | Rationale                                                                 | Date       |
+| ----------------------------------------------- | ------------------------------------------------------------------------- | ---------- |
+| Status is self-declared local metadata          | No accounts/server (data-model); trust is conveyed, not enforced          | 2026-07-19 |
+| Additive field, default `draft`, no format bump | Backward compatible — old files simply read as draft                      | 2026-07-19 |
+| Add `untested`; bundled unverified → `untested` | `community` misread as "from the community" for maintainer-shipped boards | 2026-10-07 |

@@ -134,17 +134,17 @@ describe("bundled resources", () => {
     }
   });
 
-  it("ships every bundled mapping as 'community' until hardware-verified as 'tested' (PAM-19 AC-4)", async () => {
+  it("ships every bundled mapping as 'untested' until hardware-verified as 'tested' (PAM-19 AC-4)", async () => {
     const result = await loadBundled();
     expect(result.mappings.length).toBeGreaterThan(0);
-    // All bundled mappings ship as 'community' (honest self-declaration);
+    // All bundled mappings ship as 'untested' (honest self-declaration);
     // a mapping moves here once it has been confirmed on real hardware.
     const hardwareVerified = new Set<string>([
       "x-touch-compact-default-1",
       "x-touch-compact-mc-playback-1", // confirmed on the real unit 2026-08-01
     ]);
     for (const mapping of result.mappings) {
-      const expected = hardwareVerified.has(mapping.id) ? "tested" : "community";
+      const expected = hardwareVerified.has(mapping.id) ? "tested" : "untested";
       expect(mapping.status, `${mapping.id} should ship as ${expected}`).toBe(expected);
     }
   });

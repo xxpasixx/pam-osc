@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "x-touch-extension-1",
   "name": "X-Touch Extension 209-217",
-  "status": "community",
+  "status": "untested",
   "notes": "The big X-Touch used as an extension to the right of an X-Touch Extender: same per-strip layout as x-touch-default-1 but using executor bank slots 9-16, so it continues where the Extender (slots 1-8) stops, with no overlap. Faders (and Mute, scribble strips) drive 209-216, main fader 217; button rows bottom->top: Select 109-116, Mute 209-216, Solo 309-316, Rec 409-416; the encoder rotate/ring and its push button both drive 409-416. The master/transport/function-key/QuickKey section is reused verbatim from 'X-Touch Default 1' (F-keys 191-198, view row 291-298 etc. never touch slots 9-16). enableTimecodeSend kept from Default 1. Ships as 'community' — this executor layout has not yet been verified on hardware.",
   "deviceDefinitionId": "x-touch",
   "midiPort": {

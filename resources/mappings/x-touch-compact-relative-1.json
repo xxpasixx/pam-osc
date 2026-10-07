@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "x-touch-compact-relative-1",
   "name": "X-Touch Compact Relative 1",
-  "status": "community",
+  "status": "untested",
   "notes": "Targets the 'x-touch-compact-relative' board (side encoders 9-16 in relative mode via X-TOUCH Editor). Re-expressed from v1 mappings/xTouchCompactRltv1.json. Same as the default mapping, but the right-side encoders 9-16 are set to relative mode (via the X-Touch editor) and control fixture attributes; pushing encoder 9 toggles fine, encoder 10 toggles rough sensitivity. v1 defined no LED-ring feedback for these encoders, so their feedback is none. The remaining right-knob pushes (v1 notes 10-15) and all layer-B right-knob pushes had no v1 assignment. Side-button block (both layers where present): Highlight | Clear / Prev | Next / Page Down | Page Up (QuickKeys, changed 2026-07-27). Layer-B knob rotations (1-16, all relative encoders since 2026-08-01) target the same executor as their push with feedback none; the top row 410-417 additionally gets the relative /Encoder message (executor > 300). Layer-A side buttons changed 2026-07-27: Highlight | Clear (row 1), encoder resolution Fine /2 | Rough x2 (row 2, PAM-31 modifier factor with LED), Page Down | Page Up (row 3). Layer B keeps the QuickKey block.",
   "deviceDefinitionId": "x-touch-compact-relative",
   "midiPort": {

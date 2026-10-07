@@ -39,7 +39,7 @@ export interface CatalogEntry {
   /** Display name of the referenced board type (device definition). */
   boardName: string;
   origin: "bundled" | "user";
-  /** Maturity/provenance badge (PAM-19) — draft / community / tested. */
+  /** Maturity/provenance badge (PAM-19) — draft / untested / community / tested. */
   status: MappingStatus;
   /** Port names currently stored in the mapping file. */
   midiPort: { input: string; output?: string };

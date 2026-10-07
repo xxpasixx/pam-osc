@@ -802,6 +802,11 @@ dialog .error {
   border-color: var(--border);
 }
 
+.status-badge.untested {
+  color: #ffb347;
+  border-color: #ffb347;
+}
+
 .status-badge.community {
   color: #6ab7ff;
   border-color: #6ab7ff;

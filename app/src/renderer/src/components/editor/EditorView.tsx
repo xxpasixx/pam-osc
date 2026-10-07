@@ -725,6 +725,7 @@ export function EditorView({
                 }
               >
                 <option value="draft">draft</option>
+                <option value="untested">untested</option>
                 <option value="community">community</option>
                 <option value="tested">tested</option>
               </select>

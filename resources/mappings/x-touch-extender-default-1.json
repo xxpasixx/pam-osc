@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "x-touch-extender-default-1",
   "name": "X-Touch Extender 201-208",
-  "status": "community",
+  "status": "untested",
   "notes": "X-Touch Extender laid out like x-touch-default-1, using executor bank slots 1-8. Faders (and Mute buttons, scribble strips) drive executors 201-208; button rows run bottom->top across pages: Select 101-108, Mute 201-208, Solo 301-308, Rec 401-408; the encoder rotate/ring and its push button both drive 401-408 (one physical control = one executor). Pairs with the 'X-Touch Extension 209-217' mapping (which uses slots 9-16) so an Extender + a big X-Touch form one continuous, non-overlapping surface. Requires the Extender in MC / 'Mackie Control XT' mode. Ships as 'community' — not yet verified on real Extender hardware.",
   "deviceDefinitionId": "x-touch-extender",
   "midiPort": {

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "apc-40-mk2-default-1",
   "name": "APC40 mkII Default (Playback)",
-  "status": "community",
+  "status": "untested",
   "sendColors": true,
   "sendNames": false,
   "resendButtons": false,

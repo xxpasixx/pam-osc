@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "x32-compact-cc-default-1",
   "name": "X32 Compact (CC) Default 1",
-  "status": "community",
+  "status": "untested",
   "notes": "Default layout for the X32 Compact in DAW Remote 'MIDI CC' mode: 16 motorized faders on executors 201-216 (left bank 201-208, right bank 209-216) plus the main fader on 217, all with fader-position feedback. Each strip's Mute button triggers the same executor with on-off LED feedback - one press = one executor go, the LED mirrors the executor's running state. The wire scheme (CC 0-7/72-79/70 on ch 1 for faders, same numbers on ch 2 for the mute buttons) was hardware-verified 2026-07-26 including motor and LED feedback. Console setup: SETUP > Remote > protocol 'MIDI CC', interface Card MIDI (X-USB), Remote engaged. No displays, encoders or further button rows - the X32 does not transmit them in CC remote mode.",
   "deviceDefinitionId": "x32-compact-cc",
   "midiPort": {

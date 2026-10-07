@@ -100,22 +100,22 @@ The beta builds are not yet code-signed, so your system will warn you once. This
 
 These boards ship with the app — pick one and go. Any other MIDI controller can be added with the visual editor.
 
-| Board                                         | Bundled mappings                                   | Status       |
-| --------------------------------------------- | -------------------------------------------------- | ------------ |
-| Behringer X-Touch Compact                     | Default 1                                          | ✅ tested    |
-| Behringer X-Touch Compact (MC mode)           | Playback 1                                         | ✅ tested    |
-| Behringer X-Touch Compact (relative encoders) | Relative 1                                         | 🧪 community |
-| Behringer X-Touch                             | Default 1 · Default 2 · Extension (exec 209–217)   | 🧪 community |
-| Behringer X-Touch Extender                    | Default 1 (exec 201–208)                           | 🧪 community |
-| Behringer X32 Compact (DAW Remote, MIDI CC)   | Default 1                                          | 🧪 community |
-| AKAI APC40 mkII                               | Default (Playback)                                 | 🧪 community |
-| AKAI APC mini                                 | Default 1 (Playback) · Default 2 (Command Section) | 🧪 community |
-| AKAI APC mini mk2                             | Controller                                         | 🧪 community |
-| Akai MPX16                                    | Default 1                                          | 🧪 community |
-| Novation Launchpad                            | Playback · TriFlats                                | 🧪 community |
-| Novation Launchpad Mini MK3                   | — (board only, build your own mapping)             | 🧪 community |
+| Board                                         | Bundled mappings                                   | Status      |
+| --------------------------------------------- | -------------------------------------------------- | ----------- |
+| Behringer X-Touch Compact                     | Default 1                                          | ✅ tested   |
+| Behringer X-Touch Compact (MC mode)           | Playback 1                                         | ✅ tested   |
+| Behringer X-Touch Compact (relative encoders) | Relative 1                                         | 🧪 untested |
+| Behringer X-Touch                             | Default 1 · Default 2 · Extension (exec 209–217)   | 🧪 untested |
+| Behringer X-Touch Extender                    | Default 1 (exec 201–208)                           | 🧪 untested |
+| Behringer X32 Compact (DAW Remote, MIDI CC)   | Default 1                                          | 🧪 untested |
+| AKAI APC40 mkII                               | Default (Playback)                                 | 🧪 untested |
+| AKAI APC mini                                 | Default 1 (Playback) · Default 2 (Command Section) | 🧪 untested |
+| AKAI APC mini mk2                             | Controller                                         | 🧪 untested |
+| Akai MPX16                                    | Default 1                                          | 🧪 untested |
+| Novation Launchpad                            | Playback · TriFlats                                | 🧪 untested |
+| Novation Launchpad Mini MK3                   | — (board only, build your own mapping)             | 🧪 untested |
 
-✅ **tested** — verified hands-on with real hardware and GrandMA3 · 🧪 **community** — works for its author / ported from v1, not yet fully verified in v2. Tried one? Tell us on Discord so we can mark it tested.
+✅ **tested** — verified hands-on with real hardware and GrandMA3 · 🧪 **untested** — ships with the app (mostly ported from v1) but not yet verified on real hardware in v2 · 🤝 **community** — shared by another user, works for its author. Tried an untested one? Tell us on Discord so we can mark it tested.
 
 Your board isn't listed? Build a mapping in the editor and share it on [Discord](https://discord.gg/4dcKjTH9Pm) — community mappings are very welcome.
 

@@ -91,7 +91,7 @@ export const mappingSchema = z
     }),
     // Maturity/provenance (PAM-19 AC-1): additive with a default, so older
     // files with no status simply load as "draft" — no format-version bump.
-    status: z.enum(["draft", "community", "tested"]).default("draft"),
+    status: z.enum(["draft", "untested", "community", "tested"]).default("draft"),
     enableTimecodeSend: z.boolean().default(false),
     // PAM-16 feedback flags — the app OR-merges these across the active
     // mappings and pushes them to the plugin in the config handshake, so the
