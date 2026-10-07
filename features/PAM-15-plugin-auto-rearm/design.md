@@ -53,10 +53,10 @@ _Deferred until the onPC linchpin is verified. If AC-2 is feasible: Level 1 add 
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| -------- | --------- | ---------------------- | --------- | ---- |
-| Opt-in best-effort, off by default | No native autostart; over-promising erodes trust | On by default | Users must discover/enable it | 2026-07-19 |
-| Gate the whole design on the onPC linchpin | The core mechanism may be impossible; designing detail now would be waste | Fully design now | Feature stays "later" until verified | 2026-07-19 |
+| Decision                                   | Rationale                                                                 | Alternative considered | Trade-off                            | Date       |
+| ------------------------------------------ | ------------------------------------------------------------------------- | ---------------------- | ------------------------------------ | ---------- |
+| Opt-in best-effort, off by default         | No native autostart; over-promising erodes trust                          | On by default          | Users must discover/enable it        | 2026-07-19 |
+| Gate the whole design on the onPC linchpin | The core mechanism may be impossible; designing detail now would be waste | Fully design now       | Feature stays "later" until verified | 2026-07-19 |
 
 ## Open Questions
 

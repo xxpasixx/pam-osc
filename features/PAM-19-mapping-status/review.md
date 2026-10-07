@@ -6,14 +6,14 @@ Regression baseline: typecheck clean, full suite **343 passing**.
 
 ## AC verification
 
-| AC | Verdict | Evidence |
-| --- | --- | --- |
+| AC                                                            | Verdict  | Evidence                                                                                                                                          |
+| ------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | AC-1 status field, enum, new=draft, old files=draft, additive | **PASS** | `mapping.ts:87` `status: z.enum([...]).default("draft")`, no format bump; loader parses via `mappingSchema.safeParse` so statusless files → draft |
-| AC-2 badge in Boards rows / Setup picker / Add-device dialog | **PASS** | `BoardsView.tsx:135`, `DevicesSection.tsx:109`, `AddDeviceDialog.tsx` picker |
-| AC-3 editor set + persist | **PASS** | `EditorView.tsx:715` select → `draft.status`; save via `catalog.saveMapping` writes parsed value |
-| AC-4 bundled = tested | **PASS** | all 10 `resources/mappings/*.json` carry `"status":"tested"`; `bundled.test.ts` asserts it |
-| AC-5 shared: preserve status, statusless → community | **PASS** | `share.ts:73-77` checks raw `hasOwnProperty("status")`, sets community only when absent; write path keeps the override |
-| AC-6 v1 import → draft | **PASS** | `converter.ts` sets `status:"draft"` explicitly |
+| AC-2 badge in Boards rows / Setup picker / Add-device dialog  | **PASS** | `BoardsView.tsx:135`, `DevicesSection.tsx:109`, `AddDeviceDialog.tsx` picker                                                                      |
+| AC-3 editor set + persist                                     | **PASS** | `EditorView.tsx:715` select → `draft.status`; save via `catalog.saveMapping` writes parsed value                                                  |
+| AC-4 bundled = tested                                         | **PASS** | all 10 `resources/mappings/*.json` carry `"status":"tested"`; `bundled.test.ts` asserts it                                                        |
+| AC-5 shared: preserve status, statusless → community          | **PASS** | `share.ts:73-77` checks raw `hasOwnProperty("status")`, sets community only when absent; write path keeps the override                            |
+| AC-6 v1 import → draft                                        | **PASS** | `converter.ts` sets `status:"draft"` explicitly                                                                                                   |
 
 ## Findings
 
@@ -23,4 +23,5 @@ Regression baseline: typecheck clean, full suite **343 passing**.
 Robustness/security: malformed status → schema rejects, loader skips + flags invalid (no crash); absent status never crashes; enum enforced at load/save/share.
 
 ## Verdict
+
 6/6 ACs PASS. No Critical/High/Medium. Two Low consistency notes. **Approved.**

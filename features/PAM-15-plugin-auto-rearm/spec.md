@@ -11,7 +11,7 @@
 
 ## Why
 
-The plugin must be run by hand after every session / showfile load — a recurring annoyance. GrandMA3 has **no native autostart hook** for plugins, so a guaranteed "always running" is impossible and we must not pretend otherwise. What *is* possible: once OSC-in is configured, the app can re-trigger the plugin with an OSC command-line call when it detects the console is reachable but the plugin isn't answering. This is a **best-effort** convenience, explicitly not a guarantee.
+The plugin must be run by hand after every session / showfile load — a recurring annoyance. GrandMA3 has **no native autostart hook** for plugins, so a guaranteed "always running" is impossible and we must not pretend otherwise. What _is_ possible: once OSC-in is configured, the app can re-trigger the plugin with an OSC command-line call when it detects the console is reachable but the plugin isn't answering. This is a **best-effort** convenience, explicitly not a guarantee.
 
 ## Dependencies
 
@@ -31,7 +31,7 @@ The plugin must be run by hand after every session / showfile load — a recurri
 
 ## Out of Scope
 
-- True OS/console-level autostart on showfile open — no native hook exists; the DMX-remote and scheduler/agenda workarounds are documented *guidance* for the user, not app features.
+- True OS/console-level autostart on showfile open — no native hook exists; the DMX-remote and scheduler/agenda workarounds are documented _guidance_ for the user, not app features.
 - Auto-starting the app's own bridge engine — a separate concern.
 - Session-master vs non-master handling on multi-station setups beyond documenting the limitation.
 
@@ -44,13 +44,13 @@ The plugin must be run by hand after every session / showfile load — a recurri
 
 - [ ] **Can OSC command input call a plugin?** — the linchpin. **Verify on onPC** that an OSC message on the Receive-Command entry can execute `Plugin "pam-osc"` (or an equivalent command) and actually start the plugin loop. If OSC command input cannot invoke a plugin, AC-2 is infeasible and this feature degrades to improved guidance only. [NEEDS CLARIFICATION: OSC command-line → plugin call on onPC 2.x]
 - [ ] **Session-master limitation** — external OSC inputs and agenda events are processed only on the session-master station; document that re-arm only works reliably there.
-- [ ] **Which entry carries the command** — confirm the Receive entry with *Receive Command* on is the one that executes an arbitrary command string sent by the app.
+- [ ] **Which entry carries the command** — confirm the Receive entry with _Receive Command_ on is the one that executes an arbitrary command string sent by the app.
 
 ## Decision Log
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
-| Best-effort re-arm, not "always on" | MA3 has no native plugin autostart; over-promising would erode trust when it inevitably fails | 2026-07-18 |
-| Opt-in, honestly labeled | Silently re-firing commands at a live console is surprising; the user must choose it knowingly | 2026-07-18 |
+| Decision                            | Rationale                                                                                      | Date       |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------- | ---------- |
+| Best-effort re-arm, not "always on" | MA3 has no native plugin autostart; over-promising would erode trust when it inevitably fails  | 2026-07-18 |
+| Opt-in, honestly labeled            | Silently re-firing commands at a live console is surprising; the user must choose it knowingly | 2026-07-18 |

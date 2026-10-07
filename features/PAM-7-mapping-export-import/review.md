@@ -58,7 +58,7 @@
 
 - **Severity:** Medium
 - **Steps to reproduce:** 1. Have a user mapping/device file that fails validation (broken JSON, or references a missing board — the classic "my mapping won't load"). 2. It shows under Boards → "Invalid mapping files". 3. Export a support package. 4. Open the .zip.
-- **Expected / Actual:** the broken file is in the package so a helper can reproduce it / it's absent. `catalog.allFiles()` returns only `deviceSources`/`mappingSources` (validation survivors); the session log records the *load error* but not the file's *content*. AC-10 says "all … visible in the app," and invalid files are visible. Fix: add the user folders' invalid files (or a `raw/` dump of the user device/mapping dirs) to the zip.
+- **Expected / Actual:** the broken file is in the package so a helper can reproduce it / it's absent. `catalog.allFiles()` returns only `deviceSources`/`mappingSources` (validation survivors); the session log records the _load error_ but not the file's _content_. AC-10 says "all … visible in the app," and invalid files are visible. Fix: add the user folders' invalid files (or a `raw/` dump of the user device/mapping dirs) to the zip.
 
 **BUG-1: Export size pre-check is a TOCTOU (advisory)**
 

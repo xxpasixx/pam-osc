@@ -39,7 +39,7 @@ unitRuntime.rgb: Map<executor, { running: boolean; colorVelocity: number }>
   that, for `byExecutor` **button** entries with `rgb-color` feedback, maps the
   colour via the device palette into `colorVelocity`, then renders.
 - Render (`feedback-out.sendRgbColorFeedback`): velocity = `running ?
-  colorVelocity : offValue`; sent as a note on the control's channel (channel 0 =
+colorVelocity : offValue`; sent as a note on the control's channel (channel 0 =
   APC Primary-Colour solid; the grid controls resolve to channel 1 = wire 0).
 
 Idle/until-first-message: the map defaults `{running:false, colorVelocity:0}` →

@@ -11,7 +11,7 @@
 
 ## Why
 
-The mapping editor exposes the QuickKey action as a **free-text field** ("QuickKey (pam-osc_<KEY>)", `MappingInspector.tsx:207`), so a user must know the exact code and a typo silently produces a dead key. But the set of valid codes is fixed and already known — the ~110 hardkey codes the plugin pre-creates (`createQuickeysIfNotExists`, `pam-OSC.lua:299`). This feature turns the field into a **dropdown** fed from a single canonical list shared by the app and the plugin, so UI and plugin can never drift. It also records the outcome of the EvoFaderWing review so the "is this native?" question is settled in-repo.
+The mapping editor exposes the QuickKey action as a **free-text field** ("QuickKey (pam-osc\_<KEY>)", `MappingInspector.tsx:207`), so a user must know the exact code and a typo silently produces a dead key. But the set of valid codes is fixed and already known — the ~110 hardkey codes the plugin pre-creates (`createQuickeysIfNotExists`, `pam-OSC.lua:299`). This feature turns the field into a **dropdown** fed from a single canonical list shared by the app and the plugin, so UI and plugin can never drift. It also records the outcome of the EvoFaderWing review so the "is this native?" question is settled in-repo.
 
 ## Dependencies
 
@@ -22,7 +22,7 @@ The mapping editor exposes the QuickKey action as a **free-text field** ("QuickK
 ## Context: EvoFaderWing review (2026-07-19)
 
 - **EvoFaderWing uses no QuickKeys.** Executors are driven by the **command line + a temporary macro** (`Set Macro … command="Page X.Y" /NoOops` + `Go Macro`) — the exact mechanism pam-osc already ported in PAM-12. Hardkeys on EvoFaderWing go over **USB HID keyboard shortcuts** (`keyboard_shortcuts/*.xml` + firmware `Keysend`), which is only possible because it is a physical USB device.
-- **pam-osc cannot use the USB route** (it is an OSC bridge), and **MA3 cannot press a hardkey over OSC without a pre-existing Quickey object** (confirmed by the RBOSCKeys plugin too). So the QuickKey-pool approach is the correct, most-native OSC method for hardkeys — no change of mechanism is needed. The only open lever is *how many* QuickKeys we create (all vs. only-mapped).
+- **pam-osc cannot use the USB route** (it is an OSC bridge), and **MA3 cannot press a hardkey over OSC without a pre-existing Quickey object** (confirmed by the RBOSCKeys plugin too). So the QuickKey-pool approach is the correct, most-native OSC method for hardkeys — no change of mechanism is needed. The only open lever is _how many_ QuickKeys we create (all vs. only-mapped).
 
 ## Acceptance Criteria
 
@@ -51,7 +51,7 @@ The mapping editor exposes the QuickKey action as a **free-text field** ("QuickK
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
-| Dropdown from a shared canonical key list | Free text invites typos → dead keys; the valid set is fixed and already known, so a dropdown is strictly better and a shared list prevents UI/plugin drift | 2026-07-19 |
+| Decision                                       | Rationale                                                                                                                                                                           | Date       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Dropdown from a shared canonical key list      | Free text invites typos → dead keys; the valid set is fixed and already known, so a dropdown is strictly better and a shared list prevents UI/plugin drift                          | 2026-07-19 |
 | Keep QuickKeys for hardkeys (confirmed native) | EvoFaderWing's non-QuickKey routes (CMD for executors — already matched; USB HID for hardkeys — impossible for an OSC bridge) leave QuickKeys as the only native OSC hardkey method | 2026-07-19 |

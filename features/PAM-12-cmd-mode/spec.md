@@ -74,8 +74,8 @@ Reference implementation for all interception behavior: EvoFaderWing PR #12 (`lu
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
+| Decision                                                            | Rationale                                                                                                                     | Date       |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | Interception logic lives app-side (engine), detection in the plugin | Keeps the plugin a thin sensor; app knows mappings/pages and can serialize; mirrors the PR split (Lua detects, firmware acts) | 2026-07-17 |
-| Hard version check over graceful degradation | Maintainer choice — a half-working CMD mode is worse to support than a clear "update the plugin" | 2026-07-17 |
-| OSC entry strictly by name, no numeric fallback | Maintainer request — setups must not depend on line numbers | 2026-07-17 |
+| Hard version check over graceful degradation                        | Maintainer choice — a half-working CMD mode is worse to support than a clear "update the plugin"                              | 2026-07-17 |
+| OSC entry strictly by name, no numeric fallback                     | Maintainer request — setups must not depend on line numbers                                                                   | 2026-07-17 |

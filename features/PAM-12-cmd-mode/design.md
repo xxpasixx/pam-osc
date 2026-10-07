@@ -11,18 +11,18 @@
 
 **The CMD action executes inside the Lua plugin, not in the app.** The EvoFaderWing PR builds the macro from the device side by sending seven separate `/cmd` UDP messages with delays — that is exactly where the pre-mortem risks live (lost/reordered packets firing a stale macro, stale flags, stale occupancy). pam-osc already has a better channel: the app can run Lua on the console via a single `/cmd Lua '…'` message (the existing pamPing works this way). So:
 
-- The **app** decides only *whether* to intercept (flags active?) and sends **one** small message per press: "executor N was pressed in CMD mode" (a GlobalVar the plugin watches).
+- The **app** decides only _whether_ to intercept (flags active?) and sends **one** small message per press: "executor N was pressed in CMD mode" (a GlobalVar the plugin watches).
 - The **plugin** consumes that variable on its next tick and performs the whole action locally and synchronously: it re-reads the command line **fresh**, reads the target executor's occupancy **live**, builds the `pam-osc_CMD` macro with `/NoOops`, and fires it — ordered Lua `Cmd()` calls, no UDP between steps, no delays.
 
 This resolves all three spec Open Questions and defuses EC-3/EC-4 by construction:
 
-| Spec item | Resolution |
-| --------- | ---------- |
-| Open Q "atomic macro sequence" | One UDP trigger message; all plumbing runs synchronously in Lua on the console |
-| Open Q "which page" | The plugin uses its own watched page (`fixedPageNr` if set, else current page) — consistent with what the board displays |
-| Open Q "`Go+`-style tokens" | Keyword extraction ported verbatim from the PR (`letters-only` first word; `Go+` → keyword `go`, intercepted, auto-execute) — same proven behavior |
-| EC-3 stale flags | The plugin re-parses the command line at execution time; if it is empty or holds no listed keyword by then, the action is a **safe no-op** (console log line, ack still sent) — never an unexpected executor trigger |
-| EC-4 stale occupancy | Occupancy is read live from the executor object at execution time — the `At` vs `+` decision can't be stale |
+| Spec item                      | Resolution                                                                                                                                                                                                           |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Open Q "atomic macro sequence" | One UDP trigger message; all plumbing runs synchronously in Lua on the console                                                                                                                                       |
+| Open Q "which page"            | The plugin uses its own watched page (`fixedPageNr` if set, else current page) — consistent with what the board displays                                                                                             |
+| Open Q "`Go+`-style tokens"    | Keyword extraction ported verbatim from the PR (`letters-only` first word; `Go+` → keyword `go`, intercepted, auto-execute) — same proven behavior                                                                   |
+| EC-3 stale flags               | The plugin re-parses the command line at execution time; if it is empty or holds no listed keyword by then, the action is a **safe no-op** (console log line, ack still sent) — never an unexpected executor trigger |
+| EC-4 stale occupancy           | Occupancy is read live from the executor object at execution time — the `At` vs `+` decision can't be stale                                                                                                          |
 
 **Trade-off:** up to one plugin tick (~100 ms) latency between button press and console action — irrelevant for programming actions. And more logic lives in Lua, which has no unit-test harness; mitigated by keeping the Lua functions small and porting the PR's proven parsing verbatim, with the engine-side protocol fully covered by fake-MA3 tests.
 
@@ -57,13 +57,13 @@ Build tooling
 
 Engine runtime state additions (reset on every engine start):
 
-| Field | Type | Meaning |
-| ----- | ---- | ------- |
-| cmdFlags | integer bitmask, default 0 | Last `/status/cmdFlags` value. Nonzero = interception active. Bits (PR-compatible): 2 = add-to-cmdline without execute · 4 = add + auto-execute · 8 = copy/move source selected · 16 = thru open |
-| pluginProtocol | integer or unknown, default unknown | Version from the last plugin pong; 1 = v1 plugin (outdated), 2 = current. Interception requires exactly 2 |
-| cmdQueue | ordered list of executor numbers, max 8 | Presses waiting for the plugin ack; overflow is dropped with a log line |
-| cmdAwaitingAck | executor number or none | The press sent to the console, not yet acked |
-| interceptedPresses | set of (mapping id, control id) | Controls whose press was intercepted — their release is swallowed too, even if flags changed in between (press/release always pair) |
+| Field              | Type                                    | Meaning                                                                                                                                                                                          |
+| ------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| cmdFlags           | integer bitmask, default 0              | Last `/status/cmdFlags` value. Nonzero = interception active. Bits (PR-compatible): 2 = add-to-cmdline without execute · 4 = add + auto-execute · 8 = copy/move source selected · 16 = thru open |
+| pluginProtocol     | integer or unknown, default unknown     | Version from the last plugin pong; 1 = v1 plugin (outdated), 2 = current. Interception requires exactly 2                                                                                        |
+| cmdQueue           | ordered list of executor numbers, max 8 | Presses waiting for the plugin ack; overflow is dropped with a log line                                                                                                                          |
+| cmdAwaitingAck     | executor number or none                 | The press sent to the console, not yet acked                                                                                                                                                     |
+| interceptedPresses | set of (mapping id, control id)         | Controls whose press was intercepted — their release is swallowed too, even if flags changed in between (press/release always pair)                                                              |
 
 Plugin v2 internal state (Lua, per run): last sent flags, last consumed `pamCmdKey` value. The GlobalVar `pamCmdKey` is numeric; 0 = consumed/idle.
 
@@ -71,12 +71,12 @@ Plugin v2 internal state (Lua, per run): last sent flags, last consumed `pamCmdK
 
 ### New/changed messages
 
-| Message | Direction | Args | When |
-| ------- | --------- | ---- | ---- |
-| `/status/pluginPong` | console → app | integer protocol version (v2 sends 2; the v1 plugin sends 1) | Answer to pamPing, unchanged trigger |
-| `/status/cmdFlags` | console → app | integer bitmask (0 clears) | On every change of the parsed command-line state, and on forceReload |
-| `/cmd` with `Lua 'SetVar(GlobalVars(), "pamCmdKey", N)'` | app → console | N = executor number (101–4xx) | Per intercepted press, one at a time (queue) |
-| `/status/cmdKeyDone` | console → app | integer executor number | After the plugin executed **or safely no-op'd** the pressed key — always acked |
+| Message                                                  | Direction     | Args                                                         | When                                                                           |
+| -------------------------------------------------------- | ------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `/status/pluginPong`                                     | console → app | integer protocol version (v2 sends 2; the v1 plugin sends 1) | Answer to pamPing, unchanged trigger                                           |
+| `/status/cmdFlags`                                       | console → app | integer bitmask (0 clears)                                   | On every change of the parsed command-line state, and on forceReload           |
+| `/cmd` with `Lua 'SetVar(GlobalVars(), "pamCmdKey", N)'` | app → console | N = executor number (101–4xx)                                | Per intercepted press, one at a time (queue)                                   |
+| `/status/cmdKeyDone`                                     | console → app | integer executor number                                      | After the plugin executed **or safely no-op'd** the pressed key — always acked |
 
 Everything else (faders, buttons On/Off, colors, names, page, deskLocked, masterEnabled, timecode) is **unchanged** — the existing feedback contract stays intact.
 
@@ -96,7 +96,7 @@ Queue behavior (AC-11): exactly one outstanding press; the next is sent when `/s
    - `Copy`/`Move` with source, target **occupied** → `+ Page P.N`, Execute No
    - open `Thru` → bare `N`, Execute No; completed thru range → treat as source-selected
    - command line ends in `At` → `Page P.N`, Execute Yes
-   Occupancy = live read of executor N on page P: no assigned object → empty; object present → occupied.
+     Occupancy = live read of executor N on page P: no assigned object → empty; object present → occupied.
 3. Build and fire the macro synchronously: delete/store/set (`command`, `AddToCmdLine "Yes"`, `Execute Yes|No`)/go of macro `pam-osc_CMD`, every plumbing command with `/NoOops` (AC-6); no artificial delays (Lua `Cmd()` is synchronous — build verifies once on onPC).
 4. Send the ack.
 
@@ -110,17 +110,17 @@ New engine event carrying `{ deskLocked, cmdFlags, pluginProtocol }`, emitted on
 
 ## D) Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| -------- | --------- | ---------------------- | --------- | ---- |
-| Execute the CMD action in the plugin, triggered by one GlobalVar message | Atomic (synchronous Lua), fresh command line and occupancy at execution time — kills the pre-mortem's UDP loss/staleness risks by construction | 1:1 PR port: app sends 7 `/cmd` messages with delays | ~100 ms tick latency; more Lua (no unit tests console-side) | 2026-07-17 |
-| Ack-based serialization (`cmdKeyDone` + 300 ms timeout, queue of 8) | AC-11 without the app ever reading console state; a lost ack only costs 300 ms | Fire-and-forget SetVar per press | Slightly slower rapid-fire targeting; strictly ordered | 2026-07-17 |
-| Occupancy read live by the plugin — **no occupancy OSC message** (spec delta to AC-5) | The only consumer of occupancy is the `At`/`+` decision, which now runs console-side; a mirrored copy in the app would be the stale one | Plugin streams 3-state per executor (PR approach) | App never knows occupancy (fine — nothing else needs it; PAM-10 can add it later) | 2026-07-17 |
-| Existing feedback messages untouched (Button stays On/Off) | Zero regression surface for LEDs/motor faders; protocol additions are purely additive | Consolidated 3-state exec status replacing Button | Slightly chattier protocol than a redesign | 2026-07-17 |
-| Version = integer arg on the existing pong; exact match required; new state "plugin-outdated" | Maintainer chose the hard check; reusing the pong means zero new handshake round-trips; v1 pong (arg 1) is automatically "outdated" | Separate `/status/version` message | Pong overloading (documented here) | 2026-07-17 |
-| Keyword parsing + copy/move/thru matrix ported **verbatim** from EvoFaderWing PR #12 Lua | Field-proven behavior, spec declares the PR the behavioral reference | Redesigning the keyword table | Inherits PR quirks (`Go+` → `go`) — accepted in spec Open Q3 | 2026-07-17 |
-| Plugin resolves the OSC entry by name only; the app's connection-pong Lua **keeps** its numeric fallback | AC-8 targets the plugin; the app-side pong is a diagnostic that must work even on a half-configured console to tell the user *what's* wrong | Removing the fallback everywhere | A wrongly-named entry still answers the connection check (intended: better diagnostics) | 2026-07-17 |
-| **Superseded 2026-07-18:** both the plugin **and** the app-side ping now use `SendOSC "pam-osc" "…"` — MA3 accepts the entry name directly, so there is no index lookup and no numeric fallback anywhere | Maintainer confirmed name-addressing works (EvoFaderWing plugin uses it); removes the whole `resolveOscEntry` walk and the fallback ambiguity. `sendOsc` checks the `Cmd()` return for `"OK"` and logs failures | Keep the index resolution + fallback | If the entry is missing, sends are logged failures and the app reports unreachable — clean diagnostics. Needs onPC confirmation | 2026-07-18 |
-| Plugin XML generated by a build script from the `.lua` sources + parity test | The bundled XML already drifted (it embeds pre-v1.4 Lua today); generation makes drift impossible | Hand-maintained XML | One more build script to own | 2026-07-17 |
+| Decision                                                                                                                                                                                                 | Rationale                                                                                                                                                                                                       | Alternative considered                               | Trade-off                                                                                                                       | Date       |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Execute the CMD action in the plugin, triggered by one GlobalVar message                                                                                                                                 | Atomic (synchronous Lua), fresh command line and occupancy at execution time — kills the pre-mortem's UDP loss/staleness risks by construction                                                                  | 1:1 PR port: app sends 7 `/cmd` messages with delays | ~100 ms tick latency; more Lua (no unit tests console-side)                                                                     | 2026-07-17 |
+| Ack-based serialization (`cmdKeyDone` + 300 ms timeout, queue of 8)                                                                                                                                      | AC-11 without the app ever reading console state; a lost ack only costs 300 ms                                                                                                                                  | Fire-and-forget SetVar per press                     | Slightly slower rapid-fire targeting; strictly ordered                                                                          | 2026-07-17 |
+| Occupancy read live by the plugin — **no occupancy OSC message** (spec delta to AC-5)                                                                                                                    | The only consumer of occupancy is the `At`/`+` decision, which now runs console-side; a mirrored copy in the app would be the stale one                                                                         | Plugin streams 3-state per executor (PR approach)    | App never knows occupancy (fine — nothing else needs it; PAM-10 can add it later)                                               | 2026-07-17 |
+| Existing feedback messages untouched (Button stays On/Off)                                                                                                                                               | Zero regression surface for LEDs/motor faders; protocol additions are purely additive                                                                                                                           | Consolidated 3-state exec status replacing Button    | Slightly chattier protocol than a redesign                                                                                      | 2026-07-17 |
+| Version = integer arg on the existing pong; exact match required; new state "plugin-outdated"                                                                                                            | Maintainer chose the hard check; reusing the pong means zero new handshake round-trips; v1 pong (arg 1) is automatically "outdated"                                                                             | Separate `/status/version` message                   | Pong overloading (documented here)                                                                                              | 2026-07-17 |
+| Keyword parsing + copy/move/thru matrix ported **verbatim** from EvoFaderWing PR #12 Lua                                                                                                                 | Field-proven behavior, spec declares the PR the behavioral reference                                                                                                                                            | Redesigning the keyword table                        | Inherits PR quirks (`Go+` → `go`) — accepted in spec Open Q3                                                                    | 2026-07-17 |
+| Plugin resolves the OSC entry by name only; the app's connection-pong Lua **keeps** its numeric fallback                                                                                                 | AC-8 targets the plugin; the app-side pong is a diagnostic that must work even on a half-configured console to tell the user _what's_ wrong                                                                     | Removing the fallback everywhere                     | A wrongly-named entry still answers the connection check (intended: better diagnostics)                                         | 2026-07-17 |
+| **Superseded 2026-07-18:** both the plugin **and** the app-side ping now use `SendOSC "pam-osc" "…"` — MA3 accepts the entry name directly, so there is no index lookup and no numeric fallback anywhere | Maintainer confirmed name-addressing works (EvoFaderWing plugin uses it); removes the whole `resolveOscEntry` walk and the fallback ambiguity. `sendOsc` checks the `Cmd()` return for `"OK"` and logs failures | Keep the index resolution + fallback                 | If the entry is missing, sends are logged failures and the app reports unreachable — clean diagnostics. Needs onPC confirmation | 2026-07-18 |
+| Plugin XML generated by a build script from the `.lua` sources + parity test                                                                                                                             | The bundled XML already drifted (it embeds pre-v1.4 Lua today); generation makes drift impossible                                                                                                               | Hand-maintained XML                                  | One more build script to own                                                                                                    | 2026-07-17 |
 
 ## E) Dependencies
 

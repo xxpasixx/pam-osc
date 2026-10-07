@@ -11,7 +11,7 @@ definition. The engine resolves it; the renderer never touches the filesystem.
   → convention lookup (AC-1/AC-2).
 - **Catalog** (`catalog.ts`, Electron-free, already does fs): add
   `async deviceImage(id): Promise<string | null>`. Resolve `imagesDir =
-  <dirname(deviceFile)>/images`. Candidates: `[device.image]` if set, else
+<dirname(deviceFile)>/images`. Candidates: `[device.image]` if set, else
   `<id>.{png,jpg,jpeg,webp}`. For each, **guard `basename(name) === name`**
   (belt-and-braces beyond the schema), read the file, return
   `data:<mime>;base64,<…>`. First hit wins; nothing found → `null`. Unreadable /

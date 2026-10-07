@@ -11,7 +11,7 @@
 
 ## Why
 
-Console-side setup is the product's adoption bottleneck. Two things make it worse than it needs to be: the user currently imports and sees **two** separate UserPlugins ("pam-osc Start Stop" + "pam-osc Settings") for what feels like one tool, and the two required OSC entries must be created by hand — the bundled OSC-config file even ships only the *Receive* entry, so importing it alone doesn't set up feedback (PAM-9 open question). This feature collapses that: **one** plugin to import, and the plugin checks its own OSC configuration on start — creating the missing entries where the MA3 Lua API allows it, and warning clearly where it can't.
+Console-side setup is the product's adoption bottleneck. Two things make it worse than it needs to be: the user currently imports and sees **two** separate UserPlugins ("pam-osc Start Stop" + "pam-osc Settings") for what feels like one tool, and the two required OSC entries must be created by hand — the bundled OSC-config file even ships only the _Receive_ entry, so importing it alone doesn't set up feedback (PAM-9 open question). This feature collapses that: **one** plugin to import, and the plugin checks its own OSC configuration on start — creating the missing entries where the MA3 Lua API allows it, and warning clearly where it can't.
 
 ## Dependencies
 
@@ -40,11 +40,11 @@ Console-side setup is the product's adoption bottleneck. Two things make it wors
 ## Edge Cases
 
 - **EC-1** — An OSC entry with the right name but wrong port/toggles already exists → the plugin should detect the mismatch and warn (or correct it), not create a duplicate.
-- **EC-2** — Ports differ from the defaults (user changed send/receive ports in the app) → the plugin must self-check against the *actual* expected ports, not hardcoded ones. _(How the plugin learns the expected ports is an Open Question.)_
+- **EC-2** — Ports differ from the defaults (user changed send/receive ports in the app) → the plugin must self-check against the _actual_ expected ports, not hardcoded ones. _(How the plugin learns the expected ports is an Open Question.)_
 
 ## Open Questions
 
-- [ ] **OSCBase property set** — the forum shows `Name` and `Port` on `ShowData().OSCBase:Append()`, but the full property set needed for a working entry (destination IP, direction / Input vs Output, the *Receive* / *Receive Command* / *Send Command* toggles) is undocumented. **Verify on onPC** via `oscbase:Children()` + `:Dump()` against a hand-made working entry before relying on auto-create. If a needed flag isn't settable from Lua, AC-4 degrades to AC-5 (warn only) for that entry. [NEEDS CLARIFICATION: full writable OSCBase property set on onPC 2.x]
+- [ ] **OSCBase property set** — the forum shows `Name` and `Port` on `ShowData().OSCBase:Append()`, but the full property set needed for a working entry (destination IP, direction / Input vs Output, the _Receive_ / _Receive Command_ / _Send Command_ toggles) is undocumented. **Verify on onPC** via `oscbase:Children()` + `:Dump()` against a hand-made working entry before relying on auto-create. If a needed flag isn't settable from Lua, AC-4 degrades to AC-5 (warn only) for that entry. [NEEDS CLARIFICATION: full writable OSCBase property set on onPC 2.x]
 - [ ] **How the plugin knows the expected ports** — the send/receive ports are chosen in the app; the plugin reads options from `GlobalVars`. Does the plugin already know the ports, or must the app inject them (e.g. via `SetVar`)? _Resolved 2026-07-19 (design): auto-create uses default ports 9003/9004 (the plugin can't learn app-chosen custom ports before OSC works); it warns when an entry exists by name but the port differs; custom-port setups stay covered by the app guide/wizard._
 - [ ] **Merge mechanism** — can one MA3 UserPlugin expose the settings dialog (multiple components / an argument / an in-plugin menu) so AC-2 holds with a single pool entry? Verify against the MA3 plugin model. _(Design detail, not a contract blocker.)_
 
@@ -52,7 +52,7 @@ Console-side setup is the product's adoption bottleneck. Two things make it wors
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
-| One plugin, not two | The two-entry import ("Start Stop" + "Settings") reads as two tools and adds a setup step for no user benefit | 2026-07-18 |
+| Decision                              | Rationale                                                                                                                               | Date       |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| One plugin, not two                   | The two-entry import ("Start Stop" + "Settings") reads as two tools and adds a setup step for no user benefit                           | 2026-07-18 |
 | Create-where-possible, warn-otherwise | Auto-create is the goal, but the Lua API's OSC-config surface is unverified; a loud warning is the honest floor we can always guarantee | 2026-07-18 |

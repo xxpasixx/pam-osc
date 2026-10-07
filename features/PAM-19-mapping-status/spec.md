@@ -39,14 +39,14 @@ As mappings get shared in the community (PAM-7), users need to know at a glance 
 
 ## Open Questions
 
-- [ ] **Single enum vs. two axes** — `community` describes *provenance* (came from someone else) while `draft`/`tested` describe *maturity*; they can overlap (a community mapping you then verify is both community and tested). Modelled here as one status as requested — confirm that's intended, or split into provenance + maturity later. [NEEDS CLARIFICATION: keep single 3-value status, or split axes]
+- [ ] **Single enum vs. two axes** — `community` describes _provenance_ (came from someone else) while `draft`/`tested` describe _maturity_; they can overlap (a community mapping you then verify is both community and tested). Modelled here as one status as requested — confirm that's intended, or split into provenance + maturity later. [NEEDS CLARIFICATION: keep single 3-value status, or split axes]
 - [ ] **Bundled + import defaults** — confirm AC-4 (bundled = `tested`) and AC-5 (statusless shared file = `community`).
 
 ## Decision Log
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
-| Status is self-declared local metadata | No accounts/server (data-model); trust is conveyed, not enforced | 2026-07-19 |
-| Additive field, default `draft`, no format bump | Backward compatible — old files simply read as draft | 2026-07-19 |
+| Decision                                        | Rationale                                                        | Date       |
+| ----------------------------------------------- | ---------------------------------------------------------------- | ---------- |
+| Status is self-declared local metadata          | No accounts/server (data-model); trust is conveyed, not enforced | 2026-07-19 |
+| Additive field, default `draft`, no format bump | Backward compatible — old files simply read as draft             | 2026-07-19 |

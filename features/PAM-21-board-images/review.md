@@ -5,13 +5,13 @@ the maintainer dropping actual photos (a user action, not a code blocker).
 
 ## AC verification
 
-| AC | Result | Evidence |
-| -- | ------ | -------- |
-| AC-1 convention `images/<id>.{ext}` | ✅ | `board-image.test.ts`: `images/conv-board.png` → `data:image/png;base64,…`. |
-| AC-2 `image` override + MIME | ✅ | override `shot.jpg` → `data:image/jpeg;base64,…`; schema field additive/optional (existing files unchanged). |
-| AC-3 placeholder, never broken | ✅ | no file → `deviceImage` returns `null`; `BoardThumb` renders `.board-thumb--empty` placeholder. Unknown id → null. |
-| AC-4 traversal-safe | ✅ | schema regex rejects `../…` and `sub/dir.png`; resolver also guards `basename(name)===name` and reads only `images/` with a whitelisted extension. |
-| AC-5 ships no third-party images | ✅ | `resources/devices/images/` contains only `README.md` (licence rule + naming + size). |
+| AC                                  | Result | Evidence                                                                                                                                           |
+| ----------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-1 convention `images/<id>.{ext}` | ✅     | `board-image.test.ts`: `images/conv-board.png` → `data:image/png;base64,…`.                                                                        |
+| AC-2 `image` override + MIME        | ✅     | override `shot.jpg` → `data:image/jpeg;base64,…`; schema field additive/optional (existing files unchanged).                                       |
+| AC-3 placeholder, never broken      | ✅     | no file → `deviceImage` returns `null`; `BoardThumb` renders `.board-thumb--empty` placeholder. Unknown id → null.                                 |
+| AC-4 traversal-safe                 | ✅     | schema regex rejects `../…` and `sub/dir.png`; resolver also guards `basename(name)===name` and reads only `images/` with a whitelisted extension. |
+| AC-5 ships no third-party images    | ✅     | `resources/devices/images/` contains only `README.md` (licence rule + naming + size).                                                              |
 
 ## Code review
 

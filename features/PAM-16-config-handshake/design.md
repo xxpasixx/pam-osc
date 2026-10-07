@@ -80,12 +80,12 @@ Level 3 — Plugin: T3  parse pamConfig → executorsToWatch + flags; default fa
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| -------- | --------- | ---------------------- | --------- | ---- |
-| GlobalVars "pamConfig" + forceReload | Reuses proven app→plugin channel and resync path | New dedicated OSC message/address | Payload is a parsed string, not typed fields | 2026-07-19 |
-| Per-mapping flags OR-merged; fixedPage global | Maintainer decision; fixedPage is a single console page | All flags global, or fixedPage per mapping | Merge logic needed; documented rule | 2026-07-19 |
-| Watch-set from executor+display actions | Only these need feedback polling | Watch a fixed wide range | Command-action executors aren't polled (by design — no feedback) | 2026-07-19 |
-| Default = today's hardcoded ranges | Never idle before first push; known-good | Idle until config arrives | A brief window watches more than needed | 2026-07-19 |
+| Decision                                      | Rationale                                               | Alternative considered                     | Trade-off                                                        | Date       |
+| --------------------------------------------- | ------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- | ---------- |
+| GlobalVars "pamConfig" + forceReload          | Reuses proven app→plugin channel and resync path        | New dedicated OSC message/address          | Payload is a parsed string, not typed fields                     | 2026-07-19 |
+| Per-mapping flags OR-merged; fixedPage global | Maintainer decision; fixedPage is a single console page | All flags global, or fixedPage per mapping | Merge logic needed; documented rule                              | 2026-07-19 |
+| Watch-set from executor+display actions       | Only these need feedback polling                        | Watch a fixed wide range                   | Command-action executors aren't polled (by design — no feedback) | 2026-07-19 |
+| Default = today's hardcoded ranges            | Never idle before first push; known-good                | Idle until config arrives                  | A brief window watches more than needed                          | 2026-07-19 |
 
 ## Open Questions
 

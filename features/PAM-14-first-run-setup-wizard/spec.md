@@ -11,7 +11,7 @@
 
 ## Why
 
-The PRD's headline success metric is "download to a moving fader in under 10 minutes, without touching a terminal." Today a first-time user is dropped onto the plain Setup tab with `127.0.0.1` pre-filled and no signpost: the hardest task (console-side plugin + OSC setup) sits unadvertised on the second tab, and the engine is started from a *third* tab — so "Save & apply" silently dead-ends. This wizard sequences the screens that already exist into one linear first-run flow that ends in a verified connection and a "move a fader" success moment. It is the flagship fix from the UX review (§4) and resolves UX-C1 and UX-H1/H4.
+The PRD's headline success metric is "download to a moving fader in under 10 minutes, without touching a terminal." Today a first-time user is dropped onto the plain Setup tab with `127.0.0.1` pre-filled and no signpost: the hardest task (console-side plugin + OSC setup) sits unadvertised on the second tab, and the engine is started from a _third_ tab — so "Save & apply" silently dead-ends. This wizard sequences the screens that already exist into one linear first-run flow that ends in a verified connection and a "move a fader" success moment. It is the flagship fix from the UX review (§4) and resolves UX-C1 and UX-H1/H4.
 
 ## Dependencies
 
@@ -59,7 +59,7 @@ The PRD's headline success metric is "download to a moving fader in under 10 min
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
-| Reuse existing screens, don't rebuild | The MA3 guide, console fields, and connection check already work well; the gap is sequencing, not the screens | 2026-07-18 |
-| End on a verify + "move a fader" moment | The PRD success metric is a moving fader; staging that proof is what turns setup into a win | 2026-07-18 |
+| Decision                                | Rationale                                                                                                     | Date       |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------- |
+| Reuse existing screens, don't rebuild   | The MA3 guide, console fields, and connection check already work well; the gap is sequencing, not the screens | 2026-07-18 |
+| End on a verify + "move a fader" moment | The PRD success metric is a moving fader; staging that proof is what turns setup into a win                   | 2026-07-18 |

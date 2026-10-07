@@ -11,7 +11,7 @@
 
 ## Why
 
-Users running a **real GrandMA3 console** (not onPC) have no local MA3 install for the app to write into — the only way onto the desk is a USB stick imported at the console. Today PAM-9 AC-4 only *shows instructions* for that ("create this folder layout on the stick by hand"). This feature makes it one click: the app lists the connected removable drives, and copying the bundled plugin **and** OSC config onto the chosen stick — in the exact `gma3_library/…` layout the console imports from — happens for you.
+Users running a **real GrandMA3 console** (not onPC) have no local MA3 install for the app to write into — the only way onto the desk is a USB stick imported at the console. Today PAM-9 AC-4 only _shows instructions_ for that ("create this folder layout on the stick by hand"). This feature makes it one click: the app lists the connected removable drives, and copying the bundled plugin **and** OSC config onto the chosen stick — in the exact `gma3_library/…` layout the console imports from — happens for you.
 
 ## Dependencies
 
@@ -28,7 +28,7 @@ Users running a **real GrandMA3 console** (not onPC) have no local MA3 install f
 - [ ] **AC-4** — Given the copy succeeds, then the app shows the full target paths and the next step (import via the console's plugin pool / OSC menu), consistent with the PAM-9 install wording.
 - [ ] **AC-5** — Given a `pam-osc.xml` already exists at a target path on the stick, when I copy, then it is replaced **only after confirmation** (same overwrite-confirm rule as PAM-9 AC-2); the version already on the stick is shown where known.
 - [ ] **AC-6** — Given the copy fails (drive removed mid-copy, read-only/permission error, drive full), then the app shows a friendly error carrying the exact **source and target paths** so I can copy by hand, plus a **"reveal bundled files"** button (Finder/Explorer) — mirroring PAM-9 AC-3.
-- [ ] **AC-7** — Given the app runs on macOS, Windows, or Linux, then drive detection works on each (Linux especially, where there is no onPC and USB is the *only* route to a console); the exact per-OS detection is /design work.
+- [ ] **AC-7** — Given the app runs on macOS, Windows, or Linux, then drive detection works on each (Linux especially, where there is no onPC and USB is the _only_ route to a console); the exact per-OS detection is /design work.
 - [ ] **AC-8** — Given a selected/detected removable drive already contains a `pam-osc.xml` (plugin) whose version is **older than the bundled** version, then the USB-export card **and** the app's notification bar ([NoticesArea]) show a dismissible "plugin update available on this stick" hint (on-stick version → bundled version), analogous to PAM-9 AC-7; when the stick's version equals the bundled one, no update hint is shown. _(Added 2026-07-21: maintainer wants the "new version not yet on the stick" state surfaced, not just silently overwritable.)_
 - [ ] **AC-9** — Given a selected target drive whose filesystem the console likely cannot read (Mac-formatted APFS/HFS+, or ext4), when I copy or select it, then the app shows a clear warning that GrandMA3 expects **FAT32** (exFAT usually works but is not guaranteed per desk) so a silent "copied but the console shows nothing" failure is pre-empted; the copy is still allowed (the user may know their desk). _(Added 2026-07-21 from the pre-mortem: the copy succeeds onto any mounted volume even when the console can't read it.)_
 - [ ] **AC-10** — Given a successful copy, when the result is shown, then it displays both the **exact on-stick path** written and the **exact console navigation path** to import from (plugin pool import / OSC menu), so a user can hand-navigate even if the structured import view is empty — the message never claims the console "will" see it, only that the files are on the stick. _(Added 2026-07-21 from the pre-mortem: "copied" ≠ "importable".)_
@@ -59,11 +59,11 @@ Users running a **real GrandMA3 console** (not onPC) have no local MA3 install f
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
-| Separate feature (PAM-23), not a PAM-9 delta | Maintainer's call (2026-07-21): track the USB export as its own item even though it complements PAM-9's AC-4 | 2026-07-21 |
-| Copy plugin **and** OSC config | Same scope as the local install (PAM-9 AC-2 + AC-2b) so the console is fully set up from the stick, not just the plugin | 2026-07-21 |
-| List removable drives only (+ manual folder fallback) | Writing to the internal system disk by accident is the real risk; a filtered list plus an explicit "choose folder" escape hatch is safest | 2026-07-21 |
+| Decision                                                 | Rationale                                                                                                                                                                  | Date       |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Separate feature (PAM-23), not a PAM-9 delta             | Maintainer's call (2026-07-21): track the USB export as its own item even though it complements PAM-9's AC-4                                                               | 2026-07-21 |
+| Copy plugin **and** OSC config                           | Same scope as the local install (PAM-9 AC-2 + AC-2b) so the console is fully set up from the stick, not just the plugin                                                    | 2026-07-21 |
+| List removable drives only (+ manual folder fallback)    | Writing to the internal system disk by accident is the real risk; a filtered list plus an explicit "choose folder" escape hatch is safest                                  | 2026-07-21 |
 | Write the `grandMA3/` wrapper folder on the stick (AC-3) | Pre-mortem: the console browses external media from `grandMA3/gma3_library/…`, not the root; harmless if root also works, essential if it doesn't — pending hardware check | 2026-07-21 |
-| Warn on non-FAT32/exFAT targets (AC-9) | Mac-formatted (APFS/HFS+) sticks copy fine but are unreadable by the console — a silent field failure the warning pre-empts | 2026-07-21 |
-| Detect drives by shelling out (no native dep) | Keeps the project's zero-native-deps stance (no `drivelist`); parsers are unit-testable with captured OS-command fixtures | 2026-07-21 |
+| Warn on non-FAT32/exFAT targets (AC-9)                   | Mac-formatted (APFS/HFS+) sticks copy fine but are unreadable by the console — a silent field failure the warning pre-empts                                                | 2026-07-21 |
+| Detect drives by shelling out (no native dep)            | Keeps the project's zero-native-deps stance (no `drivelist`); parsers are unit-testable with captured OS-command fixtures                                                  | 2026-07-21 |

@@ -34,7 +34,7 @@ Today the plugin polls a **hardcoded** set of executor ranges (101–122, 201–
 
 ## Out of Scope
 
-- Which MA3 action a control is bound to — that's the mapping (PAM-1); this feature only communicates *which executors* and *which feature flags*, not the bindings.
+- Which MA3 action a control is bound to — that's the mapping (PAM-1); this feature only communicates _which executors_ and _which feature flags_, not the bindings.
 - The OSC-entry self-configuration — that's PAM-13.
 - Colored button feedback content itself — that's PAM-10; PAM-16 only carries the on/off flag for it.
 
@@ -56,7 +56,7 @@ Today the plugin polls a **hardcoded** set of executor ranges (101–122, 201–
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
-| App is the source of truth for executors + flags | The app knows the active mapping and settings; the plugin should watch exactly what's needed, not a fixed guess | 2026-07-18 |
-| Periodic heartbeat re-sync, not one-shot | Plugin state drifts on reload/missed messages; a light periodic push self-heals without the user restarting the plugin | 2026-07-18 |
+| Decision                                         | Rationale                                                                                                              | Date       |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ---------- |
+| App is the source of truth for executors + flags | The app knows the active mapping and settings; the plugin should watch exactly what's needed, not a fixed guess        | 2026-07-18 |
+| Periodic heartbeat re-sync, not one-shot         | Plugin state drifts on reload/missed messages; a light periodic push self-heals without the user restarting the plugin | 2026-07-18 |

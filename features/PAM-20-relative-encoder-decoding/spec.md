@@ -5,12 +5,12 @@
 
 ## Why
 
-The AKAI APC40 (and other Akai boards) send their endless encoders as a *signed*
+The AKAI APC40 (and other Akai boards) send their endless encoders as a _signed_
 relative CC: `1..63 = +1..+63`, `64..127 = −64..−1` (so `0x7F` = −1, one slow
 detent left). The engine's only relative decoder (`relativeDetents`) is
 range-based and monotonic — it assumes magnitude grows with the CC value inside a
 `from..to` window (X-Touch style). That window cannot represent the Akai scheme,
-where magnitude *shrinks* as the value rises toward 127. Result: the APC40 mkII
+where magnitude _shrinks_ as the value rises toward 127. Result: the APC40 mkII
 **Cue Level** and **Tempo** knobs cannot be mapped correctly today (a slow left
 turn reads as a huge negative jump). This adds a second decode mode so signed
 encoders work, and enables the Cue Level → executor mapping the user asked for.

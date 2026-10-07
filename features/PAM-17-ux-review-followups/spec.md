@@ -24,10 +24,10 @@ The UX review (2026-07-18, see the UX Review artifact) surfaced findings beyond 
 - [ ] **AC-1** — _(UX-H2, priority)_ Given the visual editor is open, when a notice is raised (save error, learn warning, "port disappeared"), then it is visible over the editor — notices render at the App root, not only inside the tabbed body — so editor failures are never silent.
 - [ ] **AC-2** — _(UX-M7)_ Given the traffic-log "Copy" action fails, when the clipboard write is rejected, then the user gets clear feedback (a "Copy failed" notice or a selectable fallback), never a button that silently does nothing.
 - [ ] **AC-3** — _(UX-M8)_ Given a load failure at startup or in the MA3 setup assistant, when the error screen shows, then it offers a **Retry** action instead of forcing an app relaunch.
-- [ ] **AC-4** — _(UX-M6 · **KNOWN BROKEN — maintainer-confirmed 2026-07-19**)_ The Status-tab **"Test output" does not work today and must be fixed.** Given a bound device and a running engine, when the user clicks "Test output", then a real test signal actually reaches the device (motor fader moves / LED lights) **and** the button state reflects the engine's actual result/ack — not a fixed 4-second timer (`runOutputTest`, App.tsx:242). First step is to pin down *what* fails (no MIDI sent at all vs. wrong signal vs. only the state-timing), verified against real hardware.
+- [ ] **AC-4** — _(UX-M6 · **KNOWN BROKEN — maintainer-confirmed 2026-07-19**)_ The Status-tab **"Test output" does not work today and must be fixed.** Given a bound device and a running engine, when the user clicks "Test output", then a real test signal actually reaches the device (motor fader moves / LED lights) **and** the button state reflects the engine's actual result/ack — not a fixed 4-second timer (`runOutputTest`, App.tsx:242). First step is to pin down _what_ fails (no MIDI sent at all vs. wrong signal vs. only the state-timing), verified against real hardware.
 - [ ] **AC-5** — _(UX-M1)_ Given any diagnostic text (console IP, error message, port-diagnosis line), when the user tries to select/copy it, then it is selectable — the global `user-select: none` is scoped to drag/canvas surfaces only.
 - [ ] **AC-6** — _(UX-M2, UX-L3)_ Given the editor's confirm/delete/retarget modals and the top tab bar, then modals trap focus and close on Escape (via native `<dialog>`), and the tabs expose proper `role="tab"` / `tablist` / `aria-selected` semantics.
-- [ ] **AC-7** — _(UX-M4, UX-M5, UX-L1)_ Given user-facing copy, then internal spec IDs are removed from visible strings (e.g. "…to save (AC-6)"), disabled Create/Save buttons state *why* they're disabled, and MIDI/action jargon (`cc/note/pitchbend`, `encoderFine`, QuickKey…) has inline help.
+- [ ] **AC-7** — _(UX-M4, UX-M5, UX-L1)_ Given user-facing copy, then internal spec IDs are removed from visible strings (e.g. "…to save (AC-6)"), disabled Create/Save buttons state _why_ they're disabled, and MIDI/action jargon (`cc/note/pitchbend`, `encoderFine`, QuickKey…) has inline help.
 - [ ] **AC-8** — _(UX-M3)_ Given the 2D board editor, then a control can be selected and nudged/moved with the keyboard, not only with the pointer.
 
 ## Out of Scope
@@ -44,7 +44,7 @@ The UX review (2026-07-18, see the UX Review artifact) surfaced findings beyond 
 
 ### Product Decisions
 
-| Decision | Rationale | Date |
-| -------- | --------- | ---- |
+| Decision                                      | Rationale                                                                                                                   | Date       |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | One "follow-ups" feature, not one per finding | The remaining findings are small and thematically related (feedback, recoverability, a11y); a folder each would be ceremony | 2026-07-18 |
-| UX-H2 flagged as the priority AC | It's the only High here — a genuine silent-failure surface — so it ships first | 2026-07-18 |
+| UX-H2 flagged as the priority AC              | It's the only High here — a genuine silent-failure surface — so it ships first                                              | 2026-07-18 |

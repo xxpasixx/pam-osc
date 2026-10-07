@@ -48,7 +48,7 @@ which values a user can pick; an imported/unknown key is still a valid string (A
   2. the `pam-osc_CMD` macro (PAM-12).
   3. the two OSC entries (`pam-osc`, `pam-osc-recive`) — **last of the console-comms items**, because deleting them ends feedback/command flow.
   4. the plugin pool objects themselves — the merged pam-osc plugin (PAM-13).
-  The action reports what was removed (counts per category). Removing the OSC entries and the plugin means the app will lose its connection — the UI must explain this ("this ends the console connection") in the confirm dialog and reflect the disconnected state afterwards.
+     The action reports what was removed (counts per category). Removing the OSC entries and the plugin means the app will lose its connection — the UI must explain this ("this ends the console connection") in the confirm dialog and reflect the disconnected state afterwards.
 
 **Access:** local user, single machine — same trust model as install (PAM-9). The uninstall targets only `pam-osc_`-prefixed / pam-osc-named objects; it must never touch unrelated console objects.
 
@@ -73,11 +73,11 @@ Level 4 — Trigger:   T4      app-side "Remove pam-osc from console…" + confi
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| -------- | --------- | ---------------------- | --------- | ---- |
-| Canonical key list in core + parity test | One source of truth for UI dropdown and plugin creation; test prevents drift | Duplicate the list in TS and Lua by hand | Must keep the test; list edits touch two files until/unless the generator injects it | 2026-07-19 |
-| Full uninstall, comms-removed-last | Maintainer wants a real "remove from console"; ordering avoids cutting the channel mid-uninstall | QuickKey-only cleanup | Larger scope; depends on OSCBase delete (onPC-pending) | 2026-07-19 |
-| Keep pre-create-all from pool 1000 | Maintainer choice; already working, no PAM-16 coupling | Lazy-create only mapped keys | ~110 pool objects per showfile | 2026-07-19 |
+| Decision                                 | Rationale                                                                                        | Alternative considered                   | Trade-off                                                                            | Date       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
+| Canonical key list in core + parity test | One source of truth for UI dropdown and plugin creation; test prevents drift                     | Duplicate the list in TS and Lua by hand | Must keep the test; list edits touch two files until/unless the generator injects it | 2026-07-19 |
+| Full uninstall, comms-removed-last       | Maintainer wants a real "remove from console"; ordering avoids cutting the channel mid-uninstall | QuickKey-only cleanup                    | Larger scope; depends on OSCBase delete (onPC-pending)                               | 2026-07-19 |
+| Keep pre-create-all from pool 1000       | Maintainer choice; already working, no PAM-16 coupling                                           | Lazy-create only mapped keys             | ~110 pool objects per showfile                                                       | 2026-07-19 |
 
 ## Open Questions
 

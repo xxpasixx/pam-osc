@@ -55,6 +55,7 @@ All new types are transient IPC payloads — **nothing is persisted** (consisten
 | `bundledVersion` | text \| undefined | The plugin version the app ships (compare source for AC-8). |
 
 **`UsbCopyResult`** — returned by `copyPluginToUsb(driveId, overwrite)`:
+
 - `{ status: "copied"; pluginTarget: text; oscTarget: text; consolePath: text }` — `consolePath` is the human console-navigation hint (AC-10).
 - `{ status: "exists"; existingPluginVersion?: text }` — a target file is present and `overwrite` was false; UI confirms then re-calls with `overwrite: true` (AC-5).
 - `{ status: "error"; error: text; pluginTarget: text; oscTarget: text }` — friendly failure carrying both target paths for manual copy (AC-6).
@@ -64,13 +65,15 @@ All new types are transient IPC payloads — **nothing is persisted** (consisten
 ## C) Behaviors & Access
 
 **Drive detection (`listRemovableDrives`)** — main process only. Per OS:
+
 - **macOS:** `diskutil list -plist` + `diskutil info -plist <mount>`; keep a volume only when `Internal == false` **and** `WritableVolume == true` **and** it is physical (not a disk-image/DMG), and exclude the boot volume (`/` and its `/Volumes/Macintosh HD` symlink).
 - **Linux:** `lsblk --json -o NAME,LABEL,RM,HOTPLUG,TRAN,RO,MOUNTPOINT,FSTYPE,SIZE`; keep partitions with a non-empty `MOUNTPOINT`, `RO == false`, and (`RM == true` **or** `HOTPLUG == true` **or** `TRAN == "usb"`).
 - **Windows:** PowerShell `Get-Disk` + `Get-Volume` (JSON out); keep volumes whose disk `BusType == "USB"` **or** `DriveType == "Removable"`, with a drive letter. Do **not** use deprecated `wmic`.
-- **Filter rule (all OSes):** *writable mountpoint AND (removable OR USB bus) AND not the boot/system volume* — never the "removable" bit alone (external USB HDDs report as fixed). Anything that fails to parse ⇒ empty list, not a crash (AC-2 fallback still available).
+- **Filter rule (all OSes):** _writable mountpoint AND (removable OR USB bus) AND not the boot/system volume_ — never the "removable" bit alone (external USB HDDs report as fixed). Anything that fails to parse ⇒ empty list, not a crash (AC-2 fallback still available).
 
 **Copy (`copyPluginToUsb`)** — main process:
-1. **Security gate (mirrors PAM-9's base check):** the `driveId` must be either (a) present in a *fresh* `listRemovableDrives()` call, or (b) in the session allowlist of paths returned by `chooseUsbFolder` (a native, user-driven dialog). Any other path ⇒ `error` "unknown drive — rescan". The renderer can never point the copy at an arbitrary path.
+
+1. **Security gate (mirrors PAM-9's base check):** the `driveId` must be either (a) present in a _fresh_ `listRemovableDrives()` call, or (b) in the session allowlist of paths returned by `chooseUsbFolder` (a native, user-driven dialog). Any other path ⇒ `error` "unknown drive — rescan". The renderer can never point the copy at an arbitrary path.
 2. Compute targets via `usbTargetDirs(driveId)` = `<driveId>/grandMA3/gma3_library/datapools/plugins/pam-osc.xml` and `…/inout/osc/pam-osc.xml`.
 3. Reuse `installFile(bundledPluginXml, pluginsDir, overwrite)` and `installFile(bundledOscXml, oscDir, overwrite)`. If the first returns `exists` and `overwrite` is false, return `exists` before copying anything (atomic-ish: confirm once, then both).
 4. Bundled source paths resolve exactly as PAM-9 does (`process.resourcesPath/...` packaged, `../gma3_library/...` in dev) — reuse the same `bundledPluginXml`/`bundledOscXml` constants already in index.ts.
@@ -78,6 +81,7 @@ All new types are transient IPC payloads — **nothing is persisted** (consisten
 **Filesystem warning (AC-9)** — derived, not enforced: the card shows `consoleReadable` as a colored hint next to each drive and a warning line before copy when it is `no`; the copy button stays enabled (the user may know their desk).
 
 **Update-available notice (shared, PAM-9 AC-9 + PAM-23 AC-8):**
+
 - **Local (AC-9):** at app startup the main process already detects installs; for each install whose `installedVersion` is older than `bundledVersion` (via `comparePluginVersions`), it adds one `info` Notice — `"MA3 plugin update available — installed X, bundle Y"` — to the initial snapshot `notices`, so it shows without opening the assistant. De-duped to one notice even with several installs.
 - **Stick (AC-8):** after the USB card lists drives, if any drive's `existingPluginVersion` is older than `bundledVersion`, the card shows an inline "update available on this stick" hint **and** pushes one `info` Notice via the existing `pushNotices` path. Equal versions ⇒ no hint/notice.
 
@@ -85,14 +89,14 @@ All new types are transient IPC payloads — **nothing is persisted** (consisten
 
 ## D) Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| --- | --- | --- | --- | --- |
-| Shell out to `diskutil`/`lsblk`/PowerShell, parse output | Zero native deps (project actively avoids native modules like serialport); `systeminformation` internally does the same | `drivelist` (native), `systeminformation` (pure-JS dep) | We own three parsers; but they're unit-testable with captured fixtures and add no ABI/rebuild risk | 2026-07-21 |
-| Filter on "external OR USB, not system", not the removable bit | External USB HDDs report as "Fixed" and would be silently hidden | Match `removable == true` only | Slightly broader list; mitigated by excluding the boot volume + writable check | 2026-07-21 |
-| Write the `grandMA3/` wrapper on the stick | Pre-mortem: console browses external media from `grandMA3/gma3_library/…` | Write `gma3_library/` at the stick root (old spec) | If root also works, wrapper is harmless; isolated one-line constant if hardware says otherwise | 2026-07-21 |
-| Copy plugin + OSC config as one action | Same scope as local install; a stick should fully set up the console | Two separate buttons (like PAM-9 rows) | One confirm covers both; simpler UX | 2026-07-21 |
-| Session allowlist for dialog-chosen folders | Keeps the "renderer can't pick an arbitrary path" guarantee while allowing the manual fallback | Trust any renderer-supplied path | A tiny bit of main-process state; worth it for the security parity | 2026-07-21 |
-| Warn (not block) on non-FAT32/exFAT | The user may know their desk reads exFAT/NTFS; blocking would be paternalistic and sometimes wrong | Hard-block copy on APFS/HFS+ | A determined user can still footgun; the warning is prominent | 2026-07-21 |
+| Decision                                                       | Rationale                                                                                                               | Alternative considered                                  | Trade-off                                                                                          | Date       |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------- |
+| Shell out to `diskutil`/`lsblk`/PowerShell, parse output       | Zero native deps (project actively avoids native modules like serialport); `systeminformation` internally does the same | `drivelist` (native), `systeminformation` (pure-JS dep) | We own three parsers; but they're unit-testable with captured fixtures and add no ABI/rebuild risk | 2026-07-21 |
+| Filter on "external OR USB, not system", not the removable bit | External USB HDDs report as "Fixed" and would be silently hidden                                                        | Match `removable == true` only                          | Slightly broader list; mitigated by excluding the boot volume + writable check                     | 2026-07-21 |
+| Write the `grandMA3/` wrapper on the stick                     | Pre-mortem: console browses external media from `grandMA3/gma3_library/…`                                               | Write `gma3_library/` at the stick root (old spec)      | If root also works, wrapper is harmless; isolated one-line constant if hardware says otherwise     | 2026-07-21 |
+| Copy plugin + OSC config as one action                         | Same scope as local install; a stick should fully set up the console                                                    | Two separate buttons (like PAM-9 rows)                  | One confirm covers both; simpler UX                                                                | 2026-07-21 |
+| Session allowlist for dialog-chosen folders                    | Keeps the "renderer can't pick an arbitrary path" guarantee while allowing the manual fallback                          | Trust any renderer-supplied path                        | A tiny bit of main-process state; worth it for the security parity                                 | 2026-07-21 |
+| Warn (not block) on non-FAT32/exFAT                            | The user may know their desk reads exFAT/NTFS; blocking would be paternalistic and sometimes wrong                      | Hard-block copy on APFS/HFS+                            | A determined user can still footgun; the warning is prominent                                      | 2026-07-21 |
 
 ## E) Dependencies
 
@@ -100,7 +104,7 @@ All new types are transient IPC payloads — **nothing is persisted** (consisten
 
 ## F) Build Plan
 
-- **Level 1 — core logic (`app/src/main/usb-export.ts` + `ma3-install.ts`):** the three parsers, `classifyFilesystem`, `usbTargetDirs`, `comparePluginVersions`. Unit tests with captured `diskutil`/`lsblk`/PowerShell fixture strings. Serves AC-1, AC-3, AC-9, and version compare. *(No Electron — fully testable in CI.)*
+- **Level 1 — core logic (`app/src/main/usb-export.ts` + `ma3-install.ts`):** the three parsers, `classifyFilesystem`, `usbTargetDirs`, `comparePluginVersions`. Unit tests with captured `diskutil`/`lsblk`/PowerShell fixture strings. Serves AC-1, AC-3, AC-9, and version compare. _(No Electron — fully testable in CI.)_
 - **Level 2 — IPC + wiring (`ipc.ts`, `index.ts`, `preload/index.ts`):** channels `listRemovableDrives`, `copyPluginToUsb`, `chooseUsbFolder`; the security gate; the startup local update notice. Serves AC-3, AC-5, AC-6, PAM-9 AC-9.
 - **Level 3 — UI (`Ma3SetupView.tsx`, small `App.tsx` wiring):** the `UsbExportCard` (drive dropdown, refresh, choose-folder, filesystem hint, copy + confirm, result with both paths, update hint). Serves AC-1, AC-2, AC-4, AC-8, AC-10.
 

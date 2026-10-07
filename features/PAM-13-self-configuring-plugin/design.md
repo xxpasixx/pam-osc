@@ -67,11 +67,11 @@ Level 3 — Self-check:T3      OSC self-check on start: read OSCBase, verify by 
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| -------- | --------- | ---------------------- | --------- | ---- |
-| One UserPlugin with two components | User imports/sees one tool; settings not lost | Keep two pool entries | Depends on MA3 multi-component invocation (verify onPC) | 2026-07-19 |
-| Auto-create with default ports only | Cannot learn custom ports pre-OSC; warn on mismatch | Have the app inject ports first | Custom-port users still need the guide; auto-create covers the default case | 2026-07-19 |
-| Create-where-possible, warn-otherwise | OSCBase write surface unverified; warning is the guaranteed floor | Assume full create works | Some entries may stay manual until onPC confirms | 2026-07-19 |
+| Decision                              | Rationale                                                         | Alternative considered          | Trade-off                                                                   | Date       |
+| ------------------------------------- | ----------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------- | ---------- |
+| One UserPlugin with two components    | User imports/sees one tool; settings not lost                     | Keep two pool entries           | Depends on MA3 multi-component invocation (verify onPC)                     | 2026-07-19 |
+| Auto-create with default ports only   | Cannot learn custom ports pre-OSC; warn on mismatch               | Have the app inject ports first | Custom-port users still need the guide; auto-create covers the default case | 2026-07-19 |
+| Create-where-possible, warn-otherwise | OSCBase write surface unverified; warning is the guaranteed floor | Assume full create works        | Some entries may stay manual until onPC confirms                            | 2026-07-19 |
 
 ## Open Questions
 

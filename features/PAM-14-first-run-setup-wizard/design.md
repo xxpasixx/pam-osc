@@ -81,11 +81,11 @@ Level 4 — Finish:    T6      Step 6 verify + auto-start engine + mark complete
 
 ## Technical Decisions
 
-| Decision | Rationale | Alternative considered | Trade-off | Date |
-| -------- | --------- | ---------------------- | --------- | ---- |
-| Full-window overlay reusing existing screens | No router in the app; sequencing is the gap, not the screens | New wizard screens built from scratch | Reused components must accept a "wizard mode" prop | 2026-07-19 |
-| Auto-start engine on finish | PRD metric is a moving fader; removes the Setup→Status dead-end | Land on Status with Start emphasized | Engine starts without an explicit Start click (acceptable at end of a guided flow) | 2026-07-19 |
-| `onboarding.completed` optional in settings | Additive, no migration, survives updates | Separate marker file | One more optional settings field | 2026-07-19 |
+| Decision                                     | Rationale                                                       | Alternative considered                | Trade-off                                                                          | Date       |
+| -------------------------------------------- | --------------------------------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------- | ---------- |
+| Full-window overlay reusing existing screens | No router in the app; sequencing is the gap, not the screens    | New wizard screens built from scratch | Reused components must accept a "wizard mode" prop                                 | 2026-07-19 |
+| Auto-start engine on finish                  | PRD metric is a moving fader; removes the Setup→Status dead-end | Land on Status with Start emphasized  | Engine starts without an explicit Start click (acceptable at end of a guided flow) | 2026-07-19 |
+| `onboarding.completed` optional in settings  | Additive, no migration, survives updates                        | Separate marker file                  | One more optional settings field                                                   | 2026-07-19 |
 
 ## Open Questions
 

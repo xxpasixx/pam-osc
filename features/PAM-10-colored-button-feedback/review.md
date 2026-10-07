@@ -5,13 +5,13 @@ that the mapped colours read correctly on a real APC40 mkII still pending.
 
 ## AC verification
 
-| AC | Result | Evidence |
-| -- | ------ | -------- |
-| AC-1 nearest-palette mapping | ✅ | `rgb-color-feedback.test.ts`: pure green→21, red→5, blue→45, white→3; near-green (#14D205-ish)→122. |
-| AC-2 colour while running, off otherwise; colour+running combined | ✅ | routing test: colour-then-run, live colour change while running, stop→off; order-independent (run-then-colour). |
-| AC-3 device declares palette; 128 entries; others unaffected | ✅ | `led-palette.ts` `apc40-mk2` = 128 parsed entries; device `ledPalette` optional (absent→0/off); full suite (incl. APC mini / X-Touch) green. |
-| AC-4 grid uses rgb-color | ✅ | `apc-40-mk2-default-1.json` clip grid feedback `{type:"rgb-color"}`; bundled load 0 issues. |
-| AC-5 no new console traffic | ✅ | Reuses `/…Color<exec>` the plugin already sends for watched executors (PAM-16 `sendColors`); no plugin change, grid executors already in the watch-set. |
+| AC                                                                | Result | Evidence                                                                                                                                                |
+| ----------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-1 nearest-palette mapping                                      | ✅     | `rgb-color-feedback.test.ts`: pure green→21, red→5, blue→45, white→3; near-green (#14D205-ish)→122.                                                     |
+| AC-2 colour while running, off otherwise; colour+running combined | ✅     | routing test: colour-then-run, live colour change while running, stop→off; order-independent (run-then-colour).                                         |
+| AC-3 device declares palette; 128 entries; others unaffected      | ✅     | `led-palette.ts` `apc40-mk2` = 128 parsed entries; device `ledPalette` optional (absent→0/off); full suite (incl. APC mini / X-Touch) green.            |
+| AC-4 grid uses rgb-color                                          | ✅     | `apc-40-mk2-default-1.json` clip grid feedback `{type:"rgb-color"}`; bundled load 0 issues.                                                             |
+| AC-5 no new console traffic                                       | ✅     | Reuses `/…Color<exec>` the plugin already sends for watched executors (PAM-16 `sendColors`); no plugin change, grid executors already in the watch-set. |
 
 ## Code review
 
