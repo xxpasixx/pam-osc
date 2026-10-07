@@ -1,4 +1,10 @@
-import { effectivePreferences, fallbackReason, isWorthInstalling, type InstallLocation } from "../core/update/policy.js";
+import {
+  effectivePreferences,
+  fallbackReason,
+  isPrereleaseVersion,
+  isWorthInstalling,
+  type InstallLocation,
+} from "../core/update/policy.js";
 import type { StoredUpdatePreferences } from "../core/settings/schema.js";
 import { RELEASES_URL, type UpdatePreferences, type UpdateState, type UpdateStatus } from "../shared/update.js";
 
@@ -28,6 +34,7 @@ export interface UpdaterLike {
   on(event: "download-progress", listener: (progress: { percent: number }) => void): unknown;
   on(event: "update-downloaded", listener: (info: UpdateInfoLike) => void): unknown;
   on(event: "error", listener: (error: Error) => void): unknown;
+  /** Resolves null when the platform/installation can't update (no event fires). */
   checkForUpdates(): Promise<unknown>;
   downloadUpdate(): Promise<unknown>;
   quitAndInstall(isSilent?: boolean, isForceRunAfter?: boolean): void;
@@ -51,6 +58,23 @@ export interface UpdateServiceOptions {
 /** Design: never delay start-up; long show sessions still learn about fixes. */
 export const FIRST_CHECK_DELAY_MS = 30_000;
 export const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * "Nothing to update to" answers from electron-updater's GitHub provider —
+ * e.g. betas off while GitHub's "Latest" is still the v1 release (no
+ * latest*.yml there). Not a failure: the user is simply on the newest build
+ * of their channel (review BUG-1).
+ */
+const NOTHING_NEWER_CODES = new Set([
+  "ERR_UPDATER_CHANNEL_FILE_NOT_FOUND",
+  "ERR_UPDATER_LATEST_VERSION_NOT_FOUND",
+  "ERR_UPDATER_NO_PUBLISHED_VERSIONS",
+]);
+
+const errorCode = (error: unknown): string | undefined =>
+  typeof error === "object" && error !== null && typeof (error as { code?: unknown }).code === "string"
+    ? (error as { code: string }).code
+    : undefined;
 
 const shortMessage = (error: unknown): string => {
   const text = error instanceof Error ? error.message : String(error);
@@ -87,6 +111,15 @@ export class UpdateService {
     });
     updater.on("update-downloaded", (info) => {
       if (!isWorthInstalling(info.version, options.installedVersion)) return;
+      // A pre-release that finished downloading after betas were switched off
+      // must not install on quit (review BUG-2).
+      if (isPrereleaseVersion(info.version) && !this.preferences.receiveBetas) {
+        updater.autoInstallOnAppQuit = false;
+        this.options.log(`updates: dropping downloaded pre-release ${info.version} (betas off)`);
+        this.setState({ kind: "idle" });
+        return;
+      }
+      updater.autoInstallOnAppQuit = true;
       this.setState({ kind: "ready", version: info.version });
     });
     // AC-2 / AC-3: checksum/signature/network failures land here — logged, never a dialog.
@@ -126,7 +159,13 @@ export class UpdateService {
     this.options.log(`updates: checking (betas ${this.preferences.receiveBetas ? "on" : "off"})`);
     this.setState({ kind: "checking" });
     try {
-      await updater.checkForUpdates();
+      const result = await updater.checkForUpdates();
+      // null = this installation can't update (e.g. Linux without AppImage):
+      // no event follows, so leave "checking" ourselves (review BUG-5).
+      // Re-read via status(): events during the await may have moved the state on.
+      if (result === null && this.status().state.kind === "checking") {
+        this.fail(new Error("this installation can't update itself — download new versions manually"));
+      }
     } catch (error) {
       this.fail(error);
     }
@@ -140,6 +179,23 @@ export class UpdateService {
       `updates: preferences auto=${next.checkAutomatically ? "on" : "off"} betas=${next.receiveBetas ? "on" : "off"}`
     );
     if (this.options.updater) this.options.updater.allowPrerelease = next.receiveBetas;
+    // Betas off while a pre-release is pending → it must not install on quit
+    // (AC-8 / AC-10, review BUG-2); look for a stable one instead.
+    if (
+      !next.receiveBetas &&
+      this.state.kind === "ready" &&
+      isPrereleaseVersion(this.state.version) &&
+      this.options.updater
+    ) {
+      this.options.updater.autoInstallOnAppQuit = false;
+      this.options.log(`updates: pending pre-release ${this.state.version} discarded (betas off)`);
+      this.state = { kind: "idle" };
+      if (next.checkAutomatically) {
+        this.emit();
+        void this.checkNow();
+        return this.status();
+      }
+    }
     if (!next.checkAutomatically && (this.state.kind === "idle" || this.state.kind === "up-to-date")) {
       this.setState({ kind: "disabled" });
     } else if (next.checkAutomatically && this.state.kind === "disabled") {
@@ -181,7 +237,14 @@ export class UpdateService {
   }
 
   private fail(error: unknown): void {
+    if (NOTHING_NEWER_CODES.has(errorCode(error) ?? "")) {
+      this.options.log(`updates: nothing newer published for this channel (${errorCode(error)})`);
+      this.setState({ kind: "up-to-date", checkedAt: this.now().toISOString() });
+      return;
+    }
     const message = shortMessage(error);
+    // electron-updater both emits "error" and rejects — report once (review BUG-4).
+    if (this.state.kind === "error" && this.state.message === message) return;
     this.options.log(`updates: failed — ${message}`);
     this.setState({ kind: "error", checkedAt: this.now().toISOString(), message });
   }

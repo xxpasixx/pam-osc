@@ -776,14 +776,15 @@ async function main(): Promise<void> {
 
   midiPorts.start();
 
+  // PAM-34: IPC handlers must exist before the renderer asks (review BUG-3);
+  // the first network check still waits 30 s, so start-up is never delayed.
+  startUpdates({ getWindow: () => window, settingsStore, log: (line) => sessionLog.log(line) });
+
   if (process.env["ELECTRON_RENDERER_URL"]) {
     await window.loadURL(process.env["ELECTRON_RENDERER_URL"]);
   } else {
     await window.loadFile(join(import.meta.dirname, "../renderer/index.html"));
   }
-
-  // PAM-34: after the window is up — never delays start-up, never the engine.
-  startUpdates({ getWindow: () => window, settingsStore, log: (line) => sessionLog.log(line) });
 
   // The bridge is the app: closing the window stops the engine and quits
   // (a background/tray mode is a later feature — see docs/ideas.md).

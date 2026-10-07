@@ -113,8 +113,10 @@ Behaviour rules:
 - **Dev builds** (`npm run dev`, unpackaged): the service stays disabled — no checks.
 - **Newer version already running** (EC-3): a pending download is discarded when its version
   is not greater than the running version.
-- **Several releases** (EC-2): each check targets the newest one; an older pending download
-  is replaced.
+- **Several releases** (EC-2): each check targets the newest one. Once an update is
+  **ready**, no further checks run in that session — the ready one installs on quit, a newer
+  release is picked up at the next start (simpler and never loses the pending install; see
+  implementation notes, review BUG-6).
 - **Drafts** (EC-5): invisible to the updater by GitHub's design — nothing to build.
 
 Network: only github.com and GitHub's release-asset hosts; no other server, no telemetry.
@@ -169,3 +171,27 @@ Level 4 — Pipeline:    T6  universal dmg+zip, names                     · ele
 | First check 30 s after start, then every 6 h | Never delays start-up; long-running show sessions still learn about fixes | Check only at start | A 6 h interval means an update can appear mid-session — it only becomes a notice, never an install | 2026-10-07 |
 | Update preferences saved outside applySettings | Must not restart the engine | Part of the settings form | Two save paths in Settings | 2026-10-07 |
 | Updater disabled in dev builds | No packaged app to replace | Dev override flag | Local testing needs a packaged build | 2026-10-07 |
+
+## Implementation notes (post-review, 2026-10-07)
+
+Fixes after the first `/review` (see `review.md`):
+
+- **BUG-1** — GitHub's "Latest" release is still the v1 tag `v.1.3` (no `latest*.yml`). With
+  betas off, electron-updater answers `ERR_UPDATER_CHANNEL_FILE_NOT_FOUND` /
+  `…_LATEST_VERSION_NOT_FOUND` / `…_NO_PUBLISHED_VERSIONS` — now treated as "up to date",
+  not as a failure. Release rule for the maintainer: never mark a v1.x release as Latest
+  again once v2 is stable.
+- **BUG-2** — switching betas off while a pre-release is ready (or still downloading) turns
+  off install-on-quit, drops the pending pre-release and re-checks for a stable one.
+- **BUG-3** — the update IPC handlers are registered before the renderer loads; the
+  renderer hook retries the first status request once.
+- **BUG-4** — an error that electron-updater both emits and rejects is logged once.
+- **BUG-5** — a `null` check result (installation can't update, e.g. Linux without
+  AppImage) ends "checking" with a plain error instead of hanging.
+- **BUG-6** — accepted as designed (see EC-2 above).
+- **BUG-7** — accepted: update preferences write like the onboarding flag (also on a first
+  run / after an unreadable file), and a rollback to beta.2 rejects the new `updates` block
+  exactly as it already rejects `fixedPage` — rollback means "fresh settings" today.
+- **Staging ID** — electron-updater sends a random per-installation ID header; our request
+  headers override it with the constant `pam-osc`, so no identifier leaves the machine.
+

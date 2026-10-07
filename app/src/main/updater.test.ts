@@ -185,6 +185,57 @@ describe("PAM-34 UpdateService", () => {
     expect(service.status().state.kind).toBe("disabled");
   });
 
+  it("review BUG-1: 'no update metadata on the Latest release' counts as up to date", async () => {
+    const { updater, service } = setup({ version: "2.0.0-beta.3", stored: { receiveBetas: false } });
+    updater.checkResult = () =>
+      updater.emit("error", Object.assign(new Error("Cannot find latest-mac.yml"), { code: "ERR_UPDATER_CHANNEL_FILE_NOT_FOUND" }));
+    await service.checkNow();
+    expect(service.status().state.kind).toBe("up-to-date");
+  });
+
+  it("review BUG-2: betas off discards a pending pre-release and stops install-on-quit", async () => {
+    const { updater, service } = setup({ version: "2.0.0-beta.3" });
+    updater.checkResult = () => updater.emit("update-available", { version: "2.0.0-beta.4" });
+    await service.checkNow();
+    updater.emit("update-downloaded", { version: "2.0.0-beta.4" });
+    expect(service.status().state.kind).toBe("ready");
+    updater.checkResult = () => updater.emit("update-not-available", { version: "2.0.0-beta.3" });
+    await service.setPreferences({ checkAutomatically: true, receiveBetas: false });
+    expect(updater.autoInstallOnAppQuit).toBe(false);
+    expect(service.status().state.kind).toBe("up-to-date");
+    service.installNow();
+    expect(updater.installs).toHaveLength(0);
+  });
+
+  it("review BUG-2: a pre-release finishing after betas were switched off is dropped", async () => {
+    const { updater, service } = setup({ version: "2.0.0-beta.3" });
+    updater.checkResult = () => updater.emit("update-available", { version: "2.0.0-beta.4" });
+    await service.checkNow();
+    await service.setPreferences({ checkAutomatically: false, receiveBetas: false });
+    updater.emit("update-downloaded", { version: "2.0.0-beta.4" });
+    expect(updater.autoInstallOnAppQuit).toBe(false);
+    expect(service.status().state.kind).not.toBe("ready");
+  });
+
+  it("review BUG-4: an error that is both emitted and rejected is logged once", async () => {
+    const { updater, service, logs } = setup();
+    updater.checkForUpdates = () => {
+      updater.emit("checking-for-update");
+      const error = new Error("offline");
+      updater.emit("error", error);
+      return Promise.reject(error);
+    };
+    await service.checkNow();
+    expect(logs.filter((line) => line.includes("failed"))).toHaveLength(1);
+  });
+
+  it("review BUG-5: a null check result (cannot update) leaves 'checking'", async () => {
+    const { updater, service } = setup();
+    updater.checkForUpdates = () => Promise.resolve(null);
+    await service.checkNow();
+    expect(service.status().state.kind).toBe("error");
+  });
+
   it("dev builds never touch the updater", async () => {
     const { updater, service, timeouts } = setup({ supported: false });
     service.start();

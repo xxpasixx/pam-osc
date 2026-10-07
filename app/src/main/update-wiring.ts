@@ -43,6 +43,10 @@ export function startUpdates(deps: {
       error: (message: unknown) => deps.log(`updater error: ${String(message)}`),
       debug: () => undefined,
     };
+    // electron-updater sends a per-installation random ID (staged rollouts,
+    // which we don't use) with every request. Our headers override it with a
+    // constant — no identifier leaves the machine (spec → Technical Requirements).
+    updater.requestHeaders = { "x-user-staging-id": "pam-osc" };
   }
 
   const service = new UpdateService({
