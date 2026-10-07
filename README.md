@@ -2,6 +2,32 @@
 
 Control GrandMA3 with MIDI devices over Open Stage Control and a plugin to get feedback for motorized faders and button lights.
 
+## pam-osc v2 beta
+
+v2 is a standalone desktop app (macOS, Windows, Linux) — no Open Stage Control needed. Download it from the [Releases](https://github.com/xxpasixx/pam-osc/releases) page (beta builds are marked _Pre-release_). v1.4 stays available and keeps working; you can switch back at any time.
+
+| System              | File                                    |
+| ------------------- | --------------------------------------- |
+| macOS Apple Silicon | `pam-osc-<version>-mac-arm64.dmg`       |
+| macOS Intel         | `pam-osc-<version>-mac-x64.dmg`         |
+| Windows             | `pam-osc-<version>-win-x64.exe`         |
+| Linux               | `pam-osc-<version>-linux-x86_64.AppImage` |
+
+### Installing an unsigned beta build
+
+The beta builds are not yet code-signed, so your system will warn you once. This is expected — the warnings disappear once signing is in place.
+
+- **macOS:** open the `.dmg` and drag pam-osc into _Applications_. On first start macOS blocks it. Open _System Settings → Privacy & Security_, scroll down and click **Open Anyway** next to the pam-osc message, then confirm. If macOS says the app is "damaged", run this once in Terminal and start it again:
+  ```sh
+  xattr -cr /Applications/pam-osc.app
+  ```
+- **Windows:** when SmartScreen shows "Windows protected your PC", click **More info → Run anyway**.
+- **Linux:** make the AppImage executable (`chmod +x pam-osc-*.AppImage`) and start it.
+
+Please report beta problems on [Discord](https://discord.gg/4dcKjTH9Pm) or as a [GitHub issue](https://github.com/xxpasixx/pam-osc/issues) — the app's support package (Status tab) helps a lot.
+
+The rest of this README describes **v1.4** (Open Stage Control).
+
 ## Features
 
 - **MIDI Control:** Send fader, encoder, and button values to GrandMA3 executors on the current page

@@ -1,0 +1,103 @@
+name: App Release
+
+# Builds the pam-osc v2 installers (macOS dmg arm64+x64, Windows nsis x64,
+# Linux AppImage x64) and uploads them into a DRAFT GitHub release.
+# Nothing goes public automatically — the maintainer publishes the draft
+# (tick "pre-release" for betas).
+#
+# Trigger: push a tag matching the app version, e.g. `v2.0.0-beta.1`
+# (app/package.json "version" must be 2.0.0-beta.1), or run it manually.
+#
+# Signing is opt-in. Missing secrets = unsigned build (still succeeds).
+#   macOS (Apple Developer Program):
+#     MAC_CSC_LINK            base64 of the "Developer ID Application" .p12
+#     MAC_CSC_KEY_PASSWORD    password of that .p12
+#     APPLE_ID                Apple account e-mail
+#     APPLE_APP_SPECIFIC_PASSWORD  app-specific password (appleid.apple.com)
+#     APPLE_TEAM_ID           10-char team ID
+#   Windows: provider not chosen yet (PAM-8) — see the TODO in the build step.
+
+on:
+  push:
+    tags: ["v2.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Typecheck + tests
+    # Virtual MIDI ports work on macOS runners without extra setup.
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  build:
+    name: Package (${{ matrix.os }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: --mac
+          - os: windows-latest
+            target: --win
+          - os: ubuntu-latest
+            target: --linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: ALSA headers (native MIDI module)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+      - run: npm ci
+      - run: npm run build
+
+      - name: Package + upload to draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAC_CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          MAC_CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            if [[ -n "$MAC_CSC_LINK" ]]; then
+              # electron-builder signs with CSC_* and notarizes when APPLE_* are set.
+              export CSC_LINK="$MAC_CSC_LINK" CSC_KEY_PASSWORD="$MAC_CSC_KEY_PASSWORD"
+              echo "macOS: signing + notarizing"
+            else
+              export CSC_IDENTITY_AUTO_DISCOVERY=false
+              unset APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID
+              echo "::warning::macOS build is UNSIGNED (no MAC_CSC_LINK secret)"
+            fi
+          fi
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            # TODO(PAM-8): wire Windows signing once a provider is chosen
+            # (Azure Artifact Signing via win.azureSignOptions, or SignPath).
+            echo "::warning::Windows build is UNSIGNED"
+          fi
+          npx electron-builder ${{ matrix.target }} --publish always

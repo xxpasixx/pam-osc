@@ -1,7 +1,9 @@
-# Packaging (AGENTS.md → Environments & Release): unsigned installers for
-# the MVP; Gatekeeper/SmartScreen workarounds are documented in the README.
+# Packaging (AGENTS.md → Environments & Release). Signing is opt-in via CI
+# secrets (see .github/workflows/release.yml): without them the installers are
+# unsigned and the Gatekeeper/SmartScreen workarounds in the README apply.
 appId: io.github.xxpasixx.pam-osc
 productName: pam-osc
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 directories:
   output: release
 files:
@@ -16,14 +18,27 @@ extraResources:
     to: resources/plugin
   - from: ../gma3_library/inout/osc
     to: resources/osc
+# CI uploads into a DRAFT GitHub release — the maintainer reviews and publishes it.
+publish:
+  provider: github
+  owner: xxpasixx
+  repo: pam-osc
+  releaseType: draft
 mac:
-  target: dmg
+  target:
+    - target: dmg
+      arch: [arm64, x64]
   category: public.app-category.music
   icon: build/icon-mac.png
+  hardenedRuntime: true
 win:
-  target: nsis
+  target:
+    - target: nsis
+      arch: [x64]
   icon: build/icon-win.png
 linux:
-  target: AppImage
+  target:
+    - target: AppImage
+      arch: [x64]
   category: Audio
   icon: build/icon-linux.png
