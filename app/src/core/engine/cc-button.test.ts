@@ -10,7 +10,8 @@ import type { OscMessage } from "../../transports/osc.js";
 import { deviceDefinitionSchema, mappingSchema } from "../format/index.js";
 
 /**
- * PAM-26: CC-addressed buttons (X32 Compact mute row in "MIDI CC" remote mode).
+ * PAM-26: CC-addressed buttons (board-independent; the bundled X32 Compact
+ * board that motivated it was removed 2026-10-07).
  * The button sends CC value 127/0 instead of note on/off, and its LED listens
  * on the same CC — both directions must behave exactly like a note button.
  */

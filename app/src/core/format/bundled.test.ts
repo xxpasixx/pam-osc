@@ -28,7 +28,7 @@ describe("bundled resources", () => {
     expect(result.issues).toEqual([]);
   });
 
-  it("ship the complete inventory: the five v1 board types + APC40 mkII + X-Touch Extender + Launchpad Mini MK3 + X32 Compact (CC remote) + X-Touch Compact (MC mode), and their default mappings (AC-1, AC-3)", async () => {
+  it("ship the complete inventory: the five v1 board types + APC40 mkII + X-Touch Extender + Launchpad Mini MK3 + X-Touch Compact (MC mode), and their default mappings (AC-1, AC-3)", async () => {
     const result = await loadBundled();
     expect(result.devices.map((device) => device.id).sort()).toEqual([
       "apc-40-mk2",
@@ -42,7 +42,6 @@ describe("bundled resources", () => {
       "x-touch-compact-mc",
       "x-touch-compact-relative",
       "x-touch-extender",
-      "x32-compact-cc",
     ]);
     expect(result.mappings.map((mapping) => mapping.id).sort()).toEqual([
       "apc-40-mk2-default-1",
@@ -59,7 +58,6 @@ describe("bundled resources", () => {
       "x-touch-default-2",
       "x-touch-extender-default-1",
       "x-touch-extension-1",
-      "x32-compact-cc-default-1",
     ]);
   });
 

@@ -107,7 +107,6 @@ These boards ship with the app — pick one and go. Any other MIDI controller ca
 | Behringer X-Touch Compact (relative encoders) | Relative 1                                         | 🧪 untested |
 | Behringer X-Touch                             | Default 1 · Default 2 · Extension (exec 209–217)   | 🧪 untested |
 | Behringer X-Touch Extender                    | Default 1 (exec 201–208)                           | 🧪 untested |
-| Behringer X32 Compact (DAW Remote, MIDI CC)   | Default 1                                          | 🧪 untested |
 | AKAI APC40 mkII                               | Default (Playback)                                 | 🧪 untested |
 | AKAI APC mini                                 | Default 1 (Playback) · Default 2 (Command Section) | 🧪 untested |
 | AKAI APC mini mk2                             | Controller                                         | 🧪 untested |
