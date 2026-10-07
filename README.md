@@ -117,7 +117,7 @@ These boards ship with the app — pick one and go. Any other MIDI controller ca
 
 ✅ **tested** — verified hands-on with real hardware and GrandMA3 · 🧪 **untested** — ships with the app (mostly ported from v1) but not yet verified on real hardware in v2 · 🤝 **community** — shared by another user, works for its author. Tried an untested one? Tell us on Discord so we can mark it tested.
 
-Your board isn't listed? Build a mapping in the editor and share it on [Discord](https://discord.gg/4dcKjTH9Pm) — community mappings are very welcome.
+**Your board isn't listed?** Request it on [Discord](https://discord.gg/4dcKjTH9Pm) — post the board name, a photo and, if you have it, the manual or MIDI implementation chart. Boards with the most requests get bundled first. Or build the mapping yourself in the editor and share it — community mappings are very welcome.
 
 ## 🧩 How it works
 
@@ -128,11 +128,40 @@ Your board isn't listed? Build a mapping in the editor and share it on [Discord]
 
 The app translates MIDI into OSC for the console. A small Lua plugin on the GrandMA3 side sends the feedback back (fader positions, running sequences, names, colors). Tested with GrandMA3 **2.x**.
 
-## ⚠️ Can I use this on a live show?
+## 🆚 pam-osc compared
 
-pam-osc was primarily developed for **pre-programming sessions**. If you want to use it in a production environment, test it thoroughly in your specific setup first.
+There are other ways to get MIDI hardware talking to GrandMA3. They are great tools — pam-osc's focus is a **much simpler setup** for exactly this job.
+
+|                                | **pam-osc v2**                                                              | Chataigne + MA3 plugin                                                                    | Bome MIDI Translator Pro + MA3 plugin                                | grandMA3 onPC Fader Wing (official) |
+| ------------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------- |
+| **Setup**                      | Download, setup wizard, pick your board — plugin install from the app       | Build every MIDI → OSC mapping yourself in Chataigne, set up a feedback plugin separately | Write your own translator rules, set up a feedback plugin separately | Plug in over USB                    |
+| **Ready-made boards**          | 12 bundled boards + visual mapping editor                                   | — you build each mapping                                                                  | — you build each mapping                                             | n/a (it _is_ the hardware)          |
+| **Motor fader & LED feedback** | Built in                                                                    | Possible — your own wiring + a community plugin                                           | Possible — your own rules + a plugin                                 | Native                              |
+| **Troubleshooting**            | Connection, plugin & port checks, MIDI test mode, one-click support package | Chataigne's logger                                                                        | Bome's log                                                           | Supported by MA                     |
+| **Flexibility**                | Focused on GrandMA3                                                         | Very high — many protocols beyond MA3                                                     | Very high MIDI processing                                            | Fixed hardware                      |
+| **Cost**                       | Free & open source                                                          | Free & open source                                                                        | Commercial licence                                                   | Official MA hardware                |
+
+**In short:** if you want maximum flexibility across many protocols, Chataigne or Bome are excellent. If you want your controller driving MA3 executors with feedback in minutes — without building the mapping logic yourself — that's what pam-osc is for. If you need a show-critical surface with official support, buy MA hardware.
+
+## ⚠️ Using it in a show
+
+pam-osc was primarily developed for **pre-programming sessions**, rehearsals and smaller events — and works well there. For a show, treat it as an **additional** control surface:
+
+- Keep show-critical executors reachable on the console itself — pam-osc adds hands, it doesn't replace the desk.
+- If the computer or the app stops, the console simply keeps running; only the MIDI controller stops doing anything.
+- Test your exact setup (board, mapping, MA3 version) before the job — MA3 updates can change the Lua API the plugin relies on.
+- Start the pam-osc plugin on the console once per session, and check the app's Status tab shows the console and the plugin as connected.
+- In a multi-station MA3 session, run pam-osc against the **session master**.
 
 The software is provided "as-is" without warranty of any kind. The author assumes no liability for issues, malfunctions or damages during live shows or production use. **Use at your own risk.**
+
+## 🚧 Known limitations (v2 beta)
+
+- **Most bundled boards are not yet verified on real hardware in v2** (see the table above) — tester reports are the fastest way to change that.
+- **The plugin must be started on the console** once per session — MA3 has no plugin autostart.
+- **Closing the app window stops the bridge.** A tray/background mode and "start at login" are planned.
+- **Feedback is polled by the plugin** (~10× per second for the executors your mapping uses), so feedback is near-instant but not hardware-wing immediate. We are measuring the console load and will publish the numbers.
+- **Builds are not code-signed yet** — see the install notes above.
 
 ## 💬 Help & community
 
