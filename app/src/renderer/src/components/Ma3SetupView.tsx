@@ -13,8 +13,10 @@ import type {
 } from "../../../shared/ipc.js";
 import { isPort, type OscConfigValues } from "../../../shared/osc-config.js";
 import { comparePluginVersions } from "../../../shared/plugin-version.js";
+import { ma3Checklist } from "../ma3-checklist.js";
 import { consoleRoute } from "../wizard-logic.js";
 import { ConnectionCheck, type CheckContext } from "./ConnectionCheck.js";
+import { Ma3Checklist } from "./Ma3Checklist.js";
 
 /**
  * PAM-9: the MA3 setup assistant — one-click install of the plugin and the
@@ -564,8 +566,8 @@ function PluginCard({ check }: { check?: { live: boolean; context: CheckContext 
 }
 
 /**
- * Presentation mode: the full MA3 tab renders all three numbered steps; the
- * setup wizard reuses the SAME cards one step at a time — "files", "osc",
+ * Presentation mode: the full MA3 tab renders the three steps as a checklist
+ * (PAM-36); the setup wizard reuses the SAME cards one step at a time — "files", "osc",
  * "plugin" (PAM-14, reordered by PAM-35). One data path (getMa3Setup), no
  * forked components.
  */
@@ -640,37 +642,65 @@ export function Ma3SetupView({
     ? "Use a USB stick or folder instead"
     : "Install into onPC on this computer instead";
 
+  // PAM-36: the full tab is a checklist — same cards, one step expanded at a
+  // time, status from what the app observes. The wizard modes below are unchanged.
+  if (full) {
+    const steps = ma3Checklist({
+      info,
+      onThisComputer,
+      engineState: check?.engineState ?? "stopped",
+      connection: check?.connection,
+    });
+    return (
+      <Ma3Checklist
+        steps={steps}
+        bodies={{
+          files: (
+            <>
+              {oscTarget}
+              {primary}
+              <details className="advanced">
+                <summary>{secondaryLabel}</summary>
+                {secondary}
+              </details>
+            </>
+          ),
+          // One live check in the tab (PAM-35 AC-8): the plugin step polls for both.
+          osc: (
+            <OscCard
+              values={values}
+              pick={pick}
+              feedbackIp={feedbackIp}
+              check={check ? { live: false, context: check } : undefined}
+            />
+          ),
+          plugin: <PluginCard check={check ? { live: true, context: check } : undefined} />,
+        }}
+      />
+    );
+  }
+
   return (
     <>
-      {full && <h2 className="guide-heading">Step 1 — Copy the files to GrandMA3</h2>}
-      {(full || mode === "files") && (
+      {mode === "files" && (
         <>
           {oscTarget}
           {primary}
-          {full ? (
-            secondary
-          ) : (
-            <details className="advanced">
-              <summary>{secondaryLabel}</summary>
-              {secondary}
-            </details>
-          )}
+          <details className="advanced">
+            <summary>{secondaryLabel}</summary>
+            {secondary}
+          </details>
         </>
       )}
-
-      {full && <h2 className="guide-heading">Step 2 — Set up OSC on the console</h2>}
-      {(full || mode === "osc") && (
+      {mode === "osc" && (
         <OscCard
           values={values}
           pick={pick}
           feedbackIp={feedbackIp}
-          // In the full tab, the plugin step's check polls for both (connected implies reachable).
-          check={check ? { live: mode === "osc", context: check } : undefined}
+          check={check ? { live: true, context: check } : undefined}
         />
       )}
-
-      {full && <h2 className="guide-heading">Step 3 — Import &amp; start the plugin</h2>}
-      {(full || mode === "plugin") && <PluginCard check={check ? { live: true, context: check } : undefined} />}
+      {mode === "plugin" && <PluginCard check={check ? { live: true, context: check } : undefined} />}
     </>
   );
 }

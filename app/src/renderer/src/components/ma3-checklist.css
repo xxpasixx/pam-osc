@@ -1,0 +1,100 @@
+/* PAM-36 MA3 setup checklist. */
+
+.checklist-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.checklist-progress {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.checklist-progress.complete {
+  color: var(--ok);
+}
+
+.checklist-steps {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checklist-step {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+
+.checklist-step.open {
+  border-color: var(--accent);
+}
+
+.checklist-row {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.checklist-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+.checklist-number {
+  font-family: var(--mono);
+  color: var(--text-dim);
+  width: 1ch;
+}
+
+.checklist-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.checklist-title {
+  font-weight: 600;
+}
+
+.checklist-step.waiting .checklist-title {
+  color: var(--text-dim);
+}
+
+.checklist-summary {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.checklist-state {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.checklist-chevron {
+  color: var(--text-dim);
+}
+
+/* The existing cards render inside a step — drop their own card chrome. */
+.checklist-body {
+  padding: 0 14px 12px;
+}
+
+.checklist-body > section.card,
+.checklist-body > details > section.card {
+  border: none;
+  background: transparent;
+  padding: 8px 0 0;
+  margin: 0;
+}
