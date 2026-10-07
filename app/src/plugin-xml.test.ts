@@ -42,11 +42,13 @@ describe("bundled MA3 plugin XML (PAM-12)", () => {
   const xml = readFileSync(xmlPath, "utf8");
   const components = parseComponents(xml);
 
-  it("embeds exactly the two pam-osc plugins", () => {
-    expect(components.map((c) => c.pluginName)).toEqual(["pam-osc Start Stop", "pam-osc Settings"]);
+  it("embeds exactly one pam-osc plugin (PAM-13 AC-1)", () => {
+    expect(components.map((c) => c.pluginName)).toEqual(["pam-osc"]);
+    // keeps the former "Start Stop" GUID so MA3 recognises the re-import
+    expect(xml).toContain('Guid="C1 19 BD 33 A9 FD 10 03 5E 76 48 94 2C 0E 90 FB"');
   });
 
-  it("carries the generator's PLUGIN_VERSION on both plugins", () => {
+  it("carries the generator's PLUGIN_VERSION", () => {
     // Single source of truth: the version lives in build-plugin-xml.mjs and is
     // bumped (last/"mini" component) on every plugin change. The test follows it
     // automatically so a routine bump never has to touch this assertion.
@@ -70,9 +72,23 @@ describe("bundled MA3 plugin XML (PAM-12)", () => {
     expect(components[0]?.content.equals(source)).toBe(true);
   });
 
-  it("matches SettingsPage.lua byte-for-byte", () => {
-    const source = readFileSync(resolve(repoRoot, "SettingsPage.lua"));
-    expect(components[1]?.content.equals(source)).toBe(true);
+  it("carries the settings dialog, the start/stop/settings entry point and the OSC self-check (PAM-13)", () => {
+    const lua = components[0]?.content.toString("utf8") ?? "";
+    // AC-2: every option of the former "pam-osc Settings" plugin is still there
+    for (const signal of [
+      "AutoResendClicked",
+      "SendColorsClicked",
+      "SendNamesClicked",
+      "SendTimecodeClicked",
+      "FixedPageNrChanged",
+    ]) {
+      expect(lua).toContain(`signalTable.${signal}`);
+    }
+    expect(lua).toContain("local function main(displayHandle, argument)");
+    // AC-3..AC-5: self-check runs on start, creates via OSCBase:Append, warns otherwise
+    expect(lua).toContain("runOscSelfCheck()");
+    expect(lua).toContain("ShowData().OSCBase");
+    expect(lua).toContain("base:Append()");
   });
 
   it("ships the v2 protocol and CMD-mode pieces in the embedded Lua", () => {

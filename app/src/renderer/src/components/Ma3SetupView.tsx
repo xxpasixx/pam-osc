@@ -232,7 +232,7 @@ function InstallCard({ info, osc, onRefresh }: { info: Ma3SetupInfo; osc: OscTar
           <InstallRow
             install={install}
             asset="plugin"
-            label="Plugin (pam-osc Start Stop / Settings)"
+            label="Plugin (pam-osc)"
             present={install.hasPamOsc}
             presentDetail={`installed, version ${install.installedVersion ?? "unknown"}`}
             bundledLabel={`version ${info.bundledVersion ?? "the bundled one"}`}
@@ -553,11 +553,12 @@ function PluginCard({ check }: { check?: { live: boolean; context: CheckContext 
           <strong>Import</strong>.
         </li>
         <li>
-          Pick <code>pam-osc</code> (the plugin you copied over) and import both plugins.
+          Pick <code>pam-osc</code> (the plugin you copied over) and import it.
         </li>
         <li>
-          Run <strong>“pam-osc Start Stop”</strong> — once per session. “pam-osc Settings” configures colors, names and
-          more.
+          Run <strong>“pam-osc”</strong> — once per session. On start it checks the OSC entries and creates missing
+          ones; running it again offers Stop, Settings and an OSC re-check. An old “pam-osc Settings” plugin from an
+          earlier version can be deleted.
         </li>
       </ol>
       {check && <ConnectionCheck target="connected" live={check.live} context={check.context} />}

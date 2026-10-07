@@ -50,6 +50,42 @@ check("fixedPage 7", c2.fixedPage == 7)
 local c3 = parse("v=1;e=301,311,321,331,341,348;c=1;n=1;r=0;t=0;p=0")
 check("high grid execs kept (>322)", eqlist(c3.executors, { 301, 311, 321, 331, 341, 348 }))
 
+-- PAM-13: the pure OSC self-check planner (AC-3..AC-5, EC-1, EC-2).
+local plan = assert(_G.__PAM_OSC_TEST.planOscCheck, "planOscCheck not exposed")
+local flag = _G.__PAM_OSC_TEST.oscFlag
+local function has(list, needle)
+  for _, v in ipairs(list) do if string.find(v, needle, 1, true) then return true end end
+  return false
+end
+local receiveOk = { name = "pam-osc-receive", port = 9003, destinationIp = "127.0.0.1", receive = true, receiveCommand = true }
+local feedbackOk = { name = "pam-osc", port = 9004, destinationIp = "192.168.1.20", receive = false, receiveCommand = false }
+
+check("oscFlag reads Yes/No/booleans", flag("Yes") and flag(true) and flag("1") and not flag("No") and not flag(nil))
+
+local p0 = plan({}, true)
+check("empty config -> create both", eqlist(p0.create, { "receive", "feedback" }) and #p0.warnings == 0)
+
+local p1 = plan({ receiveOk, feedbackOk }, false)
+check("working config -> nothing to create, no warnings", #p1.create == 0 and #p1.warnings == 0 and #p1.ok == 2)
+
+local p2 = plan({ { name = "my-input", port = 8000, receive = true, receiveCommand = true }, feedbackOk }, false)
+check("hand-made receive entry with another name is accepted", #p2.create == 0)
+check("...but its non-default port is reported (EC-2)", has(p2.warnings, "port 8000"))
+
+local p3 = plan({ { name = "pam-osc-receive", port = 9003, receive = true, receiveCommand = false }, feedbackOk }, false)
+check("receive entry without Receive Command -> warning, no duplicate (EC-1)", #p3.create == 0 and has(p3.warnings, "Receive Command"))
+
+local p4 = plan({ receiveOk, { name = "pam-osc", port = 9100, destinationIp = "10.0.0.5" } }, false)
+check("feedback entry on wrong port -> warning, no duplicate (EC-1)", #p4.create == 0 and has(p4.warnings, "port 9100"))
+
+local p5 = plan({ receiveOk, { name = "pam-osc", port = 9004, destinationIp = "127.0.0.1" } }, false)
+check("console sending to 127.0.0.1 -> destination warning", has(p5.warnings, "Destination IP"))
+local p6 = plan({ receiveOk, { name = "pam-osc", port = 9004, destinationIp = "127.0.0.1" } }, true)
+check("onPC sending to 127.0.0.1 -> fine", #p6.warnings == 0)
+
+local p7 = plan({ { name = "pam-osc", port = 9004, destinationIp = "10.0.0.5", receive = true, receiveCommand = true } }, false)
+check("the feedback entry never doubles as the receive entry", eqlist(p7.create, { "receive" }))
+
 if failures == 0 then
   print("\nALL PASS")
   os.exit(0)

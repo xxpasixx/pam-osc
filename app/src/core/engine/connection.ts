@@ -125,7 +125,7 @@ export class ConnectionChecker {
     log(
       state,
       state === "plugin-missing"
-        ? "GrandMA3 is reachable, but the pam-osc plugin did not answer — start the 'pam-osc Start Stop' plugin on the console"
+        ? "GrandMA3 is reachable, but the pam-osc plugin did not answer — start the 'pam-osc' plugin on the console"
         : "no response from GrandMA3 — check console IP/port, the MA3 OSC settings, and your firewall"
     );
 

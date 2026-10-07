@@ -16,23 +16,21 @@ const outFile = resolve(repoRoot, "gma3_library/datapools/plugins/pam-osc.xml");
  *  change so an install version-mismatch is visible; PLUGIN_PROTOCOL only moves
  *  on real protocol breaks. 2.0.0.1: PR #42 EXEC.Object fix (multi-executor).
  *  2.0.0.2: PAM-16 pamConfig parser (app-driven watch-set + feature flags).
- *  2.0.0.3: PAM-32 IsRunningPlayback() with HasActivePlayback() fallback. */
-const PLUGIN_VERSION = "2.0.0.3";
+ *  2.0.0.3: PAM-32 IsRunningPlayback() with HasActivePlayback() fallback.
+ *  2.0.0.4: PAM-13 one plugin "pam-osc" (settings merged in) + OSC self-check. */
+const PLUGIN_VERSION = "2.0.0.4";
 const DATA_VERSION = "2.0.2.0";
 const BLOCK_SIZE = 1024;
 
+// PAM-13: ONE plugin. It keeps the former "pam-osc Start Stop" GUIDs so MA3
+// recognises a re-import as the same plugin; the settings dialog (formerly a
+// second "pam-osc Settings" plugin) now lives inside pam-OSC.lua.
 const plugins = [
   {
-    name: "pam-osc Start Stop",
+    name: "pam-osc",
     pluginGuid: "C1 19 BD 33 A9 FD 10 03 5E 76 48 94 2C 0E 90 FB",
     componentGuid: "C1 19 BD 33 96 FC 10 02 7D 74 11 B4 F6 65 C8 40",
     source: resolve(repoRoot, "pam-OSC.lua"),
-  },
-  {
-    name: "pam-osc Settings",
-    pluginGuid: "C1 19 BD 33 A9 FD 10 03 5E 76 48 94 2C 0E 90 FC",
-    componentGuid: "C1 19 BD 33 7E A6 10 02 EB 81 42 CE E9 06 2A 41",
-    source: resolve(repoRoot, "SettingsPage.lua"),
   },
 ];
 

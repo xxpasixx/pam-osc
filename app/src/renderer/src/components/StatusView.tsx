@@ -20,12 +20,12 @@ const UNREACHABLE_HINTS = [
 ];
 
 const PLUGIN_HINTS = [
-  "GrandMA3 answered, but the pam-osc plugin did not — run the “pam-osc Start Stop” plugin on the console (once per session).",
+  "GrandMA3 answered, but the pam-osc plugin did not — run the “pam-osc” plugin on the console (once per session).",
   "If the plugin is not installed yet, the MA3 setup guide installs it and walks through the console settings.",
 ];
 
 const OUTDATED_HINTS = [
-  "Import the current pam-osc.xml into the console (plugin pool), then restart the “pam-osc Start Stop” plugin.",
+  "Import the current pam-osc.xml into the console (plugin pool), then restart the “pam-osc” plugin.",
   "Faders, buttons and feedback keep working meanwhile — only command-line targeting (CMD mode) stays off.",
 ];
 

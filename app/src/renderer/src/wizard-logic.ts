@@ -146,7 +146,7 @@ export function checkReadout(input: {
   if (state === "plugin-missing") {
     return {
       led: "warn",
-      text: "The console answers, but the plugin isn’t running yet — run “pam-osc Start Stop” on the console.",
+      text: "The console answers, but the plugin isn’t running yet — run the “pam-osc” plugin on the console.",
       reached: false,
     };
   }

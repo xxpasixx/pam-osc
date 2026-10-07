@@ -96,7 +96,7 @@ export function ma3Checklist({ info, onThisComputer, engineState, connection }: 
           ? "After the OSC step"
           : connection?.state === "plugin-outdated"
             ? "The plugin on the console is outdated — import the new one and restart it"
-            : "Import and start “pam-osc Start Stop” on the console",
+            : "Import and start the “pam-osc” plugin on the console",
       };
 
   return [files, osc, plugin];

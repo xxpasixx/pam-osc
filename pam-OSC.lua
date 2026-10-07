@@ -1,4 +1,4 @@
--- pam-OSC. It allows to controll GrandMA3 with Midi Devices over Open Stage Controll and allows for Feedback from MA.
+-- pam-osc. Controls GrandMA3 with MIDI devices through the pam-osc app and sends feedback back (motor faders, LEDs, displays).
 -- Copyright (C) 2024  xxpasixx
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -10,6 +10,11 @@
 -- GNU General Public License for more details.
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+-- MA3 passes (pluginName, componentName, signalTable, handle) to the chunk;
+-- the settings dialog binds its button callbacks into signalTable.
+local signalTable = select(3, ...)
+
 local executorsToWatch = {}
 local oldValues = {}
 local oldButtonValues = {}
@@ -446,7 +451,679 @@ local function createQuickeysIfNotExists()
     Echo("Quickey creation completed")
 end
 
-local function main()
+-- ===========================================================================
+-- Settings dialog (PAM-13 AC-2) — formerly the separate "pam-osc Settings"
+-- plugin (SettingsPage.lua). Credit to the user Nigel63 from
+-- https://forum.malighting.com/forum/thread/5738-lua-ui/ for the dialog base.
+-- Note: these options are the plugin-side fallback; once the pam-osc app syncs
+-- its config (PAM-16), the app's settings take precedence.
+-- ===========================================================================
+local function openSettingsDialog()
+
+    -- Get the index of the display on which to create the dialog.
+    local displayIndex = Obj.Index(GetFocusDisplay())
+    if displayIndex > 5 then
+        displayIndex = 1
+    end
+
+    -- Get the colors.
+    local colorTransparent = Root().ColorTheme.ColorGroups.Global.Transparent
+    local colorBackground = Root().ColorTheme.ColorGroups.Button.Background
+    local colorBackgroundPlease = Root().ColorTheme.ColorGroups.Button.BackgroundPlease
+    local colorPartlySelected = Root().ColorTheme.ColorGroups.Global.PartlySelected
+    local colorPartlySelectedPreset = Root().ColorTheme.ColorGroups.Global.PartlySelectedPreset
+    local colorBlue = Root().ColorTheme.ColorGroups.Global.Blue
+    local colorWhite = Root().ColorTheme.ColorGroups.Global.White
+
+    -- Get the overlay.
+    local display = GetDisplayByIndex(displayIndex)
+    local screenOverlay = display.ScreenOverlay
+
+    -- Delete any UI elements currently displayed on the overlay.
+    screenOverlay:ClearUIChildren()
+
+    -- Create the dialog base.
+    local dialogWidth = 650
+    local baseInput = screenOverlay:Append("BaseInput")
+    baseInput.Name = "DMXTesterWindow"
+    baseInput.H = "0"
+    baseInput.W = dialogWidth
+    baseInput.MaxSize = string.format("%s,%s", display.W * 0.8, display.H)
+    baseInput.MinSize = string.format("%s,0", dialogWidth - 100)
+    baseInput.Columns = 1
+    baseInput.Rows = 2
+    baseInput[1][1].SizePolicy = "Fixed"
+    baseInput[1][1].Size = "60"
+    baseInput[1][2].SizePolicy = "Stretch"
+    baseInput.AutoClose = "No"
+    baseInput.CloseOnEscape = "Yes"
+
+    -- Create the title bar.
+    local titleBar = baseInput:Append("TitleBar")
+    titleBar.Columns = 2
+    titleBar.Rows = 1
+    titleBar.Anchors = "0,0"
+    titleBar[2][2].SizePolicy = "Fixed"
+    titleBar[2][2].Size = "50"
+    titleBar.Texture = "corner2"
+
+    local titleBarIcon = titleBar:Append("TitleButton")
+    titleBarIcon.Text = "pam-OSC Settings"
+    titleBarIcon.Texture = "corner1"
+    titleBarIcon.Anchors = "0,0"
+    titleBarIcon.Icon = "star"
+
+    local titleBarCloseButton = titleBar:Append("CloseButton")
+    titleBarCloseButton.Anchors = "1,0"
+    titleBarCloseButton.Texture = "corner2"
+
+    -- Create the dialog's main frame.
+    local dlgFrame = baseInput:Append("DialogFrame")
+    dlgFrame.H = "100%"
+    dlgFrame.W = "100%"
+    dlgFrame.Columns = 1
+    dlgFrame.Rows = 3
+    dlgFrame.Anchors = {
+        left = 0,
+        right = 0,
+        top = 1,
+        bottom = 1
+    }
+    dlgFrame[1][1].SizePolicy = "Fixed"
+    dlgFrame[1][1].Size = "60"
+    dlgFrame[1][2].SizePolicy = "Fixed"
+    dlgFrame[1][2].Size = "300"
+    dlgFrame[1][3].SizePolicy = "Fixed"
+    dlgFrame[1][3].Size = "80"
+
+    -- Create the sub title.
+    -- This is row 1 of the dlgFrame.
+    local subTitle = dlgFrame:Append("UIObject")
+    subTitle.Text = "Configure what the plugin should send"
+    subTitle.ContentDriven = "Yes"
+    subTitle.ContentWidth = "No"
+    subTitle.TextAutoAdjust = "No"
+    subTitle.Anchors = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0
+    }
+    subTitle.Padding = {
+        left = 20,
+        right = 20,
+        top = 15,
+        bottom = 15
+    }
+    subTitle.Font = "Medium20"
+    subTitle.HasHover = "No"
+    subTitle.BackColor = colorTransparent
+
+    -- Create the settings grid.
+    -- This is row 2 of the dlgFrame.
+    local settingsGrid = dlgFrame:Append("UILayoutGrid")
+    settingsGrid.Columns = 10
+    settingsGrid.Rows = 5
+    settingsGrid.Anchors = {
+        left = 0,
+        right = 0,
+        top = 1,
+        bottom = 1
+    }
+    settingsGrid.Margin = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 5
+    }
+
+    -- Create Automatic Resend Buttons checkbox
+    local autoResendIcon = settingsGrid:Append("Button")
+    autoResendIcon.Text = ""
+    autoResendIcon.Anchors = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0
+    }
+    autoResendIcon.Icon = "refresh"
+    autoResendIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 0,
+        bottom = 2
+    }
+    autoResendIcon.HasHover = "No"
+
+    local checkBox1 = settingsGrid:Append("CheckBox")
+    checkBox1.Anchors = {
+        left = 1,
+        right = 9,
+        top = 0,
+        bottom = 0
+    }
+    checkBox1.Text = "Automatic Resend Buttons"
+    checkBox1.TextalignmentH = "Left"
+    checkBox1.State = GetVar(GlobalVars(), "automaticResendButtons") and 1 or 0
+    checkBox1.PluginComponent = myHandle
+    checkBox1.Clicked = "AutoResendClicked"
+    checkBox1.Margin = {
+        left = 2,
+        right = 0,
+        top = 0,
+        bottom = 2
+    }
+
+    -- Create Send Colors checkbox
+    local sendColorsIcon = settingsGrid:Append("Button")
+    sendColorsIcon.Text = ""
+    sendColorsIcon.Anchors = {
+        left = 0,
+        right = 0,
+        top = 1,
+        bottom = 1
+    }
+    sendColorsIcon.Icon = "icon_color_picker"
+    sendColorsIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    sendColorsIcon.HasHover = "No"
+
+    local checkBox2 = settingsGrid:Append("CheckBox")
+    checkBox2.Anchors = {
+        left = 1,
+        right = 9,
+        top = 1,
+        bottom = 1
+    }
+    checkBox2.Text = "Send Colors"
+    checkBox2.TextalignmentH = "Left"
+    checkBox2.State = GetVar(GlobalVars(), "sendColors") and 1 or 0
+    checkBox2.PluginComponent = myHandle
+    checkBox2.Clicked = "SendColorsClicked"
+    checkBox2.Margin = {
+        left = 2,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+
+    -- Create Send Names checkbox
+    local sendNamesIcon = settingsGrid:Append("Button")
+    sendNamesIcon.Text = ""
+    sendNamesIcon.Anchors = {
+        left = 0,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+    sendNamesIcon.Icon = "PhaserAddAbsolute"
+    sendNamesIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    sendNamesIcon.HasHover = "No"
+
+    local checkBox3 = settingsGrid:Append("CheckBox")
+    checkBox3.Anchors = {
+        left = 1,
+        right = 9,
+        top = 2,
+        bottom = 2
+    }
+    checkBox3.Text = "Send Names"
+    checkBox3.TextalignmentH = "Left"
+    checkBox3.State = GetVar(GlobalVars(), "sendNames") and 1 or 0
+    checkBox3.PluginComponent = myHandle
+    checkBox3.Clicked = "SendNamesClicked"
+    checkBox3.Margin = {
+        left = 2,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+
+    -- Create Send Timecode checkbox
+    local sendTimecodeIcon = settingsGrid:Append("Button")
+    sendTimecodeIcon.Text = ""
+    sendTimecodeIcon.Anchors = {
+        left = 0,
+        right = 0,
+        top = 3,
+        bottom = 3
+    }
+    sendTimecodeIcon.Icon = "Time"
+    sendTimecodeIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    sendTimecodeIcon.HasHover = "No"
+
+    local checkBox4 = settingsGrid:Append("CheckBox")
+    checkBox4.Anchors = {
+        left = 1,
+        right = 9,
+        top = 3,
+        bottom = 3
+    }
+    checkBox4.Text = "Send Timecode"
+    checkBox4.TextalignmentH = "Left"
+    checkBox4.State = GetVar(GlobalVars(), "sendTimecode") and 1 or 0
+    checkBox4.PluginComponent = myHandle
+    checkBox4.Clicked = "SendTimecodeClicked"
+    checkBox4.Margin = {
+        left = 2,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+
+    -- Create Fixed Page Number input
+    local pageNumberIcon = settingsGrid:Append("Button")
+    pageNumberIcon.Text = ""
+    pageNumberIcon.Anchors = {
+        left = 0,
+        right = 0,
+        top = 4,
+        bottom = 4
+    }
+    pageNumberIcon.Icon = "locked"
+    pageNumberIcon.Margin = {
+        left = 0,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    pageNumberIcon.HasHover = "No"
+
+    local pageLabel = settingsGrid:Append("UIObject")
+    pageLabel.Text = "Fixed Page Number (0 = disabled):"
+    pageLabel.TextalignmentH = "Left"
+    pageLabel.Anchors = {
+        left = 1,
+        right = 6,
+        top = 4,
+        bottom = 4
+    }
+    pageLabel.Padding = "5,5"
+    pageLabel.Margin = {
+        left = 2,
+        right = 2,
+        top = 2,
+        bottom = 2
+    }
+    pageLabel.HasHover = "No"
+
+    local pageInput = settingsGrid:Append("LineEdit")
+    pageInput.Margin = {
+        left = 2,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+    pageInput.Prompt = "Page: "
+    pageInput.TextAutoAdjust = "Yes"
+    pageInput.Anchors = {
+        left = 7,
+        right = 9,
+        top = 4,
+        bottom = 4
+    }
+    pageInput.Padding = "5,5"
+    pageInput.Filter = "0123456789"
+    pageInput.VkPluginName = "TextInputNumOnly"
+    pageInput.Content = tostring(GetVar(GlobalVars(), "fixedPageNr") or 0)
+    pageInput.MaxTextLength = 3
+    pageInput.HideFocusFrame = "Yes"
+    pageInput.PluginComponent = myHandle
+    pageInput.TextChanged = "FixedPageNrChanged"
+
+    -- Create the button grid.
+    -- This is row 3 of the dlgFrame.
+    local buttonGrid = dlgFrame:Append("UILayoutGrid")
+    buttonGrid.Columns = 1
+    buttonGrid.Rows = 1
+    buttonGrid.Anchors = {
+        left = 0,
+        right = 0,
+        top = 2,
+        bottom = 2
+    }
+
+    local closeButton = buttonGrid:Append("Button")
+    closeButton.Anchors = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0
+    }
+    closeButton.Textshadow = 1
+    closeButton.HasHover = "Yes"
+    closeButton.Text = "Close"
+    closeButton.Font = "Medium20"
+    closeButton.TextalignmentH = "Centre"
+    closeButton.PluginComponent = myHandle
+    closeButton.Clicked = "CloseButtonClicked"
+    closeButton.Visible = "Yes"
+
+    -- Define all signal handlers
+    signalTable.CloseButtonClicked = function(caller)
+        Echo("Close button clicked.")
+        Obj.Delete(screenOverlay, Obj.Index(baseInput))
+    end
+    signalTable.AutoResendClicked = function(caller)
+        if (caller.State == 1) then
+            caller.State = 0
+            SetVar(GlobalVars(), "automaticResendButtons", false)
+        else
+            caller.State = 1
+            SetVar(GlobalVars(), "automaticResendButtons", true)
+        end
+        SetVar(GlobalVars(), "forceReload", true)
+    end
+
+    signalTable.SendColorsClicked = function(caller)
+        if (caller.State == 1) then
+            caller.State = 0
+            SetVar(GlobalVars(), "sendColors", false)
+        else
+            caller.State = 1
+            SetVar(GlobalVars(), "sendColors", true)
+        end
+        SetVar(GlobalVars(), "forceReload", true)
+    end
+
+    signalTable.SendNamesClicked = function(caller)
+        if (caller.State == 1) then
+            caller.State = 0
+            SetVar(GlobalVars(), "sendNames", false)
+        else
+            caller.State = 1
+            SetVar(GlobalVars(), "sendNames", true)
+        end
+        SetVar(GlobalVars(), "forceReload", true)
+    end
+
+    signalTable.SendTimecodeClicked = function(caller)
+        if (caller.State == 1) then
+            caller.State = 0
+            SetVar(GlobalVars(), "sendTimecode", false)
+        else
+            caller.State = 1
+            SetVar(GlobalVars(), "sendTimecode", true)
+        end
+        SetVar(GlobalVars(), "forceReload", true)
+    end
+
+    signalTable.FixedPageNrChanged = function(caller)
+        local pageNr = tonumber(caller.Content) or 0
+        if pageNr < 0 then
+            pageNr = 0
+            caller.Content = "0"
+        elseif pageNr > 999 then
+            pageNr = 999
+            caller.Content = "999"
+        end
+        SetVar(GlobalVars(), "fixedPageNr", pageNr)
+        SetVar(GlobalVars(), "forceReload", true)
+        Echo("Fixed Page Number changed: " .. pageNr)
+    end
+end
+
+-- ===========================================================================
+-- OSC self-check (PAM-13 AC-3..AC-5): on start the plugin inspects the
+-- console's OSC entries and creates the missing ones where the Lua API allows,
+-- otherwise it prints exactly what to fix. Split into a pure planner (tested
+-- off-console, see pam-OSC.config.test.lua) and the MA3-facing reader/writer.
+-- ===========================================================================
+
+-- Defaults of the app (Settings → console ports). The plugin can't learn
+-- custom ports before OSC works, so auto-create uses these and a mismatch on
+-- an existing entry is reported, never "fixed" (design.md, Tech Decisions).
+local OSC_RECEIVE_ENTRY_NAME = "pam-osc-receive"
+local OSC_DEFAULT_RECEIVE_PORT = 9003 -- console listens here (app "send port")
+local OSC_DEFAULT_FEEDBACK_PORT = 9004 -- app listens here (app "receive port")
+
+local function oscFlag(value)
+    if value == true then return true end
+    if value == false or value == nil then return false end
+    local s = string.lower(tostring(value))
+    return s == "yes" or s == "true" or s == "1" or s == "on"
+end
+
+-- The properties a freshly created entry gets — the same values as the
+-- maintainer's working console export (gma3_library/inout/osc/pam-osc.xml).
+local function oscEntryTemplate(kind, destinationIp)
+    if kind == "receive" then
+        return {
+            { "Name", OSC_RECEIVE_ENTRY_NAME }, { "Mode", "UDP" },
+            { "Port", tostring(OSC_DEFAULT_RECEIVE_PORT) }, { "DestinationIP", destinationIp },
+            { "Receive", "Yes" }, { "ReceiveCommand", "Yes" },
+            { "Send", "No" }, { "SendCommand", "No" },
+            { "EchoInput", "No" }, { "EchoOutput", "No" }
+        }
+    end
+    return {
+        { "Name", OSC_ENTRY_NAME }, { "Mode", "UDP" },
+        { "Port", tostring(OSC_DEFAULT_FEEDBACK_PORT) }, { "DestinationIP", destinationIp },
+        { "Receive", "No" }, { "ReceiveCommand", "No" },
+        { "Send", "No" }, { "SendCommand", "Yes" },
+        { "EchoInput", "No" }, { "EchoOutput", "No" }
+    }
+end
+
+-- Pure planner. `entries` is a list of plain tables
+-- { name, port, destinationIp, receive, receiveCommand } read from OSCBase;
+-- `isOnPC` tells whether 127.0.0.1 can be a sensible feedback destination.
+-- Returns { create = {kind...}, warnings = {text...}, ok = {text...} }.
+local function planOscCheck(entries, isOnPC)
+    local plan = { create = {}, warnings = {}, ok = {} }
+
+    -- Receive side: the entry named pam-osc-receive, else any entry that
+    -- accepts commands (a hand-made setup with another name is fine).
+    local receive = nil
+    for _, e in ipairs(entries) do
+        if e.name == OSC_RECEIVE_ENTRY_NAME then receive = e break end
+    end
+    if receive == nil then
+        for _, e in ipairs(entries) do
+            if e.receive and e.receiveCommand and e.name ~= OSC_ENTRY_NAME then receive = e break end
+        end
+    end
+    if receive == nil then
+        plan.create[#plan.create + 1] = "receive"
+    elseif not (receive.receive and receive.receiveCommand) then
+        plan.warnings[#plan.warnings + 1] = 'OSC entry "' .. tostring(receive.name) ..
+            '" must have Receive and Receive Command switched on, or the app cannot reach the plugin.'
+    else
+        if tonumber(receive.port) ~= OSC_DEFAULT_RECEIVE_PORT then
+            plan.warnings[#plan.warnings + 1] = 'OSC entry "' .. tostring(receive.name) .. '" listens on port ' ..
+                tostring(receive.port) .. ' (app default ' .. OSC_DEFAULT_RECEIVE_PORT ..
+                ') - fine if you changed the send port in the app to match.'
+        end
+        plan.ok[#plan.ok + 1] = 'receive entry "' .. tostring(receive.name) .. '" on port ' .. tostring(receive.port)
+    end
+
+    -- Feedback side: must be named exactly pam-osc (SendOSC addresses it by name).
+    local feedback = nil
+    for _, e in ipairs(entries) do
+        if e.name == OSC_ENTRY_NAME then feedback = e break end
+    end
+    if feedback == nil then
+        plan.create[#plan.create + 1] = "feedback"
+    else
+        if tonumber(feedback.port) ~= OSC_DEFAULT_FEEDBACK_PORT then
+            plan.warnings[#plan.warnings + 1] = 'OSC entry "' .. OSC_ENTRY_NAME .. '" sends to port ' ..
+                tostring(feedback.port) .. ' (app default ' .. OSC_DEFAULT_FEEDBACK_PORT ..
+                ') - fine if you changed the receive port in the app to match.'
+        end
+        if not isOnPC and (feedback.destinationIp == "127.0.0.1" or feedback.destinationIp == "" or feedback.destinationIp == nil) then
+            plan.warnings[#plan.warnings + 1] = 'OSC entry "' .. OSC_ENTRY_NAME .. '" sends to ' ..
+                tostring(feedback.destinationIp) .. ' - on a console, set its Destination IP to the computer running pam-osc.'
+        end
+        plan.ok[#plan.ok + 1] = 'feedback entry "' .. OSC_ENTRY_NAME .. '" -> ' ..
+            tostring(feedback.destinationIp) .. ':' .. tostring(feedback.port)
+    end
+    return plan
+end
+
+local function warnConsole(text)
+    local ok = pcall(ErrPrintf, "pam-osc: " .. text)
+    if not ok then Printf("pam-osc WARNING: " .. text) end
+end
+
+local function oscBase()
+    local ok, base = pcall(function() return ShowData().OSCBase end)
+    if ok and base ~= nil then return base end
+    return nil
+end
+
+local function readProp(obj, name)
+    local ok, value = pcall(function() return obj:Get(name) end)
+    if ok and value ~= nil then return value end
+    ok, value = pcall(function() return obj[name] end)
+    if ok then return value end
+    return nil
+end
+
+local function readOscEntries(base)
+    local entries = {}
+    for _, child in ipairs(base:Children()) do
+        entries[#entries + 1] = {
+            name = tostring(readProp(child, "Name") or ""),
+            port = tonumber(readProp(child, "Port")),
+            destinationIp = tostring(readProp(child, "DestinationIP") or ""),
+            receive = oscFlag(readProp(child, "Receive")),
+            receiveCommand = oscFlag(readProp(child, "ReceiveCommand"))
+        }
+    end
+    return entries
+end
+
+-- Appends one entry and verifies every property by reading it back. Returns
+-- nil on success or the reason it failed (AC-4 degrades to AC-5).
+local function createOscEntry(base, kind, destinationIp)
+    local ok, entry = pcall(function() return base:Append() end)
+    if not ok or entry == nil then
+        return "the Lua API refused to create an OSC entry (" .. tostring(entry) .. ")"
+    end
+    local failed = {}
+    for _, prop in ipairs(oscEntryTemplate(kind, destinationIp)) do
+        local key, value = prop[1], prop[2]
+        pcall(function() entry:Set(key, value) end)
+        local readBack = readProp(entry, key)
+        local matches
+        if value == "Yes" or value == "No" then
+            matches = oscFlag(readBack) == (value == "Yes")
+        else
+            matches = tostring(readBack) == value
+        end
+        if not matches then failed[#failed + 1] = key end
+    end
+    if #failed > 0 then
+        return "the entry was created but these settings could not be set: " .. table.concat(failed, ", ")
+    end
+    return nil
+end
+
+local function isOnPC()
+    local ok, host = pcall(HostType)
+    return ok and string.lower(tostring(host)) == "onpc"
+end
+
+local function runOscSelfCheck()
+    local base = oscBase()
+    if base == nil then
+        warnConsole("could not read the OSC configuration - please check MENU > In & Out > OSC by hand: " ..
+            'a receive entry on port ' .. OSC_DEFAULT_RECEIVE_PORT .. ' (Receive + Receive Command on) and a send entry named "' ..
+            OSC_ENTRY_NAME .. '" to the pam-osc computer on port ' .. OSC_DEFAULT_FEEDBACK_PORT .. '.')
+        return
+    end
+    local onPC = isOnPC()
+    local ok, entries = pcall(readOscEntries, base)
+    if not ok then
+        warnConsole("could not read the OSC entries (" .. tostring(entries) .. ") - please check MENU > In & Out > OSC by hand.")
+        return
+    end
+    local plan = planOscCheck(entries, onPC)
+
+    for _, kind in ipairs(plan.create) do
+        local label = kind == "receive"
+            and ('receive entry "' .. OSC_RECEIVE_ENTRY_NAME .. '" (port ' .. OSC_DEFAULT_RECEIVE_PORT .. ', Receive + Receive Command)')
+            or ('send entry "' .. OSC_ENTRY_NAME .. '" (port ' .. OSC_DEFAULT_FEEDBACK_PORT .. ', Send Command)')
+        local err = createOscEntry(base, kind, "127.0.0.1")
+        if err == nil then
+            Printf("pam-osc: created OSC " .. label)
+            if kind == "feedback" and not onPC then
+                warnConsole('the new OSC entry "' .. OSC_ENTRY_NAME .. '" sends to 127.0.0.1 - set its Destination IP ' ..
+                    'to the computer running pam-osc (MENU > In & Out > OSC).')
+            end
+        else
+            warnConsole("missing OSC " .. label .. " - " .. err .. ". Create it in MENU > In & Out > OSC " ..
+                "or import the OSC config from the pam-osc app.")
+        end
+    end
+    for _, text in ipairs(plan.warnings) do warnConsole(text) end
+    for _, text in ipairs(plan.ok) do Printf("pam-osc: OSC " .. text .. " - ok") end
+end
+
+-- ===========================================================================
+-- One plugin, three jobs (PAM-13 AC-1/AC-2): start, stop, settings.
+-- The running loop writes a heartbeat; a second call while it is fresh means
+-- "the plugin is running" (more reliable than the persisted opdateOSC flag,
+-- which survives a console restart as a stale `true`).
+-- ===========================================================================
+local HEARTBEAT_MAX_AGE = 3 -- seconds
+
+local function now()
+    local ok, t = pcall(os.time)
+    if ok and t then return t end
+    return 0
+end
+
+local function isLoopRunning()
+    local beat = tonumber(GetVar(GlobalVars(), "pamHeartbeat") or 0) or 0
+    return GetVar(GlobalVars(), "opdateOSC") == true and beat > 0 and (now() - beat) <= HEARTBEAT_MAX_AGE
+end
+
+local function stopLoop()
+    SetVar(GlobalVars(), "opdateOSC", false)
+    Printf("pam-osc: stopped")
+end
+
+-- Asks what to do when the plugin is called while it is already running.
+-- Decides by the returned item TEXT (PopupInput's index base is not something
+-- we want to depend on); a dismissed popup does nothing. Falls back to the old
+-- toggle behaviour (stop) only if no popup can be shown at all.
+local POPUP_STOP, POPUP_SETTINGS, POPUP_CHECK = "Stop pam-osc", "Settings", "Check OSC setup"
+
+local function chooseWhileRunning()
+    local ok, _, value = pcall(PopupInput, {
+        title = "pam-osc is running",
+        caller = GetFocusDisplay(),
+        items = { POPUP_STOP, POPUP_SETTINGS, POPUP_CHECK }
+    })
+    if not ok then return "stop" end
+    if value == POPUP_STOP then return "stop" end
+    if value == POPUP_SETTINGS then return "settings" end
+    if value == POPUP_CHECK then return "check" end
+    return "cancel"
+end
+
+local function runLoop()
+    -- Mark as running first, so a second call during the start-up work below
+    -- (OSC self-check, QuickKeys) sees a live plugin instead of starting twice.
+    SetVar(GlobalVars(), "opdateOSC", true)
+    local lastBeat = now()
+    SetVar(GlobalVars(), "pamHeartbeat", lastBeat)
+
     -- PAM-16: watch-set + feature flags come from the app's pamConfig when
     -- present (loadConfig applies the watch-set as a side effect); otherwise the
     -- built-in range + legacy GlobalVars stand in.
@@ -460,6 +1137,7 @@ local function main()
     Printf("fixedPageNr: " .. fixedPageNr)
 
     Printf("pam-osc: sending feedback to the OSC entry named '" .. OSC_ENTRY_NAME .. "'")
+    runOscSelfCheck()
     createQuickeysIfNotExists()
 
     local destPage = 1
@@ -470,13 +1148,13 @@ local function main()
     -- Reset a stale CMD key trigger from a previous run
     SetVar(GlobalVars(), "pamCmdKey", 0)
 
-    if GetVar(GlobalVars(), "opdateOSC") ~= nil then
-        SetVar(GlobalVars(), "opdateOSC", not GetVar(GlobalVars(), "opdateOSC"))
-    else
-        SetVar(GlobalVars(), "opdateOSC", true)
-    end
-
     while (GetVar(GlobalVars(), "opdateOSC")) do
+        -- Heartbeat at most once per second (os.time() resolution), not per tick.
+        local beat = now()
+        if beat ~= lastBeat then
+            lastBeat = beat
+            SetVar(GlobalVars(), "pamHeartbeat", beat)
+        end
         local currentDeskLocked = DeskLocked()
         if currentDeskLocked ~= oldDeskLockedStatus then
             oldDeskLockedStatus = currentDeskLocked
@@ -649,13 +1327,41 @@ local function main()
         coroutine.yield(tick)
     end
 
+    SetVar(GlobalVars(), "pamHeartbeat", 0)
+end
+
+-- Entry point. Called with an argument (e.g. from a macro:
+--   Plugin "pam-osc" "settings")  it does exactly that: settings | check |
+-- stop | start. Without one: start when idle, ask Stop/Settings/Check when
+-- the plugin is already running.
+local function main(displayHandle, argument)
+    local action = string.lower(tostring(argument or ""))
+    if action == "" then
+        action = isLoopRunning() and chooseWhileRunning() or "start"
+    end
+
+    if action == "settings" then
+        openSettingsDialog()
+    elseif action == "check" then
+        runOscSelfCheck()
+    elseif action == "stop" then
+        stopLoop()
+    elseif action == "start" then
+        if isLoopRunning() then
+            Printf("pam-osc: already running")
+        else
+            runLoop()
+        end
+    elseif action ~= "cancel" then
+        Printf('pam-osc: unknown argument "' .. tostring(argument) .. '" - use start, stop, settings or check')
+    end
 end
 
 
 -- Test hook (never set by MA3): expose the pure config parser so off-console
 -- Lua tests can exercise it without the MA3 API. See pam-OSC.config.test.lua.
 if rawget(_G, "__PAM_OSC_TEST") then
-    _G.__PAM_OSC_TEST = { parsePamConfig = parsePamConfig }
+    _G.__PAM_OSC_TEST = { parsePamConfig = parsePamConfig, planOscCheck = planOscCheck, oscFlag = oscFlag }
 end
 
 return main
