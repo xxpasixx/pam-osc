@@ -12,7 +12,10 @@ export type UpdateState =
   | { kind: "checking" }
   | { kind: "up-to-date"; checkedAt: string }
   | { kind: "downloading"; version: string; percent: number }
-  | { kind: "ready"; version: string }
+  /** scheduled = the user chose "On next launch" (AC-15). */
+  | { kind: "ready"; version: string; scheduled: boolean }
+  /** Installing at start-up; the app restarts into the new version (AC-15). */
+  | { kind: "installing"; version: string }
   | { kind: "fallback"; version: string; releaseUrl: string; reason: UpdateFallbackReason }
   | { kind: "error"; checkedAt: string; message: string };
 
@@ -36,6 +39,8 @@ export interface PamOscUpdatesApi {
   setPreferences(preferences: UpdatePreferences): Promise<UpdateStatus>;
   /** Only acts in state "ready"; the renderer asks for confirmation first. */
   installNow(): Promise<void>;
+  /** AC-15: install at the next start instead of now. */
+  scheduleForNextLaunch(): Promise<void>;
   /** Fallback (AC-13 / EC-4): opens the GitHub release page in the browser. */
   openReleasePage(url: string): Promise<void>;
   onStatus(listener: (status: UpdateStatus) => void): () => void;
@@ -46,6 +51,7 @@ export const UPDATE_IPC = {
   checkNow: "pam:update:checkNow",
   setPreferences: "pam:update:setPreferences",
   installNow: "pam:update:installNow",
+  scheduleForNextLaunch: "pam:update:scheduleForNextLaunch",
   openReleasePage: "pam:update:openReleasePage",
   evStatus: "pam:update:ev:status",
 } as const;

@@ -45,7 +45,12 @@ export const persistedSettingsSchema = z.strictObject({
   // PAM-34: update preferences. Additive & optional — absent fields fall back
   // to the derived defaults in core/update/policy.ts; no format bump.
   updates: z
-    .strictObject({ checkAutomatically: z.boolean().optional(), receiveBetas: z.boolean().optional() })
+    .strictObject({
+      checkAutomatically: z.boolean().optional(),
+      receiveBetas: z.boolean().optional(),
+      // Version the user chose to install at the next start ("On next launch").
+      installOnNextLaunch: z.string().min(1).max(64).optional(),
+    })
     .optional(),
 });
 

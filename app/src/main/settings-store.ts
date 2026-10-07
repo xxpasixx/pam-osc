@@ -110,7 +110,18 @@ export class SettingsStore {
    * on a first run — the user's explicit choice must survive the next launch.
    */
   async setUpdatePreferences(updates: { checkAutomatically: boolean; receiveBetas: boolean }): Promise<void> {
-    const next: PersistedSettings = { ...this.current, updates: { ...updates } };
+    const next: PersistedSettings = { ...this.current, updates: { ...this.current.updates, ...updates } };
+    await this.write(next);
+    this.current = next;
+    this.persisted = true;
+  }
+
+  /** PAM-34 AC-15: remember (or forget, with undefined) the version to install at the next start. */
+  async setInstallOnNextLaunch(version: string | undefined): Promise<void> {
+    const updates = { ...this.current.updates };
+    if (version === undefined) delete updates.installOnNextLaunch;
+    else updates.installOnNextLaunch = version;
+    const next: PersistedSettings = { ...this.current, updates };
     await this.write(next);
     this.current = next;
     this.persisted = true;

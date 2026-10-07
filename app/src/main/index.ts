@@ -25,7 +25,8 @@ import { MidiLearn } from "./midi-learn.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
 import { SessionLog } from "./session-log.js";
-import { startUpdates } from "./update-wiring.js";
+import { launchInstallFor, startUpdates, updatesMenuItems } from "./update-wiring.js";
+import type { UpdateService } from "./updater.js";
 import { SettingsStore } from "./settings-store.js";
 import { importShareFile } from "./share-files.js";
 import { writeSupportPackage } from "./support-package.js";
@@ -57,6 +58,8 @@ if (!app.requestSingleInstanceLock()) {
 
 async function main(): Promise<void> {
   let window: BrowserWindow | undefined;
+  // PAM-34: created once the window exists; the Help menu reads it lazily.
+  let updates: UpdateService | undefined;
 
   app.on("second-instance", () => {
     if (!window) return;
@@ -197,7 +200,8 @@ async function main(): Promise<void> {
   });
 
   // AC-4: valid persisted settings → the engine starts before the window.
-  if (!loaded.firstRun && loaded.settings.activeMappingIds.length > 0) {
+  const autoStartFromSaved = async () => {
+    if (loaded.firstRun || loaded.settings.activeMappingIds.length === 0) return;
     const error = await engineHost.autoStart(
       engineConfigFrom(loaded.settings.console, loaded.settings.activeMappingIds, loaded.settings.fixedPage)
     );
@@ -205,7 +209,10 @@ async function main(): Promise<void> {
       pushNotice({ severity: "error", message: `engine did not start with the saved settings: ${error}` });
       runPortDiagnosis(); // a blocked receive port is the classic cause (AC-2)
     }
-  }
+  };
+  // PAM-34 AC-15: an update scheduled for this start installs first — the
+  // bridge only starts if that install is abandoned (AC-16).
+  if (!launchInstallFor(settingsStore)) await autoStartFromSaved();
 
   const midiPorts = new MidiPortLister(easymidiTransport, (ports) => {
     midiLearn.onPortsChanged(ports); // a vanished port ends a learn session
@@ -586,6 +593,8 @@ async function main(): Promise<void> {
       { role: "editMenu" },
       { role: "viewMenu" },
       { role: "windowMenu" },
+      // PAM-34: updates live here, not in the Setup view.
+      { role: "help", submenu: updatesMenuItems(() => updates, () => window) },
     ];
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   }
@@ -778,7 +787,14 @@ async function main(): Promise<void> {
 
   // PAM-34: IPC handlers must exist before the renderer asks (review BUG-3);
   // the first network check still waits 30 s, so start-up is never delayed.
-  startUpdates({ getWindow: () => window, settingsStore, log: (line) => sessionLog.log(line) });
+  updates = startUpdates({
+    getWindow: () => window,
+    settingsStore,
+    log: (line) => sessionLog.log(line),
+    onPreferencesChanged: () => rebuildMenu(),
+    onLaunchInstallAbandoned: () => void autoStartFromSaved(),
+  });
+  rebuildMenu();
 
   if (process.env["ELECTRON_RENDERER_URL"]) {
     await window.loadURL(process.env["ELECTRON_RENDERER_URL"]);

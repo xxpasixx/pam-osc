@@ -7,6 +7,7 @@ import {
   isWorthInstalling,
   needsInstallConfirmation,
   parsePreferences,
+  pendingLaunchInstall,
 } from "./policy.js";
 
 describe("PAM-34 update policy", () => {
@@ -75,5 +76,13 @@ describe("PAM-34 update policy", () => {
     expect(linux(undefined, false)).toBe("unsupported-platform");
 
     expect(fallbackReason({ platform: "win32", appPath: "", appImagePath: undefined, appImageWritable: false })).toBeUndefined();
+  });
+
+  it("AC-15: a scheduled launch install only runs when it is still newer, never in dev", () => {
+    expect(pendingLaunchInstall({ installOnNextLaunch: "2.0.0-beta.4" }, "2.0.0-beta.3", true)).toBe("2.0.0-beta.4");
+    expect(pendingLaunchInstall({ installOnNextLaunch: "2.0.0-beta.4" }, "2.0.0-beta.4", true)).toBeUndefined();
+    expect(pendingLaunchInstall({ installOnNextLaunch: "2.0.0-beta.4" }, "2.0.0-beta.3", false)).toBeUndefined();
+    expect(pendingLaunchInstall({}, "2.0.0-beta.3", true)).toBeUndefined();
+    expect(pendingLaunchInstall(undefined, "2.0.0-beta.3", true)).toBeUndefined();
   });
 });

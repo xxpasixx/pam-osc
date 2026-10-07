@@ -76,6 +76,7 @@ const updates: PamOscUpdatesApi = {
   checkNow: () => ipcRenderer.invoke(UPDATE_IPC.checkNow),
   setPreferences: (preferences) => ipcRenderer.invoke(UPDATE_IPC.setPreferences, preferences),
   installNow: () => ipcRenderer.invoke(UPDATE_IPC.installNow),
+  scheduleForNextLaunch: () => ipcRenderer.invoke(UPDATE_IPC.scheduleForNextLaunch),
   openReleasePage: (url) => ipcRenderer.invoke(UPDATE_IPC.openReleasePage, url),
   onStatus: subscribe(UPDATE_IPC.evStatus),
 };

@@ -6,14 +6,27 @@ import "./update.css";
 
 /**
  * PAM-34 AC-5: a slim, dismissable bar under the status bar when an update is
- * ready (or needs a manual download). Never covers the editor or status views.
+ * ready, being installed at start (AC-15) or needs a manual download. Never
+ * covers the editor or status views. Closing the app never installs.
  */
 export function UpdateBar({ engineState }: { engineState: EngineState }) {
   const status = useUpdateStatus();
   const [dismissed, setDismissed] = useState<string | undefined>();
   const state = status?.state;
-  if (!state || (state.kind !== "ready" && state.kind !== "fallback")) return null;
-  if (dismissed === `${state.kind}:${state.version}`) return null;
+  if (!state) return null;
+  if (state.kind === "installing") {
+    return (
+      <div className="update-bar" role="status">
+        <span>
+          <strong>Installing update {state.version} …</strong> pam-osc restarts in a moment; the bridge starts
+          afterwards.
+        </span>
+      </div>
+    );
+  }
+  if (state.kind !== "ready" && state.kind !== "fallback") return null;
+  const dismissKey = `${state.kind}:${state.version}:${state.kind === "ready" && state.scheduled ? "s" : ""}`;
+  if (dismissed === dismissKey) return null;
 
   const install = () => {
     // AC-6: a restart interrupts MIDI ↔ MA3 — ask while the bridge is active.
@@ -33,9 +46,16 @@ export function UpdateBar({ engineState }: { engineState: EngineState }) {
       {state.kind === "ready" ? (
         <>
           <span>
-            <strong>Update {state.version} ready</strong> — installs automatically when you close pam-osc.
+            <strong>
+              {state.scheduled
+                ? `Update ${state.version} installs on next launch`
+                : `Update ${state.version} is available`}
+            </strong>
           </span>
           <div className="grow" />
+          {!state.scheduled && (
+            <button onClick={() => void window.pamOscUpdates.scheduleForNextLaunch()}>On next launch</button>
+          )}
           <button className="primary" onClick={install}>
             Install now
           </button>
@@ -57,7 +77,7 @@ export function UpdateBar({ engineState }: { engineState: EngineState }) {
       <button
         className="subtle update-dismiss"
         aria-label="Hide update notice"
-        onClick={() => setDismissed(`${state.kind}:${state.version}`)}
+        onClick={() => setDismissed(dismissKey)}
       >
         ×
       </button>

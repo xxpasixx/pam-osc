@@ -1,7 +1,13 @@
 import { EventEmitter } from "node:events";
 import { describe, expect, it, vi } from "vitest";
 import type { UpdatePreferences, UpdateStatus } from "../shared/update.js";
-import { CHECK_INTERVAL_MS, FIRST_CHECK_DELAY_MS, UpdateService, type UpdaterLike } from "./updater.js";
+import {
+  CHECK_INTERVAL_MS,
+  FIRST_CHECK_DELAY_MS,
+  LAUNCH_INSTALL_TIMEOUT_MS,
+  UpdateService,
+  type UpdaterLike,
+} from "./updater.js";
 
 class FakeUpdater extends EventEmitter implements UpdaterLike {
   allowPrerelease = false;
@@ -28,12 +34,23 @@ class FakeUpdater extends EventEmitter implements UpdaterLike {
   }
 }
 
-function setup(overrides: { version?: string; stored?: { checkAutomatically?: boolean; receiveBetas?: boolean }; appPath?: string; supported?: boolean } = {}) {
+function setup(
+  overrides: {
+    version?: string;
+    stored?: { checkAutomatically?: boolean; receiveBetas?: boolean };
+    appPath?: string;
+    supported?: boolean;
+    launchInstall?: string;
+  } = {}
+) {
   const updater = new FakeUpdater();
   const statuses: UpdateStatus[] = [];
   const persisted: UpdatePreferences[] = [];
   const logs: string[] = [];
   const timeouts: Array<() => void> = [];
+  const timeoutDelays: number[] = [];
+  const launchSchedule: Array<string | undefined> = [];
+  const abandoned: number[] = [];
   const intervals: Array<() => void> = [];
   const service = new UpdateService({
     updater,
@@ -43,6 +60,11 @@ function setup(overrides: { version?: string; stored?: { checkAutomatically?: bo
     persist: async (preferences) => {
       persisted.push(preferences);
     },
+    persistLaunchInstall: async (version) => {
+      launchSchedule.push(version);
+    },
+    launchInstall: overrides.launchInstall,
+    onLaunchInstallAbandoned: () => abandoned.push(1),
     location: () => ({
       platform: "darwin",
       appPath: overrides.appPath ?? "/Applications/pam-osc.app",
@@ -53,10 +75,11 @@ function setup(overrides: { version?: string; stored?: { checkAutomatically?: bo
     onStatus: (status) => statuses.push(status),
     timers: {
       setTimeout: ((fn: () => void, ms: number) => {
-        expect(ms).toBe(FIRST_CHECK_DELAY_MS);
+        timeoutDelays.push(ms);
         timeouts.push(fn);
-        return 0;
+        return timeouts.length;
       }) as unknown as typeof setTimeout,
+      clearTimeout: vi.fn() as unknown as typeof clearTimeout,
       setInterval: ((fn: () => void, ms: number) => {
         expect(ms).toBe(CHECK_INTERVAL_MS);
         intervals.push(fn);
@@ -66,23 +89,24 @@ function setup(overrides: { version?: string; stored?: { checkAutomatically?: bo
     },
     now: () => new Date("2026-10-07T12:00:00Z"),
   });
-  return { updater, service, statuses, persisted, logs, timeouts, intervals };
+  return { updater, service, statuses, persisted, logs, timeouts, timeoutDelays, intervals, launchSchedule, abandoned };
 }
 
 describe("PAM-34 UpdateService", () => {
   it("configures the updater for live-show safety and the channel (AC-7, AC-8, AC-10)", () => {
     const { updater } = setup({ version: "2.0.0-beta.3" });
     expect(updater.autoDownload).toBe(false);
-    expect(updater.autoInstallOnAppQuit).toBe(true);
+    expect(updater.autoInstallOnAppQuit).toBe(false); // closing the app never installs
     expect(updater.allowDowngrade).toBe(false);
     expect(updater.allowPrerelease).toBe(true);
     expect(setup({ version: "2.0.0" }).updater.allowPrerelease).toBe(false);
   });
 
   it("AC-1: first scheduled check runs after the start delay, then downloads a newer version", async () => {
-    const { updater, service, timeouts, statuses } = setup();
+    const { updater, service, timeouts, timeoutDelays, statuses } = setup();
     updater.checkResult = () => updater.emit("update-available", { version: "2.0.0-beta.4" });
     service.start();
+    expect(timeoutDelays).toEqual([FIRST_CHECK_DELAY_MS]);
     expect(updater.checks).toBe(0); // nothing before the delay
     timeouts[0]!();
     await Promise.resolve();
@@ -92,7 +116,7 @@ describe("PAM-34 UpdateService", () => {
     updater.emit("download-progress", { percent: 42.4 });
     expect(service.status().state).toEqual({ kind: "downloading", version: "2.0.0-beta.4", percent: 42 });
     updater.emit("update-downloaded", { version: "2.0.0-beta.4" });
-    expect(service.status().state).toEqual({ kind: "ready", version: "2.0.0-beta.4" });
+    expect(service.status().state).toEqual({ kind: "ready", version: "2.0.0-beta.4", scheduled: false });
     expect(statuses.at(-1)?.state.kind).toBe("ready");
   });
 
@@ -126,6 +150,7 @@ describe("PAM-34 UpdateService", () => {
     expect(updater.installs).toHaveLength(0);
     updater.emit("update-downloaded", { version: "2.0.0-beta.4" });
     expect(updater.installs).toHaveLength(0); // ready, but no self-install
+    expect(updater.autoInstallOnAppQuit).toBe(false); // and not on quit either
     service.installNow();
     expect(updater.installs).toEqual([[true, true]]);
   });
@@ -139,7 +164,7 @@ describe("PAM-34 UpdateService", () => {
     updater.checkResult = () => updater.emit("error", new Error("offline"));
     intervals[0]!();
     await service.checkNow();
-    expect(service.status().state).toEqual({ kind: "ready", version: "2.0.0-beta.4" });
+    expect(service.status().state).toEqual({ kind: "ready", version: "2.0.0-beta.4", scheduled: false });
   });
 
   it("EC-3: an older or equal offered version counts as up to date", async () => {
@@ -201,7 +226,6 @@ describe("PAM-34 UpdateService", () => {
     expect(service.status().state.kind).toBe("ready");
     updater.checkResult = () => updater.emit("update-not-available", { version: "2.0.0-beta.3" });
     await service.setPreferences({ checkAutomatically: true, receiveBetas: false });
-    expect(updater.autoInstallOnAppQuit).toBe(false);
     expect(service.status().state.kind).toBe("up-to-date");
     service.installNow();
     expect(updater.installs).toHaveLength(0);
@@ -213,7 +237,7 @@ describe("PAM-34 UpdateService", () => {
     await service.checkNow();
     await service.setPreferences({ checkAutomatically: false, receiveBetas: false });
     updater.emit("update-downloaded", { version: "2.0.0-beta.4" });
-    expect(updater.autoInstallOnAppQuit).toBe(false);
+    await Promise.resolve();
     expect(service.status().state.kind).not.toBe("ready");
   });
 
@@ -234,6 +258,75 @@ describe("PAM-34 UpdateService", () => {
     updater.checkForUpdates = () => Promise.resolve(null);
     await service.checkNow();
     expect(service.status().state.kind).toBe("error");
+  });
+
+  it("AC-15: 'On next launch' remembers the version instead of installing", async () => {
+    const { updater, service, launchSchedule } = setup();
+    updater.checkResult = () => updater.emit("update-available", { version: "2.0.0-beta.4" });
+    await service.checkNow();
+    updater.emit("update-downloaded", { version: "2.0.0-beta.4" });
+    await Promise.resolve();
+    await service.scheduleForNextLaunch();
+    expect(launchSchedule).toEqual(["2.0.0-beta.4"]);
+    expect(service.status().state).toEqual({ kind: "ready", version: "2.0.0-beta.4", scheduled: true });
+    expect(updater.installs).toHaveLength(0);
+  });
+
+  it("BUG-2 + AC-15: betas off also forgets a scheduled pre-release", async () => {
+    const { updater, service, launchSchedule } = setup();
+    updater.checkResult = () => updater.emit("update-available", { version: "2.0.0-beta.4" });
+    await service.checkNow();
+    updater.emit("update-downloaded", { version: "2.0.0-beta.4" });
+    await Promise.resolve();
+    await service.scheduleForNextLaunch();
+    updater.checkResult = () => updater.emit("update-not-available", { version: "2.0.0-beta.3" });
+    await service.setPreferences({ checkAutomatically: true, receiveBetas: false });
+    expect(launchSchedule).toEqual(["2.0.0-beta.4", undefined]);
+  });
+
+  it("AC-15: at the next start the scheduled version installs before anything else", async () => {
+    const { updater, service, launchSchedule, abandoned, timeoutDelays } = setup({
+      version: "2.0.0-beta.3",
+      stored: { receiveBetas: false },
+      launchInstall: "2.0.0-beta.4",
+    });
+    expect(service.installingAtLaunch).toBe(true);
+    expect(service.status().state).toEqual({ kind: "installing", version: "2.0.0-beta.4" });
+    expect(updater.allowPrerelease).toBe(true); // the scheduled pre-release must be findable
+    updater.checkResult = () => updater.emit("update-available", { version: "2.0.0-beta.4" });
+    service.start();
+    expect(timeoutDelays).toEqual([LAUNCH_INSTALL_TIMEOUT_MS]);
+    expect(updater.checks).toBe(1);
+    expect(updater.downloads).toBe(1);
+    expect(service.status().state.kind).toBe("installing");
+    updater.emit("update-downloaded", { version: "2.0.0-beta.4" });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(launchSchedule).toEqual([undefined]); // forgotten before installing — no retry loop
+    expect(updater.installs).toEqual([[true, true]]);
+    expect(abandoned).toHaveLength(0);
+  });
+
+  it("AC-16: a failing launch install is abandoned — the bridge starts, schedule cleared", async () => {
+    const { updater, service, launchSchedule, abandoned, intervals } = setup({ launchInstall: "2.0.0-beta.4" });
+    updater.checkResult = () => updater.emit("error", new Error("offline"));
+    service.start();
+    await Promise.resolve();
+    expect(abandoned).toHaveLength(1);
+    expect(launchSchedule).toEqual([undefined]);
+    expect(service.installingAtLaunch).toBe(false);
+    expect(service.status().state.kind).toBe("error");
+    expect(intervals).toHaveLength(1); // normal schedule resumes
+    expect(updater.installs).toHaveLength(0);
+  });
+
+  it("AC-16: a launch install that never restarts the app times out", () => {
+    const { updater, service, abandoned, timeouts } = setup({ launchInstall: "2.0.0-beta.4" });
+    updater.checkResult = () => updater.emit("update-available", { version: "2.0.0-beta.4" });
+    service.start();
+    timeouts[0]!(); // the LAUNCH_INSTALL_TIMEOUT_MS timer
+    expect(abandoned).toHaveLength(1);
+    expect(service.installingAtLaunch).toBe(false);
   });
 
   it("dev builds never touch the updater", async () => {

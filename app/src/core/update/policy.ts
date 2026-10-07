@@ -79,6 +79,20 @@ export function isWorthInstalling(candidate: string, installedVersion: string): 
   return compareVersions(candidate, installedVersion) > 0;
 }
 
+/**
+ * AC-15: the version to install right at this start, if the user scheduled
+ * one and it is still newer than what runs. Unpackaged builds never install.
+ */
+export function pendingLaunchInstall(
+  stored: StoredUpdatePreferences | undefined,
+  installedVersion: string,
+  packaged: boolean
+): string | undefined {
+  const target = stored?.installOnNextLaunch;
+  if (!packaged || !target) return undefined;
+  return isWorthInstalling(target, installedVersion) ? target : undefined;
+}
+
 /** AC-6: an active bridge (engine starting/running) needs a confirmation before restarting. */
 export function needsInstallConfirmation(engineState: "stopped" | "starting" | "running"): boolean {
   return engineState !== "stopped";
