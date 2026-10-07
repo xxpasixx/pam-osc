@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Ma3SetupInfo } from "../../shared/ipc.js";
-import { ma3Checklist, nextOpenStep } from "./ma3-checklist.js";
+import { ma3Checklist, nextOpenStep, settledConnection } from "./ma3-checklist.js";
 
 const info = (installs: Partial<Ma3SetupInfo["installs"][number]>[] = []): Ma3SetupInfo => ({
   bundledVersion: "2.0.0.3",
@@ -76,5 +76,43 @@ describe("PAM-36 MA3 checklist", () => {
       connection: { state: "connected", attempt: 1, gaveUp: false },
     });
     expect(statuses(steps)).toEqual(["open", "waiting", "waiting"]);
+  });
+
+  it("review BUG-1: an outdated plugin on the console still means the console answers", () => {
+    const steps = ma3Checklist({
+      info: info(),
+      onThisComputer: false,
+      engineState: "running",
+      connection: { state: "plugin-outdated", attempt: 1, gaveUp: false },
+    });
+    expect(statuses(steps)).toEqual(["done", "done", "open"]);
+    expect(steps[2]!.summary).toContain("outdated");
+    expect(nextOpenStep(steps)).toBe("plugin");
+  });
+
+  it("review BUG-3: an outdated onPC plugin keeps step 1 open even when the console answers", () => {
+    const steps = ma3Checklist({
+      info: info([{ hasPamOsc: true, hasOscConfig: true, installedVersion: "2.0.0.1" }]),
+      onThisComputer: true,
+      engineState: "running",
+      connection: { state: "plugin-outdated", attempt: 1, gaveUp: false },
+    });
+    expect(steps[0]!.status).toBe("open");
+    expect(steps[0]!.summary).toBe("The plugin in onPC (2.0.0.1) is outdated — update it to 2.0.0.3");
+    expect(nextOpenStep(steps)).toBe("files");
+  });
+
+  it("names the USB route when no onPC installation exists", () => {
+    const steps = ma3Checklist({ info: info(), onThisComputer: true, engineState: "stopped", connection: undefined });
+    expect(steps[0]!.summary).toBe("No onPC installation found — use a USB stick or folder");
+    expect(steps[1]!.summary).toBe("After step 1");
+  });
+
+  it("review BUG-2: a running re-check keeps the last real result", () => {
+    const connected = { state: "connected" as const, attempt: 1, gaveUp: false };
+    const checking = { state: "checking" as const, attempt: 2, gaveUp: false };
+    expect(settledConnection(checking, connected)).toBe(connected);
+    expect(settledConnection(checking, undefined)).toBe(checking);
+    expect(settledConnection(connected, undefined)).toBe(connected);
   });
 });

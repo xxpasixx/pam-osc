@@ -1,12 +1,23 @@
 /* PAM-36 MA3 setup checklist. */
 
-.checklist-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+.checklist {
+  position: relative;
+}
+
+/* Screen-reader-only status word next to the LED (review BUG-4). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .checklist-progress {
+  position: absolute;
+  top: 16px;
+  right: 18px;
   font-family: var(--mono);
   font-size: 12px;
   color: var(--text-dim);

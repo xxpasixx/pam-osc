@@ -13,7 +13,7 @@ import type {
 } from "../../../shared/ipc.js";
 import { isPort, type OscConfigValues } from "../../../shared/osc-config.js";
 import { comparePluginVersions } from "../../../shared/plugin-version.js";
-import { ma3Checklist } from "../ma3-checklist.js";
+import { ma3Checklist, settledConnection } from "../ma3-checklist.js";
 import { consoleRoute } from "../wizard-logic.js";
 import { ConnectionCheck, type CheckContext } from "./ConnectionCheck.js";
 import { Ma3Checklist } from "./Ma3Checklist.js";
@@ -592,6 +592,10 @@ export function Ma3SetupView({
   check?: CheckContext;
 }) {
   const [info, setInfo] = useState<Ma3SetupInfo | undefined>();
+  // PAM-36 BUG-2: last connection result that wasn't "checking".
+  const settledRef = useRef<CheckContext["connection"]>(undefined);
+  const settled = settledConnection(check?.connection, settledRef.current);
+  if (check?.connection && check.connection.state !== "checking") settledRef.current = check.connection;
   const [loadError, setLoadError] = useState<string | undefined>();
 
   const refresh = useCallback(() => {
@@ -649,7 +653,7 @@ export function Ma3SetupView({
       info,
       onThisComputer,
       engineState: check?.engineState ?? "stopped",
-      connection: check?.connection,
+      connection: settled,
     });
     return (
       <Ma3Checklist

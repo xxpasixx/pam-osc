@@ -180,7 +180,7 @@ export function BoardInspector({
           />
           <label
             className="check"
-            title="For boards that lose LED state: the app re-sends its last feedback values every few seconds (PAM-25 — local, no console traffic)"
+            title="For boards that lose LED state: the app re-sends its last feedback values every few seconds (local only, no console traffic)"
           >
             <input
               type="checkbox"

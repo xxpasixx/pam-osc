@@ -8,6 +8,12 @@ const TITLES: Record<StepId, string> = {
   plugin: "Import & start the plugin",
 };
 
+const STATUS_WORD: Record<ChecklistStep["status"], string> = {
+  done: "Done",
+  open: "To do",
+  waiting: "Waiting",
+};
+
 /**
  * PAM-36: the MA3 tab as a checklist — one row per step with a status LED
  * and what the app sees right now. Only the next open step is expanded; done
@@ -21,12 +27,10 @@ export function Ma3Checklist({ steps, bodies }: { steps: ChecklistStep[]; bodies
 
   return (
     <section className="card checklist" aria-label="MA3 setup checklist">
-      <div className="checklist-head">
-        <h2>GrandMA3 setup</h2>
-        <span className={`checklist-progress ${doneCount === steps.length ? "complete" : ""}`}>
-          {doneCount === steps.length ? "All set" : `${doneCount} of ${steps.length} done`}
-        </span>
-      </div>
+      <h2>GrandMA3 setup</h2>
+      <span className={`checklist-progress ${doneCount === steps.length ? "complete" : ""}`} role="status">
+        {doneCount === steps.length ? "All set" : `${doneCount} of ${steps.length} done`}
+      </span>
       <ol className="checklist-steps">
         {steps.map((step, index) => {
           const open = overrides[step.id] ?? step.id === auto;
@@ -36,12 +40,14 @@ export function Ma3Checklist({ steps, bodies }: { steps: ChecklistStep[]; bodies
               <button
                 className="checklist-row"
                 aria-expanded={open}
+                aria-controls={`checklist-body-${step.id}`}
                 onClick={() => setOverrides((current) => ({ ...current, [step.id]: !open }))}
               >
                 <span className={`led ${led}`} aria-hidden="true" />
                 <span className="checklist-number">{index + 1}</span>
                 <span className="checklist-text">
                   <span className="checklist-title">{TITLES[step.id]}</span>
+                  <span className="visually-hidden">{STATUS_WORD[step.status]}. </span>
                   <span className="checklist-summary">{step.summary}</span>
                 </span>
                 <span className="checklist-state">{step.status === "done" ? "✓" : ""}</span>
@@ -49,7 +55,7 @@ export function Ma3Checklist({ steps, bodies }: { steps: ChecklistStep[]; bodies
                   {open ? "▾" : "▸"}
                 </span>
               </button>
-              <div className="checklist-body" hidden={!open}>
+              <div className="checklist-body" id={`checklist-body-${step.id}`} hidden={!open}>
                 {bodies[step.id]}
               </div>
             </li>

@@ -713,7 +713,7 @@ export function EditorView({
                 setDraft((current) => (current ? { ...current, name: event.target.value } : current))
               }
             />
-            <label className="editor-status" title="Maturity / provenance of this mapping (PAM-19)">
+            <label className="editor-status" title="Maturity / provenance of this mapping">
               Status
               <select
                 aria-label="Mapping status"
