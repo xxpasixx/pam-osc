@@ -1,6 +1,6 @@
 # PAM-21 — Board images (photo per board)
 
-**Status:** Building
+**Status:** In Review
 **Depends on:** PAM-1, PAM-6, PAM-11
 
 ## Why
@@ -27,12 +27,22 @@ it provides the mechanism and shows a placeholder until the user drops files in.
 - **AC-4** Image lookup is **path-traversal safe**: only a bare basename with an
   allowed image extension is ever read, always from the board's `images/`
   folder; anything else is ignored (no read outside that folder).
-- **AC-5** The app ships **no** third-party images; `resources/devices/images/`
-  carries only a README stating the licence rule + naming + size guidance.
+- **AC-5** _(delta 2026-10-07 — was: "ships **no** third-party images")_ The
+  app ships only images it may redistribute: own photos, freely licensed photos
+  (e.g. Wikimedia Commons CC0/CC BY/CC BY-SA), or with written manufacturer
+  permission — never manufacturer press/stock photos. `resources/devices/images/`
+  carries a README stating the licence rule + naming + size guidance.
+- **AC-6** _(added 2026-10-07)_ Every bundled image has a row in
+  `resources/devices/images/CREDITS.md` (file, source link, author, licence,
+  changes made); the images keep their own licence and are marked as not
+  GPL-licensed. First set: `apc-40-mk2`, `apc-mini`, `mpx16`, `launchpad` from
+  Wikimedia Commons.
+- **AC-7** _(added 2026-10-07)_ The thumbnail shows the **whole** image
+  letterboxed (no cropping by the UI) — boards range from 2:1 to square.
 
 ## Out of Scope
 
-- Bundling any manufacturer/stock photos (licence).
+- Bundling any manufacturer/stock photos without written permission (licence).
 - In-app image upload/cropping UI — the user places files in the folder.
 - Per-mapping images (this is per board/hardware).
 - Auto-generated schematic thumbnails (was the alternative; maintainer chose

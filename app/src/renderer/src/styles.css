@@ -1400,7 +1400,8 @@ button.learning {
 .board-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* Whole board visible, letterboxed — boards range from 2:1 to square. */
+  object-fit: contain;
   display: block;
 }
 .board-thumb--empty .board-thumb-ph {
