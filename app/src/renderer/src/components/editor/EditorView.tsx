@@ -242,6 +242,7 @@ export function EditorView({
           id: kebab(target.name),
           name: target.name,
           mode: "standard",
+          resendFeedback: false,
           defaultMidiChannel: 1,
           layout: { width: target.width, height: target.height },
           controls: [],
@@ -1038,11 +1039,9 @@ function MappingFeedbackOptions({
       label: "Send timecode",
       title: "Mirror timecode state to a 7-segment display (mc-mode boards)",
     },
-    {
-      key: "resendButtons",
-      label: "Resend buttons",
-      title: "v1 workaround: periodically re-send button LED states (fixes controllers that drop LED feedback)",
-    },
+    // resendButtons deliberately absent (PAM-25): stale-LED resend is a board
+    // fact — it lives as the "Re-send feedback" checkbox on the board, and the
+    // app replays its own cache instead of asking the console to resend.
   ];
   return (
     <div className="feedback-options" role="group" aria-label="Feedback options">

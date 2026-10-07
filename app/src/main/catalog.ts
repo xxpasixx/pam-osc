@@ -93,6 +93,8 @@ export class Catalog {
         id: device.id,
         name: device.name,
         origin: this.deviceSourceById.get(device.id)?.origin ?? "bundled",
+        manufacturer: device.manufacturer,
+        setupInstructions: device.setupInstructions,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
@@ -158,10 +160,10 @@ export class Catalog {
     return [...byFile.entries()].map(([file, error]) => ({ file: basename(file), error, valid: false as const }));
   }
 
-  /** Loader notices (shadowing info etc.) for the notices area. */
+  /** Loader notices for the notices area. Expected shadowing (kind "override") stays out of the UI. */
   notices(): Notice[] {
     return this.loaded.issues
-      .filter((issue) => issue.severity === "info")
+      .filter((issue) => issue.severity === "info" && issue.kind !== "override")
       .map((issue) => ({ severity: "info" as const, source: basename(issue.file), message: issue.message }));
   }
 

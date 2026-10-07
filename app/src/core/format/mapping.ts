@@ -20,6 +20,9 @@ export const actionSchema = z.discriminatedUnion("type", [
       type: z.literal("modifier"),
       modifier: z.enum(["encoderFine", "encoderRough", "attributeSelect"]),
       attribute: z.string().min(1).optional(),
+      // PAM-31: divisor (encoderFine) / multiplier (encoderRough) while the
+      // toggle is active. Absent = v1's fixed 10. Bounded like options.amount.
+      factor: z.number().positive().max(1000).optional(),
     })
     .superRefine((action, ctx) => {
       if (action.modifier === "attributeSelect" && !action.attribute) {
@@ -97,7 +100,10 @@ export const mappingSchema = z
     // enableTimecodeSend above is reused as the timecode flag.
     sendColors: z.boolean().default(true),
     sendNames: z.boolean().default(true),
-    // v1's automaticResendButtons workaround — off by default.
+    // DEPRECATED (PAM-25): v1's console-side resend workaround. Still accepted
+    // so older/shared files load, but ignored — the app replays its own
+    // feedback cache per the DEVICE's resendFeedback flag, and the plugin
+    // handshake pins r=0. Kept out of the mapping editor UI.
     resendButtons: z.boolean().default(false),
     assignments: z.array(assignmentSchema),
   })

@@ -180,3 +180,66 @@ describe("mappingSchema", () => {
     expect(mappingSchema.safeParse(ok).success).toBe(true);
   });
 });
+
+describe("device initSysEx frame validation (PAM-24 AC-6)", () => {
+  const parse = (initSysEx: number[]) => deviceDefinitionSchema.safeParse(minimalDevice({ initSysEx }));
+
+  it("accepts a well-formed SysEx frame (F0 … F7, 7-bit inner)", () => {
+    expect(parse([0xf0, 0x47, 0x7f, 0x29, 0x60, 0x0, 0x4, 0x41, 0x1, 0x1, 0x1, 0xf7]).success).toBe(true);
+  });
+
+  it("omitting initSysEx is valid (optional, additive — AC-5)", () => {
+    expect(deviceDefinitionSchema.safeParse(minimalDevice()).success).toBe(true);
+  });
+
+  it("rejects a frame that does not start with 0xF0", () => {
+    expect(parse([0x00, 0x47, 0xf7]).success).toBe(false);
+  });
+
+  it("rejects a frame that does not end with 0xF7", () => {
+    expect(parse([0xf0, 0x47, 0x00]).success).toBe(false);
+  });
+
+  it("rejects an inner data byte above 127 (only F0/F7 framing may exceed 7-bit)", () => {
+    expect(parse([0xf0, 0x80, 0xf7]).success).toBe(false);
+  });
+
+  it("rejects an over-length frame (> 64 bytes)", () => {
+    expect(parse([0xf0, ...new Array(64).fill(0), 0xf7]).success).toBe(false);
+  });
+});
+
+describe("device initCC validation (PAM-24 AC-8)", () => {
+  const parse = (initCC: unknown) => deviceDefinitionSchema.safeParse(minimalDevice({ initCC }));
+
+  it("accepts a list of controller/value (channel optional)", () => {
+    expect(
+      parse([
+        { controller: 24, value: 2 },
+        { controller: 56, value: 2, channel: 1 },
+      ]).success
+    ).toBe(true);
+  });
+
+  it("rejects a controller or value outside 0–127", () => {
+    expect(parse([{ controller: 200, value: 2 }]).success).toBe(false);
+    expect(parse([{ controller: 24, value: 200 }]).success).toBe(false);
+  });
+
+  it("rejects an unknown key (strict object)", () => {
+    expect(parse([{ controller: 24, value: 2, style: "volume" }]).success).toBe(false);
+  });
+});
+
+describe("app-side feedback resend (PAM-25)", () => {
+  it("device resendFeedback is optional, defaults to false, accepts true (AC-1)", () => {
+    const absent = deviceDefinitionSchema.safeParse(minimalDevice());
+    expect(absent.success && absent.data.resendFeedback).toBe(false);
+    const on = deviceDefinitionSchema.safeParse(minimalDevice({ resendFeedback: true }));
+    expect(on.success && on.data.resendFeedback).toBe(true);
+  });
+
+  it("mapping resendButtons stays accepted for older files (AC-4, deprecated)", () => {
+    expect(mappingSchema.safeParse(minimalMapping({ resendButtons: true })).success).toBe(true);
+  });
+});

@@ -34,7 +34,13 @@ function harness(key: string) {
     defaultMidiChannel: 1,
     layout: { width: 2, height: 2 },
     controls: [
-      { id: "btn", type: "button", midi: { kind: "note", number: 10 }, position: { x: 0, y: 0, width: 1, height: 1 }, capabilities: { led: "none" } },
+      {
+        id: "btn",
+        type: "button",
+        midi: { kind: "note", number: 10 },
+        position: { x: 0, y: 0, width: 1, height: 1 },
+        capabilities: { led: "none" },
+      },
     ],
   });
   const mapping = mappingSchema.parse({
@@ -46,7 +52,13 @@ function harness(key: string) {
     assignments: [{ controlId: "btn", action: { type: "quickKey", key } }],
   });
   const unit = buildUnit(mapping, device, []);
-  const unitRuntime: UnitRuntime = { unit, connection: undefined, cache: new Map(), colors: new Array(8).fill(0), rgb: new Map() };
+  const unitRuntime: UnitRuntime = {
+    unit,
+    connection: undefined,
+    cache: new Map(),
+    colors: new Array(8).fill(0),
+    rgb: new Map(),
+  };
   const sent: OscMessage[] = [];
   const context: InputContext = {
     state: createRuntimeState(),

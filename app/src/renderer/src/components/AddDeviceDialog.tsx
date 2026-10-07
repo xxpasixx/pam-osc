@@ -31,6 +31,7 @@ export function AddDeviceDialog({
   const ref = useRef<HTMLDialogElement>(null);
   const [boardId, setBoardId] = useState<string | undefined>();
   const [newName, setNewName] = useState<string | undefined>();
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const dialog = ref.current;
@@ -38,6 +39,7 @@ export function AddDeviceDialog({
     if (open && !dialog.open) {
       setBoardId(undefined);
       setNewName(undefined);
+      setSearch("");
       dialog.showModal();
     }
     if (!open && dialog.open) dialog.close();
@@ -46,14 +48,43 @@ export function AddDeviceDialog({
   const board = boards.find((candidate) => candidate.id === boardId);
   const mappings = board ? catalog.filter((entry) => entry.deviceDefinitionId === board.id) : [];
 
+  // PAM-29: filter by name, manufacturer or id — the list is small, so a
+  // simple case-insensitive substring match is enough.
+  const query = search.trim().toLowerCase();
+  const visibleBoards =
+    query === ""
+      ? boards
+      : boards.filter((candidate) =>
+          [candidate.name, candidate.manufacturer ?? "", candidate.id].some((field) =>
+            field.toLowerCase().includes(query)
+          )
+        );
+
   return (
     <dialog ref={ref} onClose={onClose} aria-label="Add device">
       {!board && (
         <>
           <h3>Add device — pick the board</h3>
+          <div className="field">
+            <label htmlFor="add-device-search">Search boards</label>
+            <input
+              id="add-device-search"
+              type="search"
+              value={search}
+              autoFocus
+              placeholder="Name or manufacturer…"
+              onChange={(event) => setSearch(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && visibleBoards.length === 1) setBoardId(visibleBoards[0]!.id);
+              }}
+            />
+          </div>
           <div className="picker-list">
             {boards.length === 0 && <p className="empty-state">No boards loaded.</p>}
-            {boards.map((candidate) => {
+            {boards.length > 0 && visibleBoards.length === 0 && (
+              <p className="empty-state">No board matches “{search.trim()}”.</p>
+            )}
+            {visibleBoards.map((candidate) => {
               const count = catalog.filter((entry) => entry.deviceDefinitionId === candidate.id).length;
               return (
                 <button key={candidate.id} className="picker-item" onClick={() => setBoardId(candidate.id)}>
@@ -69,21 +100,34 @@ export function AddDeviceDialog({
                 </button>
               );
             })}
-            {invalidFiles.map((file) => (
-              <div key={file.file} className="picker-item invalid" role="note">
-                <span>
-                  <span className="mono">{file.file}</span>
-                  <span className="error"> — {file.error}</span>
-                </span>
-                <span className="badge">invalid</span>
-              </div>
-            ))}
+            {query === "" &&
+              invalidFiles.map((file) => (
+                <div key={file.file} className="picker-item invalid" role="note">
+                  <span>
+                    <span className="mono">{file.file}</span>
+                    <span className="error"> — {file.error}</span>
+                  </span>
+                  <span className="badge">invalid</span>
+                </div>
+              ))}
           </div>
         </>
       )}
       {board && (
         <>
           <h3>Add device — pick a mapping for {board.name}</h3>
+          {board.setupInstructions && (
+            <div className="notice setup-instructions" role="note">
+              <span className="msg">
+                <strong>Board setup</strong>
+                {board.setupInstructions.split("\n").map((line, index) => (
+                  <span key={index} className="setup-step">
+                    {line}
+                  </span>
+                ))}
+              </span>
+            </div>
+          )}
           <div className="picker-list">
             {mappings.map((entry) => {
               const active = alreadyActive.has(entry.id);

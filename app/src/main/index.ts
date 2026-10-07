@@ -276,7 +276,9 @@ async function main(): Promise<void> {
     ? join(process.resourcesPath, "resources", "osc", "pam-osc.xml")
     : resolve(app.getAppPath(), "../gma3_library/inout/osc/pam-osc.xml");
   const detectInstalls = () =>
-    detectMa3Installs(ma3BaseCandidates(process.platform, process.env as Record<string, string | undefined>, homedir()));
+    detectMa3Installs(
+      ma3BaseCandidates(process.platform, process.env as Record<string, string | undefined>, homedir())
+    );
   // Non-internal IPv4 addresses — the OSC destination IP(s) shown in the guide (AC-5).
   const localIps = () =>
     Object.values(networkInterfaces())

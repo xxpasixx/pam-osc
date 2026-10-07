@@ -1,0 +1,389 @@
+{
+  "formatVersion": 1,
+  "id": "x32-compact-cc-default-1",
+  "name": "X32 Compact (CC) Default 1",
+  "status": "community",
+  "notes": "Default layout for the X32 Compact in DAW Remote 'MIDI CC' mode: 16 motorized faders on executors 201-216 (left bank 201-208, right bank 209-216) plus the main fader on 217, all with fader-position feedback. Each strip's Mute button triggers the same executor with on-off LED feedback - one press = one executor go, the LED mirrors the executor's running state. The wire scheme (CC 0-7/72-79/70 on ch 1 for faders, same numbers on ch 2 for the mute buttons) was hardware-verified 2026-07-26 including motor and LED feedback. Console setup: SETUP > Remote > protocol 'MIDI CC', interface Card MIDI (X-USB), Remote engaged. No displays, encoders or further button rows - the X32 does not transmit them in CC remote mode.",
+  "deviceDefinitionId": "x32-compact-cc",
+  "midiPort": {
+    "input": "X-USB",
+    "output": "X-USB"
+  },
+  "enableTimecodeSend": false,
+  "assignments": [
+    {
+      "controlId": "fader-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-1",
+      "action": {
+        "type": "executor",
+        "number": 201
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-2",
+      "action": {
+        "type": "executor",
+        "number": 202
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-3",
+      "action": {
+        "type": "executor",
+        "number": 203
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-4",
+      "action": {
+        "type": "executor",
+        "number": 204
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-5",
+      "action": {
+        "type": "executor",
+        "number": 205
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-6",
+      "action": {
+        "type": "executor",
+        "number": 206
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-7",
+      "action": {
+        "type": "executor",
+        "number": 207
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-8",
+      "action": {
+        "type": "executor",
+        "number": 208
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-9",
+      "action": {
+        "type": "executor",
+        "number": 209
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-9",
+      "action": {
+        "type": "executor",
+        "number": 209
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-10",
+      "action": {
+        "type": "executor",
+        "number": 210
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-10",
+      "action": {
+        "type": "executor",
+        "number": 210
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-11",
+      "action": {
+        "type": "executor",
+        "number": 211
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-11",
+      "action": {
+        "type": "executor",
+        "number": 211
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-12",
+      "action": {
+        "type": "executor",
+        "number": 212
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-12",
+      "action": {
+        "type": "executor",
+        "number": 212
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-13",
+      "action": {
+        "type": "executor",
+        "number": 213
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-13",
+      "action": {
+        "type": "executor",
+        "number": 213
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-14",
+      "action": {
+        "type": "executor",
+        "number": 214
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-14",
+      "action": {
+        "type": "executor",
+        "number": 214
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-15",
+      "action": {
+        "type": "executor",
+        "number": 215
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-15",
+      "action": {
+        "type": "executor",
+        "number": 215
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-16",
+      "action": {
+        "type": "executor",
+        "number": 216
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-16",
+      "action": {
+        "type": "executor",
+        "number": 216
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    },
+    {
+      "controlId": "fader-main",
+      "action": {
+        "type": "executor",
+        "number": 217
+      },
+      "feedback": {
+        "type": "fader-position"
+      }
+    },
+    {
+      "controlId": "btn-mute-main",
+      "action": {
+        "type": "executor",
+        "number": 217
+      },
+      "feedback": {
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
+      }
+    }
+  ]
+}

@@ -157,6 +157,7 @@ describe("Catalog editor surface (PAM-6)", () => {
       id: "my-board",
       name: "My Board",
       mode: "standard",
+      resendFeedback: false,
       defaultMidiChannel: 1,
       layout: { width: 4, height: 4 },
       controls: [

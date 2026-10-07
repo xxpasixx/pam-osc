@@ -30,10 +30,7 @@ type PortedEntry = { id: string; midiPort: { input: string; output?: string } };
  * import ends the controller step with an active mapping (Next enables). Idempotent:
  * an id already active is left untouched (harmless from the normal tabbed import).
  */
-export function activateCatalogEntry(
-  activeMappings: ActiveMappingDraft[],
-  entry: PortedEntry
-): ActiveMappingDraft[] {
+export function activateCatalogEntry(activeMappings: ActiveMappingDraft[], entry: PortedEntry): ActiveMappingDraft[] {
   if (activeMappings.some((mapping) => mapping.id === entry.id)) return activeMappings;
   return [...activeMappings, { id: entry.id, input: entry.midiPort.input, output: entry.midiPort.output }];
 }

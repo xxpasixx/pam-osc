@@ -96,7 +96,11 @@ export async function detectMa3Installs(candidates: string[]): Promise<Ma3Instal
  * path for manual copying. Used for both the plugin and the OSC config —
  * both files are named pam-osc.xml in their respective folders.
  */
-export async function installFile(bundledXml: string, targetDir: string, overwrite: boolean): Promise<Ma3InstallResult> {
+export async function installFile(
+  bundledXml: string,
+  targetDir: string,
+  overwrite: boolean
+): Promise<Ma3InstallResult> {
   const target = join(targetDir, "pam-osc.xml");
   try {
     if (!(await exists(bundledXml))) {
@@ -113,6 +117,11 @@ export async function installFile(bundledXml: string, targetDir: string, overwri
     return { status: "installed", target };
   } catch (error) {
     // AC-3: carry both paths so the user can copy the file by hand.
-    return { status: "error", error: error instanceof Error ? error.message : String(error), source: bundledXml, target };
+    return {
+      status: "error",
+      error: error instanceof Error ? error.message : String(error),
+      source: bundledXml,
+      target,
+    };
   }
 }

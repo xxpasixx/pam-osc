@@ -1,4 +1,9 @@
-import { EXPECTED_PLUGIN_PROTOCOL, type ConnectionStatus, type ConsoleState, type DeviceStatus } from "../../../core/engine/types.js";
+import {
+  EXPECTED_PLUGIN_PROTOCOL,
+  type ConnectionStatus,
+  type ConsoleState,
+  type DeviceStatus,
+} from "../../../core/engine/types.js";
 import type { CatalogEntry, EngineState, PortDiagnosis } from "../../../shared/ipc.js";
 
 /**

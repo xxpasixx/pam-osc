@@ -3,6 +3,10 @@
   "id": "apc-40-mk2-default-1",
   "name": "APC40 mkII Default (Playback)",
   "status": "community",
+  "sendColors": true,
+  "sendNames": false,
+  "resendButtons": false,
+  "enableTimecodeSend": false,
   "notes": "Default for the AKAI APC40 mkII (Generic Mode). Faders -> executors 201-208 (+ master 209, crossfader 210). Top Track-Control knobs -> executor faders 401-408; Device-Control encoders -> 411-418 (only transmit while Track 1 is the selected device bank). 5x8 RGB clip grid (PAD 1 = top-left) -> executor Keys, top->bottom 341-348 / 331-338 / 321-328 / 311-318 / 301-308, with PAM-10 rgb-color feedback: each pad reflects its executor's live MA3 sequence colour (nearest palette entry), lit while running. Clip Stop mirrors each track fader (201-208); Activator/Solo/Record Arm -> 221-228 / 231-238 / 241-248. Section buttons Device On/Off/Lock, Clip/Device View, Detail View -> executor Keys 251-254; the 4 arrows -> Up/Down (Device) + Prev/Next (Bank). Scene Launch (RGB) = Go/Pause/Go Back/Off/Highlight; Stop All = Escape. Transport: Play=Go, Record=Store, Session=Update, Shift=MA key, Bank=Clear, Up/Down=Page Up/Down, Nudge +/- = Go Fast/Back Fast. Cue Level (signed relative encoder) nudges executor 211. UNMAPPED: Tempo, Track Select/Master (no MIDI in Generic Mode), Crossfader-A|B row, Pan/Sends/User/Metronome/Tap Tempo, transport Left/Right. status=community: NOT yet verified on hardware.",
   "deviceDefinitionId": "apc-40-mk2",
   "midiPort": {
@@ -117,7 +121,7 @@
         "number": 401
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
@@ -127,7 +131,7 @@
         "number": 402
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
@@ -137,7 +141,7 @@
         "number": 403
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
@@ -147,7 +151,7 @@
         "number": 404
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
@@ -157,7 +161,7 @@
         "number": 405
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
@@ -167,7 +171,7 @@
         "number": 406
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
@@ -177,7 +181,7 @@
         "number": 407
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
@@ -187,87 +191,87 @@
         "number": 408
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
       "controlId": "device-knob-1",
       "action": {
         "type": "executor",
-        "number": 411
+        "number": 291
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
       "controlId": "device-knob-2",
       "action": {
         "type": "executor",
-        "number": 412
+        "number": 292
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
       "controlId": "device-knob-3",
       "action": {
         "type": "executor",
-        "number": 413
+        "number": 293
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
       "controlId": "device-knob-4",
       "action": {
         "type": "executor",
-        "number": 414
+        "number": 294
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
       "controlId": "device-knob-5",
       "action": {
         "type": "executor",
-        "number": 415
+        "number": 295
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
       "controlId": "device-knob-6",
       "action": {
         "type": "executor",
-        "number": 416
+        "number": 296
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
       "controlId": "device-knob-7",
       "action": {
         "type": "executor",
-        "number": 417
+        "number": 297
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
       "controlId": "device-knob-8",
       "action": {
         "type": "executor",
-        "number": 418
+        "number": 298
       },
       "feedback": {
-        "type": "none"
+        "type": "fader-position"
       }
     },
     {
@@ -1108,7 +1112,7 @@
       "controlId": "btn-device-onoff",
       "action": {
         "type": "executor",
-        "number": 251
+        "number": 295
       },
       "feedback": {
         "type": "on-off",
@@ -1120,7 +1124,7 @@
       "controlId": "btn-device-lock",
       "action": {
         "type": "executor",
-        "number": 252
+        "number": 296
       },
       "feedback": {
         "type": "on-off",
@@ -1132,7 +1136,7 @@
       "controlId": "btn-clip-device-view",
       "action": {
         "type": "executor",
-        "number": 253
+        "number": 297
       },
       "feedback": {
         "type": "on-off",
@@ -1144,7 +1148,7 @@
       "controlId": "btn-detail-view",
       "action": {
         "type": "executor",
-        "number": 254
+        "number": 298
       },
       "feedback": {
         "type": "on-off",
@@ -1155,57 +1159,61 @@
     {
       "controlId": "btn-device-left",
       "action": {
-        "type": "quickKey",
-        "key": "UP"
+        "type": "executor",
+        "number": 291
       },
       "options": {
         "minValue": 100
       },
       "feedback": {
-        "type": "always-on",
-        "value": 1
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
       }
     },
     {
       "controlId": "btn-device-right",
       "action": {
-        "type": "quickKey",
-        "key": "DOWN"
+        "type": "executor",
+        "number": 292
       },
       "options": {
         "minValue": 100
       },
       "feedback": {
-        "type": "always-on",
-        "value": 1
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
       }
     },
     {
       "controlId": "btn-bank-left",
       "action": {
-        "type": "quickKey",
-        "key": "PREV"
+        "type": "executor",
+        "number": 293
       },
       "options": {
         "minValue": 100
       },
       "feedback": {
-        "type": "always-on",
-        "value": 1
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
       }
     },
     {
       "controlId": "btn-bank-right",
       "action": {
-        "type": "quickKey",
-        "key": "NEXT"
+        "type": "executor",
+        "number": 294
       },
       "options": {
         "minValue": 100
       },
       "feedback": {
-        "type": "always-on",
-        "value": 1
+        "type": "on-off",
+        "onValue": 1,
+        "offValue": 0
       }
     },
     {
@@ -1350,7 +1358,7 @@
       "controlId": "btn-up",
       "action": {
         "type": "quickKey",
-        "key": "PAGE_UP"
+        "key": "UP"
       },
       "feedback": {
         "type": "none"
@@ -1360,7 +1368,7 @@
       "controlId": "btn-down",
       "action": {
         "type": "quickKey",
-        "key": "PAGE_DOWN"
+        "key": "DOWN"
       },
       "feedback": {
         "type": "none"
@@ -1381,6 +1389,26 @@
       "action": {
         "type": "quickKey",
         "key": "GOBACKFAST"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-left",
+      "action": {
+        "type": "quickKey",
+        "key": "PREV"
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "btn-right",
+      "action": {
+        "type": "quickKey",
+        "key": "NEXT"
       },
       "feedback": {
         "type": "none"

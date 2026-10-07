@@ -16,6 +16,11 @@ export interface RuntimeState {
   attribute: string;
   encoderFine: boolean;
   encoderRough: boolean;
+  /** PAM-31: divisor/multiplier applied while the toggle is on (v1 default 10).
+   * Set from the activating button's `factor`, so several buttons can offer
+   * different resolutions of the same modifier. */
+  encoderFineFactor: number;
+  encoderRoughFactor: number;
   deskLocked: boolean;
   /** /status/cmdFlags bitmask (PAM-12 AC-1) — nonzero intercepts executor buttons. */
   cmdFlags: number;
@@ -47,6 +52,8 @@ export function createRuntimeState(): RuntimeState {
     attribute: "dimmer",
     encoderFine: false,
     encoderRough: false,
+    encoderFineFactor: 10,
+    encoderRoughFactor: 10,
     deskLocked: false,
     cmdFlags: 0,
     pluginProtocol: undefined,

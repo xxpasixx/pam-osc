@@ -1,0 +1,695 @@
+{
+  "formatVersion": 1,
+  "id": "x32-compact-cc",
+  "name": "Behringer X32 Compact (DAW Remote, MIDI CC)",
+  "notes": "Behringer X32 Compact used as a control surface via its DAW Remote mode with protocol 'MIDI CC' (SETUP > Remote > MIDI CC, interface Card MIDI = X-USB, Remote engaged). HARDWARE-VERIFIED 2026-07-26 by live MIDI capture against a real unit: the left fader bank sends CC 0-7 on channel 1, the right (bus) bank CC 72-79, the main fader CC 70 - all absolute 0-127, and all motorized: the console moves the fader when it receives the same CC back. The MUTE row is the only host-controllable button row in this mode: buttons send CC on channel 2 with the strip's fader number (127 pressed / 0 released) and their LEDs follow received channel-2 CCs (verified blinking). Select/Solo rows, the encoders and the master section do NOT transmit in CC remote mode - deliberately not declared. The console occasionally broadcasts state groups (e.g. CC 40-43 / 60-63 / 80-85 on channel 2) when layers change; these are ignored because no declared control matches them. Note the Mackie Control remote protocol never engaged on this unit during testing (kept sending raw CC), which is why this definition targets CC mode.",
+  "manufacturer": "Behringer",
+  "mode": "standard",
+  "defaultMidiChannel": 1,
+  "layout": {
+    "width": 37,
+    "height": 13
+  },
+  "controls": [
+    {
+      "id": "btn-mute-1",
+      "label": "Mute 1",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 0
+      },
+      "position": {
+        "x": 0.25,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-1",
+      "label": "Fader 1",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 0
+      },
+      "position": {
+        "x": 0.5,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-2",
+      "label": "Mute 2",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 1
+      },
+      "position": {
+        "x": 2.25,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-2",
+      "label": "Fader 2",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 1
+      },
+      "position": {
+        "x": 2.5,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-3",
+      "label": "Mute 3",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 2
+      },
+      "position": {
+        "x": 4.25,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-3",
+      "label": "Fader 3",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 2
+      },
+      "position": {
+        "x": 4.5,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-4",
+      "label": "Mute 4",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 3
+      },
+      "position": {
+        "x": 6.25,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-4",
+      "label": "Fader 4",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 3
+      },
+      "position": {
+        "x": 6.5,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-5",
+      "label": "Mute 5",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 4
+      },
+      "position": {
+        "x": 8.25,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-5",
+      "label": "Fader 5",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 4
+      },
+      "position": {
+        "x": 8.5,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-6",
+      "label": "Mute 6",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 5
+      },
+      "position": {
+        "x": 10.25,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-6",
+      "label": "Fader 6",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 5
+      },
+      "position": {
+        "x": 10.5,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-7",
+      "label": "Mute 7",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 6
+      },
+      "position": {
+        "x": 12.25,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-7",
+      "label": "Fader 7",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 6
+      },
+      "position": {
+        "x": 12.5,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-8",
+      "label": "Mute 8",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 7
+      },
+      "position": {
+        "x": 14.25,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-8",
+      "label": "Fader 8",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 7
+      },
+      "position": {
+        "x": 14.5,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-9",
+      "label": "Mute 9 (right bank)",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 72
+      },
+      "position": {
+        "x": 17.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-9",
+      "label": "Fader 9 (right bank)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 72
+      },
+      "position": {
+        "x": 18,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-10",
+      "label": "Mute 10 (right bank)",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 73
+      },
+      "position": {
+        "x": 19.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-10",
+      "label": "Fader 10 (right bank)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 73
+      },
+      "position": {
+        "x": 20,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-11",
+      "label": "Mute 11 (right bank)",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 74
+      },
+      "position": {
+        "x": 21.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-11",
+      "label": "Fader 11 (right bank)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 74
+      },
+      "position": {
+        "x": 22,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-12",
+      "label": "Mute 12 (right bank)",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 75
+      },
+      "position": {
+        "x": 23.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-12",
+      "label": "Fader 12 (right bank)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 75
+      },
+      "position": {
+        "x": 24,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-13",
+      "label": "Mute 13 (right bank)",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 76
+      },
+      "position": {
+        "x": 25.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-13",
+      "label": "Fader 13 (right bank)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 76
+      },
+      "position": {
+        "x": 26,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-14",
+      "label": "Mute 14 (right bank)",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 77
+      },
+      "position": {
+        "x": 27.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-14",
+      "label": "Fader 14 (right bank)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 77
+      },
+      "position": {
+        "x": 28,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-15",
+      "label": "Mute 15 (right bank)",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 78
+      },
+      "position": {
+        "x": 29.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-15",
+      "label": "Fader 15 (right bank)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 78
+      },
+      "position": {
+        "x": 30,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-16",
+      "label": "Mute 16 (right bank)",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 79
+      },
+      "position": {
+        "x": 31.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-16",
+      "label": "Fader 16 (right bank)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 79
+      },
+      "position": {
+        "x": 32,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-mute-main",
+      "label": "Mute Main",
+      "type": "button",
+      "midi": {
+        "kind": "cc",
+        "channel": 2,
+        "number": 70
+      },
+      "position": {
+        "x": 34.75,
+        "y": 0.5,
+        "width": 1.5,
+        "height": 0.75,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-main",
+      "label": "Fader Main",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "channel": 1,
+        "number": 70
+      },
+      "position": {
+        "x": 35,
+        "y": 2,
+        "width": 1,
+        "height": 10,
+        "shape": "rect"
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    }
+  ]
+}

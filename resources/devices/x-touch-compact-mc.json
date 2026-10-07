@@ -1,0 +1,1394 @@
+{
+  "formatVersion": 1,
+  "id": "x-touch-compact-mc",
+  "name": "Behringer X-Touch Compact (MC Mode)",
+  "notes": "Behringer X-Touch Compact in Mackie Control (MC) mode - hold the bottom-left button (1) while powering on, release after the unit blinks twice, then the MC LED lights. HARDWARE-VERIFIED 2026-07-27 by live MIDI capture against a real unit (input side): faders send 14-bit pitchbend on channels 1-8 (main = 9) and are motorized; the 8 top encoders send relative MC deltas on CC 16-23 (1..8 = CW, 65..72 = CCW) with push notes 32-39 and LED rings on CC 48-55 (values 32 = off .. 43 = full); button rows send notes 8-15 / 16-23 / 24-31 (MC Solo/Mute/Select), the buttons under the faders notes 0-7 (MC Rec), the main fader button note 50 (MC Flip). MC-mode quirks, all confirmed on hardware: side encoders 9-14 transmit NOTHING when turned - only their push sends (MC V-Pot assign notes 40-45); side encoders 15/16 are the opposite - the push is silent and each rotation detent fires a note press (15: 46 CCW / 47 CW, 16: 48 CCW / 49 CW, MC fader-bank/channel). Each is modeled as a note-pair ENCODER: the clockwise note is the control's own address, the counter-clockwise note is encoding.decrementNote - one detent press = +/-1. SIDE ENCODER LED RINGS (9-16) ARE NOT CONTROLLABLE IN MC MODE - hardware-verified 2026-08-01: the unit ignores every candidate RX scheme for them (standard-mode 'LED ring change' CC 18-25, 'LED ring remote' CC 34-41, and a hypothetical MC V-Pot continuation CC 56-63, each tried on channels 1+2 with values 6/13/27/43/127), while the 8 top rings on CC 48-55 respond normally. So knob-9..14 pushes carry a plain LED capability at most and knob-15/16 declare no ledRing; if ring feedback on the side encoders matters, use the standard-mode board (x-touch-compact-relative) instead. Layer A/B send notes 84/85 (no hardware layer switching in MC mode). The 6 side buttons are the MC transport block: 91/92/86/95/93/94 in reading order. Fader touch notes 104-112 are deliberately not declared (ignored). LED/motor feedback follows the MC standard: echo the control's own note/pitchbend/ring CC back.",
+  "manufacturer": "Behringer",
+  "mode": "mc",
+  "setupInstructions": "1. Switch the unit off.\n2. Hold the bottom-left button (1).\n3. Turn the device on and still hold the button pressed.\n4. The device will blink two times.\n5. Release the button, the MC LED should now light up.",
+  "defaultMidiChannel": 1,
+  "layout": {
+    "width": 12,
+    "height": 10
+  },
+  "controls": [
+    {
+      "id": "enc-1",
+      "label": "Encoder 1",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 16
+      },
+      "position": {
+        "x": 0.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "controller": 48,
+          "from": 32,
+          "to": 43
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 32
+          },
+          "led": "none"
+        }
+      }
+    },
+    {
+      "id": "enc-2",
+      "label": "Encoder 2",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 17
+      },
+      "position": {
+        "x": 1.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "controller": 49,
+          "from": 32,
+          "to": 43
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 33
+          },
+          "led": "none"
+        }
+      }
+    },
+    {
+      "id": "enc-3",
+      "label": "Encoder 3",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 18
+      },
+      "position": {
+        "x": 2.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "controller": 50,
+          "from": 32,
+          "to": 43
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 34
+          },
+          "led": "none"
+        }
+      }
+    },
+    {
+      "id": "enc-4",
+      "label": "Encoder 4",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 19
+      },
+      "position": {
+        "x": 3.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "controller": 51,
+          "from": 32,
+          "to": 43
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 35
+          },
+          "led": "none"
+        }
+      }
+    },
+    {
+      "id": "enc-5",
+      "label": "Encoder 5",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 20
+      },
+      "position": {
+        "x": 4.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "controller": 52,
+          "from": 32,
+          "to": 43
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 36
+          },
+          "led": "none"
+        }
+      }
+    },
+    {
+      "id": "enc-6",
+      "label": "Encoder 6",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 21
+      },
+      "position": {
+        "x": 5.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "controller": 53,
+          "from": 32,
+          "to": 43
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 37
+          },
+          "led": "none"
+        }
+      }
+    },
+    {
+      "id": "enc-7",
+      "label": "Encoder 7",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 22
+      },
+      "position": {
+        "x": 6.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "controller": 54,
+          "from": 32,
+          "to": 43
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 38
+          },
+          "led": "none"
+        }
+      }
+    },
+    {
+      "id": "enc-8",
+      "label": "Encoder 8",
+      "type": "encoder",
+      "midi": {
+        "kind": "cc",
+        "number": 23
+      },
+      "position": {
+        "x": 7.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "increment": {
+            "from": 1,
+            "to": 8
+          },
+          "decrement": {
+            "from": 65,
+            "to": 72
+          }
+        },
+        "ledRing": {
+          "controller": 55,
+          "from": 32,
+          "to": 43
+        },
+        "push": {
+          "midi": {
+            "kind": "note",
+            "number": 39
+          },
+          "led": "none"
+        }
+      }
+    },
+    {
+      "id": "btn-row1-1",
+      "label": "Row 1 Button 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 8
+      },
+      "position": {
+        "x": 0.1,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row1-2",
+      "label": "Row 1 Button 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 9
+      },
+      "position": {
+        "x": 1.1,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row1-3",
+      "label": "Row 1 Button 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 10
+      },
+      "position": {
+        "x": 2.1,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row1-4",
+      "label": "Row 1 Button 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 11
+      },
+      "position": {
+        "x": 3.1,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row1-5",
+      "label": "Row 1 Button 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 12
+      },
+      "position": {
+        "x": 4.1,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row1-6",
+      "label": "Row 1 Button 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 13
+      },
+      "position": {
+        "x": 5.1,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row1-7",
+      "label": "Row 1 Button 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 14
+      },
+      "position": {
+        "x": 6.1,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row1-8",
+      "label": "Row 1 Button 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 15
+      },
+      "position": {
+        "x": 7.1,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row2-1",
+      "label": "Row 2 Button 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 16
+      },
+      "position": {
+        "x": 0.1,
+        "y": 2.1,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row2-2",
+      "label": "Row 2 Button 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 17
+      },
+      "position": {
+        "x": 1.1,
+        "y": 2.1,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row2-3",
+      "label": "Row 2 Button 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 18
+      },
+      "position": {
+        "x": 2.1,
+        "y": 2.1,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row2-4",
+      "label": "Row 2 Button 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 19
+      },
+      "position": {
+        "x": 3.1,
+        "y": 2.1,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row2-5",
+      "label": "Row 2 Button 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 20
+      },
+      "position": {
+        "x": 4.1,
+        "y": 2.1,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row2-6",
+      "label": "Row 2 Button 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 21
+      },
+      "position": {
+        "x": 5.1,
+        "y": 2.1,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row2-7",
+      "label": "Row 2 Button 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 22
+      },
+      "position": {
+        "x": 6.1,
+        "y": 2.1,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row2-8",
+      "label": "Row 2 Button 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 23
+      },
+      "position": {
+        "x": 7.1,
+        "y": 2.1,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row3-1",
+      "label": "Row 3 Button 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 24
+      },
+      "position": {
+        "x": 0.1,
+        "y": 3.0,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row3-2",
+      "label": "Row 3 Button 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 25
+      },
+      "position": {
+        "x": 1.1,
+        "y": 3.0,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row3-3",
+      "label": "Row 3 Button 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 26
+      },
+      "position": {
+        "x": 2.1,
+        "y": 3.0,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row3-4",
+      "label": "Row 3 Button 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 27
+      },
+      "position": {
+        "x": 3.1,
+        "y": 3.0,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row3-5",
+      "label": "Row 3 Button 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 28
+      },
+      "position": {
+        "x": 4.1,
+        "y": 3.0,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row3-6",
+      "label": "Row 3 Button 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 29
+      },
+      "position": {
+        "x": 5.1,
+        "y": 3.0,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row3-7",
+      "label": "Row 3 Button 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 30
+      },
+      "position": {
+        "x": 6.1,
+        "y": 3.0,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-row3-8",
+      "label": "Row 3 Button 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 31
+      },
+      "position": {
+        "x": 7.1,
+        "y": 3.0,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "fader-1",
+      "label": "Fader 1",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 1
+      },
+      "position": {
+        "x": 0.2,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-2",
+      "label": "Fader 2",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 2
+      },
+      "position": {
+        "x": 1.2,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-3",
+      "label": "Fader 3",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 3
+      },
+      "position": {
+        "x": 2.2,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-4",
+      "label": "Fader 4",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 4
+      },
+      "position": {
+        "x": 3.2,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-5",
+      "label": "Fader 5",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 5
+      },
+      "position": {
+        "x": 4.2,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-6",
+      "label": "Fader 6",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 6
+      },
+      "position": {
+        "x": 5.2,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-7",
+      "label": "Fader 7",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 7
+      },
+      "position": {
+        "x": 6.2,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-8",
+      "label": "Fader 8",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 8
+      },
+      "position": {
+        "x": 7.2,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "fader-main",
+      "label": "Main Fader",
+      "type": "fader",
+      "midi": {
+        "kind": "pitchbend",
+        "channel": 9
+      },
+      "position": {
+        "x": 8.4,
+        "y": 4,
+        "width": 0.6,
+        "height": 4.5
+      },
+      "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "btn-fader-1",
+      "label": "Fader Button 1",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 0
+      },
+      "position": {
+        "x": 0.1,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-2",
+      "label": "Fader Button 2",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 1
+      },
+      "position": {
+        "x": 1.1,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-3",
+      "label": "Fader Button 3",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 2
+      },
+      "position": {
+        "x": 2.1,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-4",
+      "label": "Fader Button 4",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 3
+      },
+      "position": {
+        "x": 3.1,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-5",
+      "label": "Fader Button 5",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 4
+      },
+      "position": {
+        "x": 4.1,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-6",
+      "label": "Fader Button 6",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 5
+      },
+      "position": {
+        "x": 5.1,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-7",
+      "label": "Fader Button 7",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 6
+      },
+      "position": {
+        "x": 6.1,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-8",
+      "label": "Fader Button 8",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 7
+      },
+      "position": {
+        "x": 7.1,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-fader-main",
+      "label": "Main Fader Button",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 50
+      },
+      "position": {
+        "x": 8.3,
+        "y": 8.8,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-9-push",
+      "label": "Encoder 9 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 40
+      },
+      "position": {
+        "x": 9.7,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-10-push",
+      "label": "Encoder 10 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 41
+      },
+      "position": {
+        "x": 10.9,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-11-push",
+      "label": "Encoder 11 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 42
+      },
+      "position": {
+        "x": 9.7,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-12-push",
+      "label": "Encoder 12 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 43
+      },
+      "position": {
+        "x": 10.9,
+        "y": 1.2,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-13-push",
+      "label": "Encoder 13 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 44
+      },
+      "position": {
+        "x": 9.7,
+        "y": 2.3,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-14-push",
+      "label": "Encoder 14 Push",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 45
+      },
+      "position": {
+        "x": 10.9,
+        "y": 2.3,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-15",
+      "label": "Encoder 15",
+      "type": "encoder",
+      "midi": {
+        "kind": "note",
+        "number": 47
+      },
+      "position": {
+        "x": 9.7,
+        "y": 3.4,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "mode": "note-pair",
+          "decrementNote": 46
+        }
+      }
+    },
+    {
+      "id": "knob-16",
+      "label": "Encoder 16",
+      "type": "encoder",
+      "midi": {
+        "kind": "note",
+        "number": 49
+      },
+      "position": {
+        "x": 10.9,
+        "y": 3.4,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "encoding": {
+          "mode": "note-pair",
+          "decrementNote": 48
+        }
+      }
+    },
+    {
+      "id": "btn-layer-a",
+      "label": "Layer A",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 84
+      },
+      "position": {
+        "x": 9.7,
+        "y": 8.5,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-layer-b",
+      "label": "Layer B",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 85
+      },
+      "position": {
+        "x": 10.9,
+        "y": 8.5,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-side-1",
+      "label": "Side 1 (Rewind)",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 91
+      },
+      "position": {
+        "x": 9.7,
+        "y": 5.3,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-side-2",
+      "label": "Side 2 (Fast Fwd)",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 92
+      },
+      "position": {
+        "x": 10.9,
+        "y": 5.3,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-side-3",
+      "label": "Side 3 (Cycle)",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 86
+      },
+      "position": {
+        "x": 9.7,
+        "y": 6.3,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-side-4",
+      "label": "Side 4 (Record)",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 95
+      },
+      "position": {
+        "x": 10.9,
+        "y": 6.3,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-side-5",
+      "label": "Side 5 (Stop)",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 93
+      },
+      "position": {
+        "x": 9.7,
+        "y": 7.3,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "btn-side-6",
+      "label": "Side 6 (Play)",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 94
+      },
+      "position": {
+        "x": 10.9,
+        "y": 7.3,
+        "width": 0.8,
+        "height": 0.7
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    }
+  ]
+}

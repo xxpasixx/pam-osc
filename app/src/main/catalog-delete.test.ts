@@ -14,7 +14,13 @@ function userDevice(id: string) {
     name: id,
     layout: { width: 2, height: 2 },
     controls: [
-      { id: "b1", type: "button", midi: { kind: "note", number: 1 }, position: { x: 0, y: 0, width: 1, height: 1 }, capabilities: { led: "none" } },
+      {
+        id: "b1",
+        type: "button",
+        midi: { kind: "note", number: 1 },
+        position: { x: 0, y: 0, width: 1, height: 1 },
+        capabilities: { led: "none" },
+      },
     ],
   };
 }

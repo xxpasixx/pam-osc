@@ -16,13 +16,7 @@ import {
  * mixed-case / legacy alias shows its real label; a genuinely unknown value
  * (AC-3) stays visible and flagged instead of being silently dropped.
  */
-export function QuickKeySelect({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (code: string) => void;
-}) {
+export function QuickKeySelect({ value, onChange }: { value: string; onChange: (code: string) => void }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -36,13 +30,9 @@ export function QuickKeySelect({
   // Flat, filtered, group-ordered list — matches on label AND code (case-insensitive).
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const inOrder = QUICKKEY_GROUP_ORDER.flatMap((group) =>
-      QUICKKEYS.filter((qk) => qk.group === group),
-    );
+    const inOrder = QUICKKEY_GROUP_ORDER.flatMap((group) => QUICKKEYS.filter((qk) => qk.group === group));
     if (!q) return inOrder;
-    return inOrder.filter(
-      (qk) => qk.label.toLowerCase().includes(q) || qk.code.toLowerCase().includes(q),
-    );
+    return inOrder.filter((qk) => qk.label.toLowerCase().includes(q) || qk.code.toLowerCase().includes(q));
   }, [query]);
 
   // Close on outside click.

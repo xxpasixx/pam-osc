@@ -193,8 +193,24 @@ describe("parseWindowsDrives", () => {
   it("keeps USB-bus and Removable volumes, drops internal fixed disks", () => {
     const json = JSON.stringify([
       { DriveLetter: "C", FileSystem: "NTFS", DriveType: "Fixed", BusType: "SATA", Size: 500, SizeRemaining: 100 },
-      { DriveLetter: "E", FileSystemLabel: "STICK", FileSystem: "FAT32", DriveType: "Removable", BusType: "USB", Size: 16, SizeRemaining: 15 },
-      { DriveLetter: "F", FileSystemLabel: "USBHDD", FileSystem: "exFAT", DriveType: "Fixed", BusType: "USB", Size: 1000, SizeRemaining: 900 },
+      {
+        DriveLetter: "E",
+        FileSystemLabel: "STICK",
+        FileSystem: "FAT32",
+        DriveType: "Removable",
+        BusType: "USB",
+        Size: 16,
+        SizeRemaining: 15,
+      },
+      {
+        DriveLetter: "F",
+        FileSystemLabel: "USBHDD",
+        FileSystem: "exFAT",
+        DriveType: "Fixed",
+        BusType: "USB",
+        Size: 1000,
+        SizeRemaining: 900,
+      },
     ]);
     const drives = parseWindowsDrives(json);
     expect(drives.map((d) => d.id)).toEqual(["E:\\", "F:\\"]); // E removable, F external USB HDD (Fixed but USB bus)

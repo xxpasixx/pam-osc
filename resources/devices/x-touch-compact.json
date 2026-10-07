@@ -2,9 +2,10 @@
   "formatVersion": 1,
   "id": "x-touch-compact",
   "name": "Behringer X-Touch Compact",
-  "notes": "Standard MIDI mode (not MC), factory preset addressing. The hardware has an A/B layer switch: the same physical control sends different MIDI addresses per layer. Layer B counterparts carry a -b id suffix and share the layer-A position. The 16 rotary encoders send ABSOLUTE CC values in the default hardware config, so they are modeled as circular faders (the v2 encoder type is for relative encoding). The right-side encoders 9-16 additionally exist as knob-N-rel encoder controls for units whose knobs are re-configured to relative mode via the X-Touch editor - knob-N-abs and knob-N-rel describe the same physical knob. Feedback in standard mode: v1 sent MA3 fader values back as a CC message on the control's own CC number (never pitchbend) - the motorized faders follow it and the encoder LED rings display it. That is why every absolute-CC control here is marked motorized. Only layer-A encoder rotation is addressed; the layer-B rotation CCs were unused in v1 and are omitted. Layer B (the hardware layer toggle) is drawn as its own area below the A layout so no controls overlap.",
+  "notes": "Standard MIDI mode (not MC), factory preset addressing. The hardware has an A/B layer switch: the same physical control sends different MIDI addresses per layer. Layer B counterparts carry a -b id suffix and share the layer-A position. The 16 rotary encoders send ABSOLUTE CC values in the default hardware config, so they are modeled as circular faders (the v2 encoder type is for relative encoding); their layer-A pushes are standalone button controls (knob-N-push). Units whose right-side knobs are re-configured to relative mode via the X-TOUCH Editor use the separate 'x-touch-compact-relative' board instead (the former knob-N-rel twin controls moved there). Feedback in standard mode: v1 sent MA3 fader values back as a CC message on the control's own CC number (never pitchbend) - the motorized faders follow it and the encoder LED rings display it. That is why every absolute-CC control here is marked motorized. Only layer-A encoder rotation is addressed; the layer-B rotation CCs were unused in v1 and are omitted. Layer B (the hardware layer toggle) is drawn as its own area below the A layout so no controls overlap. Layer-B knob rotation added 2026-07-27: CC 37-52 (chart-derived from the consistent layer offsets - faders +27, notes +55 - TO VERIFY on hardware), absolute/motorized like layer A, with the existing knob-N-push-b buttons shrunk into them. resendFeedback is ON: in standard mode the board clears a button LED locally on release, so the app must replay its feedback cache periodically (PAM-25).",
   "manufacturer": "Behringer",
   "mode": "standard",
+  "resendFeedback": true,
   "defaultMidiChannel": 1,
   "layout": {
     "width": 12,
@@ -507,38 +508,22 @@
       }
     },
     {
-      "id": "knob-9-rel",
-      "label": "Encoder 9 (relative)",
-      "type": "encoder",
+      "id": "knob-9-push",
+      "label": "Encoder 9 Push",
+      "type": "button",
       "midi": {
-        "kind": "cc",
-        "number": 18
+        "kind": "note",
+        "number": 8
       },
       "position": {
-        "x": 9.85,
-        "y": 0.25,
-        "width": 0.5,
-        "height": 0.5,
+        "x": 9.899999999999999,
+        "y": 0.30000000000000004,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
-        "encoding": {
-          "increment": {
-            "from": 1,
-            "to": 7
-          },
-          "decrement": {
-            "from": 121,
-            "to": 127
-          }
-        },
-        "push": {
-          "midi": {
-            "kind": "note",
-            "number": 8
-          },
-          "led": "on-off"
-        }
+        "led": "on-off"
       }
     },
     {
@@ -561,38 +546,22 @@
       }
     },
     {
-      "id": "knob-10-rel",
-      "label": "Encoder 10 (relative)",
-      "type": "encoder",
+      "id": "knob-10-push",
+      "label": "Encoder 10 Push",
+      "type": "button",
       "midi": {
-        "kind": "cc",
-        "number": 19
+        "kind": "note",
+        "number": 9
       },
       "position": {
-        "x": 11.05,
-        "y": 0.25,
-        "width": 0.5,
-        "height": 0.5,
+        "x": 11.1,
+        "y": 0.30000000000000004,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
-        "encoding": {
-          "increment": {
-            "from": 1,
-            "to": 7
-          },
-          "decrement": {
-            "from": 121,
-            "to": 127
-          }
-        },
-        "push": {
-          "midi": {
-            "kind": "note",
-            "number": 9
-          },
-          "led": "on-off"
-        }
+        "led": "on-off"
       }
     },
     {
@@ -615,38 +584,22 @@
       }
     },
     {
-      "id": "knob-11-rel",
-      "label": "Encoder 11 (relative)",
-      "type": "encoder",
+      "id": "knob-11-push",
+      "label": "Encoder 11 Push",
+      "type": "button",
       "midi": {
-        "kind": "cc",
-        "number": 20
+        "kind": "note",
+        "number": 10
       },
       "position": {
-        "x": 9.85,
-        "y": 1.35,
-        "width": 0.5,
-        "height": 0.5,
+        "x": 9.899999999999999,
+        "y": 1.4000000000000001,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
-        "encoding": {
-          "increment": {
-            "from": 1,
-            "to": 7
-          },
-          "decrement": {
-            "from": 121,
-            "to": 127
-          }
-        },
-        "push": {
-          "midi": {
-            "kind": "note",
-            "number": 10
-          },
-          "led": "on-off"
-        }
+        "led": "on-off"
       }
     },
     {
@@ -669,38 +622,22 @@
       }
     },
     {
-      "id": "knob-12-rel",
-      "label": "Encoder 12 (relative)",
-      "type": "encoder",
+      "id": "knob-12-push",
+      "label": "Encoder 12 Push",
+      "type": "button",
       "midi": {
-        "kind": "cc",
-        "number": 21
+        "kind": "note",
+        "number": 11
       },
       "position": {
-        "x": 11.05,
-        "y": 1.35,
-        "width": 0.5,
-        "height": 0.5,
+        "x": 11.1,
+        "y": 1.4000000000000001,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
-        "encoding": {
-          "increment": {
-            "from": 1,
-            "to": 7
-          },
-          "decrement": {
-            "from": 121,
-            "to": 127
-          }
-        },
-        "push": {
-          "midi": {
-            "kind": "note",
-            "number": 11
-          },
-          "led": "on-off"
-        }
+        "led": "on-off"
       }
     },
     {
@@ -723,38 +660,22 @@
       }
     },
     {
-      "id": "knob-13-rel",
-      "label": "Encoder 13 (relative)",
-      "type": "encoder",
+      "id": "knob-13-push",
+      "label": "Encoder 13 Push",
+      "type": "button",
       "midi": {
-        "kind": "cc",
-        "number": 22
+        "kind": "note",
+        "number": 12
       },
       "position": {
-        "x": 9.85,
-        "y": 2.45,
-        "width": 0.5,
-        "height": 0.5,
+        "x": 9.899999999999999,
+        "y": 2.5000000000000004,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
-        "encoding": {
-          "increment": {
-            "from": 1,
-            "to": 7
-          },
-          "decrement": {
-            "from": 121,
-            "to": 127
-          }
-        },
-        "push": {
-          "midi": {
-            "kind": "note",
-            "number": 12
-          },
-          "led": "on-off"
-        }
+        "led": "on-off"
       }
     },
     {
@@ -777,38 +698,22 @@
       }
     },
     {
-      "id": "knob-14-rel",
-      "label": "Encoder 14 (relative)",
-      "type": "encoder",
+      "id": "knob-14-push",
+      "label": "Encoder 14 Push",
+      "type": "button",
       "midi": {
-        "kind": "cc",
-        "number": 23
+        "kind": "note",
+        "number": 13
       },
       "position": {
-        "x": 11.05,
-        "y": 2.45,
-        "width": 0.5,
-        "height": 0.5,
+        "x": 11.1,
+        "y": 2.5000000000000004,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
-        "encoding": {
-          "increment": {
-            "from": 1,
-            "to": 7
-          },
-          "decrement": {
-            "from": 121,
-            "to": 127
-          }
-        },
-        "push": {
-          "midi": {
-            "kind": "note",
-            "number": 13
-          },
-          "led": "on-off"
-        }
+        "led": "on-off"
       }
     },
     {
@@ -831,38 +736,22 @@
       }
     },
     {
-      "id": "knob-15-rel",
-      "label": "Encoder 15 (relative)",
-      "type": "encoder",
+      "id": "knob-15-push",
+      "label": "Encoder 15 Push",
+      "type": "button",
       "midi": {
-        "kind": "cc",
-        "number": 24
+        "kind": "note",
+        "number": 14
       },
       "position": {
-        "x": 9.85,
-        "y": 3.55,
-        "width": 0.5,
-        "height": 0.5,
+        "x": 9.899999999999999,
+        "y": 3.6000000000000005,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
-        "encoding": {
-          "increment": {
-            "from": 1,
-            "to": 7
-          },
-          "decrement": {
-            "from": 121,
-            "to": 127
-          }
-        },
-        "push": {
-          "midi": {
-            "kind": "note",
-            "number": 14
-          },
-          "led": "on-off"
-        }
+        "led": "on-off"
       }
     },
     {
@@ -885,38 +774,22 @@
       }
     },
     {
-      "id": "knob-16-rel",
-      "label": "Encoder 16 (relative)",
-      "type": "encoder",
+      "id": "knob-16-push",
+      "label": "Encoder 16 Push",
+      "type": "button",
       "midi": {
-        "kind": "cc",
-        "number": 25
+        "kind": "note",
+        "number": 15
       },
       "position": {
-        "x": 11.05,
-        "y": 3.55,
-        "width": 0.5,
-        "height": 0.5,
+        "x": 11.1,
+        "y": 3.6000000000000005,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {
-        "encoding": {
-          "increment": {
-            "from": 1,
-            "to": 7
-          },
-          "decrement": {
-            "from": 121,
-            "to": 127
-          }
-        },
-        "push": {
-          "midi": {
-            "kind": "note",
-            "number": 15
-          },
-          "led": "on-off"
-        }
+        "led": "on-off"
       }
     },
     {
@@ -1072,12 +945,12 @@
       }
     },
     {
-      "id": "knob-1-push-b",
-      "label": "Encoder 1 Push (Layer B)",
-      "type": "button",
+      "id": "knob-1-b",
+      "label": "Encoder 1 (Layer B)",
+      "type": "fader",
       "midi": {
-        "kind": "note",
-        "number": 55
+        "kind": "cc",
+        "number": 37
       },
       "position": {
         "x": 0.1,
@@ -1087,7 +960,45 @@
         "shape": "circle"
       },
       "capabilities": {
+        "motorized": true
+      }
+    },
+    {
+      "id": "knob-1-push-b",
+      "label": "Encoder 1 Push (Layer B)",
+      "type": "button",
+      "midi": {
+        "kind": "note",
+        "number": 55
+      },
+      "position": {
+        "x": 0.30000000000000004,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
         "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-2-b",
+      "label": "Encoder 2 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 38
+      },
+      "position": {
+        "x": 1.1,
+        "y": 11.6,
+        "width": 0.8,
+        "height": 0.8,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "motorized": true
       }
     },
     {
@@ -1099,14 +1010,33 @@
         "number": 56
       },
       "position": {
-        "x": 1.1,
+        "x": 1.3,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-3-b",
+      "label": "Encoder 3 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 39
+      },
+      "position": {
+        "x": 2.1,
         "y": 11.6,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1118,14 +1048,33 @@
         "number": 57
       },
       "position": {
-        "x": 2.1,
+        "x": 2.3000000000000003,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-4-b",
+      "label": "Encoder 4 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 40
+      },
+      "position": {
+        "x": 3.1,
         "y": 11.6,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1137,14 +1086,33 @@
         "number": 58
       },
       "position": {
-        "x": 3.1,
+        "x": 3.3000000000000003,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-5-b",
+      "label": "Encoder 5 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 41
+      },
+      "position": {
+        "x": 4.1,
         "y": 11.6,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1156,14 +1124,33 @@
         "number": 59
       },
       "position": {
-        "x": 4.1,
+        "x": 4.3,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-6-b",
+      "label": "Encoder 6 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 42
+      },
+      "position": {
+        "x": 5.1,
         "y": 11.6,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1175,14 +1162,33 @@
         "number": 60
       },
       "position": {
-        "x": 5.1,
+        "x": 5.3,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-7-b",
+      "label": "Encoder 7 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 43
+      },
+      "position": {
+        "x": 6.1,
         "y": 11.6,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1194,14 +1200,33 @@
         "number": 61
       },
       "position": {
-        "x": 6.1,
+        "x": 6.3,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-8-b",
+      "label": "Encoder 8 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 44
+      },
+      "position": {
+        "x": 7.1,
         "y": 11.6,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1213,14 +1238,33 @@
         "number": 62
       },
       "position": {
-        "x": 7.1,
+        "x": 7.3,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-9-b",
+      "label": "Encoder 9 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 45
+      },
+      "position": {
+        "x": 9.7,
         "y": 11.6,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1232,14 +1276,33 @@
         "number": 63
       },
       "position": {
-        "x": 9.7,
+        "x": 9.899999999999999,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-10-b",
+      "label": "Encoder 10 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 46
+      },
+      "position": {
+        "x": 10.9,
         "y": 11.6,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1251,14 +1314,33 @@
         "number": 64
       },
       "position": {
-        "x": 10.9,
-        "y": 11.6,
+        "x": 11.1,
+        "y": 11.799999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-11-b",
+      "label": "Encoder 11 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 47
+      },
+      "position": {
+        "x": 9.7,
+        "y": 12.7,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1270,14 +1352,33 @@
         "number": 65
       },
       "position": {
-        "x": 9.7,
+        "x": 9.899999999999999,
+        "y": 12.899999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-12-b",
+      "label": "Encoder 12 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 48
+      },
+      "position": {
+        "x": 10.9,
         "y": 12.7,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1289,14 +1390,33 @@
         "number": 66
       },
       "position": {
-        "x": 10.9,
-        "y": 12.7,
+        "x": 11.1,
+        "y": 12.899999999999999,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-13-b",
+      "label": "Encoder 13 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 49
+      },
+      "position": {
+        "x": 9.7,
+        "y": 13.8,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1308,14 +1428,33 @@
         "number": 67
       },
       "position": {
-        "x": 9.7,
+        "x": 9.899999999999999,
+        "y": 14.0,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-14-b",
+      "label": "Encoder 14 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 50
+      },
+      "position": {
+        "x": 10.9,
         "y": 13.8,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1327,14 +1466,33 @@
         "number": 68
       },
       "position": {
-        "x": 10.9,
-        "y": 13.8,
+        "x": 11.1,
+        "y": 14.0,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-15-b",
+      "label": "Encoder 15 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 51
+      },
+      "position": {
+        "x": 9.7,
+        "y": 14.9,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1346,14 +1504,33 @@
         "number": 69
       },
       "position": {
-        "x": 9.7,
+        "x": 9.899999999999999,
+        "y": 15.1,
+        "width": 0.4,
+        "height": 0.4,
+        "shape": "circle"
+      },
+      "capabilities": {
+        "led": "on-off"
+      }
+    },
+    {
+      "id": "knob-16-b",
+      "label": "Encoder 16 (Layer B)",
+      "type": "fader",
+      "midi": {
+        "kind": "cc",
+        "number": 52
+      },
+      "position": {
+        "x": 10.9,
         "y": 14.9,
         "width": 0.8,
         "height": 0.8,
         "shape": "circle"
       },
       "capabilities": {
-        "led": "on-off"
+        "motorized": true
       }
     },
     {
@@ -1365,10 +1542,10 @@
         "number": 70
       },
       "position": {
-        "x": 10.9,
-        "y": 14.9,
-        "width": 0.8,
-        "height": 0.8,
+        "x": 11.1,
+        "y": 15.1,
+        "width": 0.4,
+        "height": 0.4,
         "shape": "circle"
       },
       "capabilities": {

@@ -2,10 +2,77 @@
   "formatVersion": 1,
   "id": "apc-40-mk2",
   "name": "AKAI APC40 mkII",
-  "notes": "AKAI APC40 mkII, Generic Mode (Mode 0). Verified against the official Akai 'APC40 Mk2 Communications Protocol' (v1.2, 2015) and the manufacturer layout art. The 5x8 clip grid has RGB pads on notes 0-39 addressed by NOTE NUMBER (not channel): note 0 = PAD 1 = TOP-left, incrementing left->right then downward, note 39 = bottom-right. LED colour is a 128-entry velocity palette (5=red, 13=yellow, 21=green #00FF00, 45=blue, 122=Green, 120=Red, 124=Yellow); the MIDI channel of an LED message picks the RGB behaviour (channel 0 = Primary Colour solid). Scene Launch buttons are RGB too. Track button rows (Record Arm 0x30, Solo 0x31, Activator 0x32, Track Select 0x33, Clip Stop 0x34, Crossfader-A|B 0x42) use MIDI channel 0-7 = Track 1-8 (stored as channel 1-8). Bank (Bank Lock) = note 0x67. The Cue Level (CC 0x2F) and Tempo (CC 0x0D) knobs are RELATIVE encoders using the Akai signed scheme (1-63=+, 64-127=-, 0x7F=-1), decoded via encoding.mode 'signed' (PAM-20). The 8 DEVICE CONTROL knobs (CC 16-23) are BANKED by Track Selection (they transmit on the selected track's channel; bound at channel 1 = the Track-1 power-on default). TRACK SELECT (0x33) and MASTER (0x50) send no MIDI in Generic Mode. Transport: Play=0x5B, Record=0x5D, Session Record=0x66 (no dedicated Stop); UP/DOWN/LEFT/RIGHT/SHIFT/TAP/NUDGE have no host LED.",
+  "notes": "AKAI APC40 mkII, Generic Mode (Mode 0). Verified against the official Akai 'APC40 Mk2 Communications Protocol' (v1.2, 2015) and the manufacturer layout art. The 5x8 clip grid has RGB pads on notes 0-39 addressed by NOTE NUMBER (not channel): note 0 = BOTTOM-left, incrementing left->right then UPWARD, note 39 = top-right (corrected against APC40 mkII hardware 2026-07-22; the earlier 'top-left' reading of the protocol doc was vertically inverted). LED colour is a 128-entry velocity palette (5=red, 13=yellow, 21=green #00FF00, 45=blue, 122=Green, 120=Red, 124=Yellow); the MIDI channel of an LED message picks the RGB behaviour (channel 0 = Primary Colour solid). Scene Launch buttons are RGB too. Track button rows (Record Arm 0x30, Solo 0x31, Clip Stop 0x34, Crossfader-A|B 0x42) use MIDI channel 0-7 = Track 1-8 (stored as channel 1-8). ACTIVATOR and TRACK SELECT are SWAPPED vs the protocol doc — hardware-verified on all channels 2026-07-23: Activator = 0x33 (51), Track Select = 0x32 (50). Bank (Bank Lock) = note 0x67. The Cue Level (CC 0x2F) and Tempo (CC 0x0D) knobs are RELATIVE encoders using the Akai signed scheme (1-63=+, 64-127=-, 0x7F=-1), decoded via encoding.mode 'signed' (PAM-20). The 8 DEVICE CONTROL knobs (CC 16-23) are BANKED by Track Selection (they transmit on the selected track's channel; bound at channel 1 = the Track-1 power-on default). TRACK SELECT (0x33) and MASTER (0x50) send no MIDI in Generic Mode. Transport: Play=0x5B, Record=0x5D, Session Record=0x66 (no dedicated Stop); UP/DOWN/LEFT/RIGHT/SHIFT/TAP/NUDGE have no host LED. PAM-24: the app sends the Ableton Live Mode (Mode 1, 0x41) Introduction SysEx on connect via initSysEx; in Mode 1 all buttons are momentary, all non-ring LEDs are host-controlled, the encoder LED rings are board-rendered but HOST-UPDATABLE (the app echoes MA3 values onto the knob CCs — the knobs carry motorized:true to mean 'hardware displays host-sent values', via ring not motor), and the DEVICE CONTROL knobs are NO LONGER banked. initCC sets each ring's type (2 = Volume style) on connect. The exact Mode-1 knob channel and any control-address corrections are PENDING HARDWARE VERIFICATION (PAM-24 AC-7/AC-8) — the Generic-Mode notes above still describe the pre-Mode-1 addressing. Note-number reference (confirmed): Shift=0x62, Bank(-Lock)=0x67, arrows UP/DOWN/RIGHT/LEFT=0x5E/0x5F/0x60/0x61, Track Select=0x33 on channel 0-7 = Track 1-8.",
   "manufacturer": "AKAI Professional",
   "ledPalette": "apc40-mk2",
   "mode": "standard",
+  "initSysEx": [240, 71, 127, 41, 96, 0, 4, 65, 1, 1, 1, 247],
+  "initCC": [
+    {
+      "controller": 24,
+      "value": 2
+    },
+    {
+      "controller": 25,
+      "value": 2
+    },
+    {
+      "controller": 26,
+      "value": 2
+    },
+    {
+      "controller": 27,
+      "value": 2
+    },
+    {
+      "controller": 28,
+      "value": 2
+    },
+    {
+      "controller": 29,
+      "value": 2
+    },
+    {
+      "controller": 30,
+      "value": 2
+    },
+    {
+      "controller": 31,
+      "value": 2
+    },
+    {
+      "controller": 56,
+      "value": 2
+    },
+    {
+      "controller": 57,
+      "value": 2
+    },
+    {
+      "controller": 58,
+      "value": 2
+    },
+    {
+      "controller": 59,
+      "value": 2
+    },
+    {
+      "controller": 60,
+      "value": 2
+    },
+    {
+      "controller": 61,
+      "value": 2
+    },
+    {
+      "controller": 62,
+      "value": 2
+    },
+    {
+      "controller": 63,
+      "value": 2
+    }
+  ],
   "defaultMidiChannel": 1,
   "layout": {
     "width": 16,
@@ -28,7 +95,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -47,7 +114,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -66,7 +133,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -85,7 +152,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -104,7 +171,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -123,7 +190,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -142,7 +209,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -161,7 +228,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -170,7 +237,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 0
+        "number": 32
       },
       "position": {
         "x": 0,
@@ -189,7 +256,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 1
+        "number": 33
       },
       "position": {
         "x": 1,
@@ -208,7 +275,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 2
+        "number": 34
       },
       "position": {
         "x": 2,
@@ -227,7 +294,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 3
+        "number": 35
       },
       "position": {
         "x": 3,
@@ -246,7 +313,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 4
+        "number": 36
       },
       "position": {
         "x": 4,
@@ -265,7 +332,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 5
+        "number": 37
       },
       "position": {
         "x": 5,
@@ -284,7 +351,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 6
+        "number": 38
       },
       "position": {
         "x": 6,
@@ -303,7 +370,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 7
+        "number": 39
       },
       "position": {
         "x": 7,
@@ -322,7 +389,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 8
+        "number": 24
       },
       "position": {
         "x": 0,
@@ -341,7 +408,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 9
+        "number": 25
       },
       "position": {
         "x": 1,
@@ -360,7 +427,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 10
+        "number": 26
       },
       "position": {
         "x": 2,
@@ -379,7 +446,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 11
+        "number": 27
       },
       "position": {
         "x": 3,
@@ -398,7 +465,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 12
+        "number": 28
       },
       "position": {
         "x": 4,
@@ -417,7 +484,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 13
+        "number": 29
       },
       "position": {
         "x": 5,
@@ -436,7 +503,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 14
+        "number": 30
       },
       "position": {
         "x": 6,
@@ -455,7 +522,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 15
+        "number": 31
       },
       "position": {
         "x": 7,
@@ -626,7 +693,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 24
+        "number": 8
       },
       "position": {
         "x": 0,
@@ -645,7 +712,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 25
+        "number": 9
       },
       "position": {
         "x": 1,
@@ -664,7 +731,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 26
+        "number": 10
       },
       "position": {
         "x": 2,
@@ -683,7 +750,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 27
+        "number": 11
       },
       "position": {
         "x": 3,
@@ -702,7 +769,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 28
+        "number": 12
       },
       "position": {
         "x": 4,
@@ -721,7 +788,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 29
+        "number": 13
       },
       "position": {
         "x": 5,
@@ -740,7 +807,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 30
+        "number": 14
       },
       "position": {
         "x": 6,
@@ -759,7 +826,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 31
+        "number": 15
       },
       "position": {
         "x": 7,
@@ -778,7 +845,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 32
+        "number": 0
       },
       "position": {
         "x": 0,
@@ -797,7 +864,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 33
+        "number": 1
       },
       "position": {
         "x": 1,
@@ -816,7 +883,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 34
+        "number": 2
       },
       "position": {
         "x": 2,
@@ -835,7 +902,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 35
+        "number": 3
       },
       "position": {
         "x": 3,
@@ -854,7 +921,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 36
+        "number": 4
       },
       "position": {
         "x": 4,
@@ -873,7 +940,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 37
+        "number": 5
       },
       "position": {
         "x": 5,
@@ -892,7 +959,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 38
+        "number": 6
       },
       "position": {
         "x": 6,
@@ -911,7 +978,7 @@
       "type": "button",
       "midi": {
         "kind": "note",
-        "number": 39
+        "number": 7
       },
       "position": {
         "x": 7,
@@ -1039,22 +1106,23 @@
       }
     },
     {
-      "id": "btn-master-select",
-      "label": "Master Select",
+      "id": "button-1",
+      "label": "Master",
       "type": "button",
       "midi": {
         "kind": "note",
+        "channel": 1,
         "number": 80
       },
       "position": {
         "x": 8,
-        "y": 8,
+        "y": 7,
         "width": 1,
         "height": 1,
-        "shape": "circle"
+        "shape": "rect"
       },
       "capabilities": {
-        "led": "on-off"
+        "led": "none"
       }
     },
     {
@@ -1224,7 +1292,7 @@
       "midi": {
         "kind": "note",
         "channel": 1,
-        "number": 50
+        "number": 51
       },
       "position": {
         "x": 0,
@@ -1244,7 +1312,7 @@
       "midi": {
         "kind": "note",
         "channel": 2,
-        "number": 50
+        "number": 51
       },
       "position": {
         "x": 1,
@@ -1264,7 +1332,7 @@
       "midi": {
         "kind": "note",
         "channel": 3,
-        "number": 50
+        "number": 51
       },
       "position": {
         "x": 2,
@@ -1284,7 +1352,7 @@
       "midi": {
         "kind": "note",
         "channel": 4,
-        "number": 50
+        "number": 51
       },
       "position": {
         "x": 3,
@@ -1304,7 +1372,7 @@
       "midi": {
         "kind": "note",
         "channel": 5,
-        "number": 50
+        "number": 51
       },
       "position": {
         "x": 4,
@@ -1324,7 +1392,7 @@
       "midi": {
         "kind": "note",
         "channel": 6,
-        "number": 50
+        "number": 51
       },
       "position": {
         "x": 5,
@@ -1344,7 +1412,7 @@
       "midi": {
         "kind": "note",
         "channel": 7,
-        "number": 50
+        "number": 51
       },
       "position": {
         "x": 6,
@@ -1364,7 +1432,7 @@
       "midi": {
         "kind": "note",
         "channel": 8,
-        "number": 50
+        "number": 51
       },
       "position": {
         "x": 7,
@@ -1384,7 +1452,7 @@
       "midi": {
         "kind": "note",
         "channel": 1,
-        "number": 51
+        "number": 50
       },
       "position": {
         "x": 0,
@@ -1464,7 +1532,7 @@
       "midi": {
         "kind": "note",
         "channel": 2,
-        "number": 51
+        "number": 50
       },
       "position": {
         "x": 1,
@@ -1544,7 +1612,7 @@
       "midi": {
         "kind": "note",
         "channel": 3,
-        "number": 51
+        "number": 50
       },
       "position": {
         "x": 2,
@@ -1624,7 +1692,7 @@
       "midi": {
         "kind": "note",
         "channel": 4,
-        "number": 51
+        "number": 50
       },
       "position": {
         "x": 3,
@@ -1704,7 +1772,7 @@
       "midi": {
         "kind": "note",
         "channel": 5,
-        "number": 51
+        "number": 50
       },
       "position": {
         "x": 4,
@@ -1784,7 +1852,7 @@
       "midi": {
         "kind": "note",
         "channel": 6,
-        "number": 51
+        "number": 50
       },
       "position": {
         "x": 5,
@@ -1864,7 +1932,7 @@
       "midi": {
         "kind": "note",
         "channel": 7,
-        "number": 51
+        "number": 50
       },
       "position": {
         "x": 6,
@@ -1944,7 +2012,7 @@
       "midi": {
         "kind": "note",
         "channel": 8,
-        "number": 51
+        "number": 50
       },
       "position": {
         "x": 7,
@@ -2205,7 +2273,7 @@
         "number": 87
       },
       "position": {
-        "x": 9,
+        "x": 11,
         "y": 0,
         "width": 1,
         "height": 1,
@@ -2224,7 +2292,7 @@
         "number": 88
       },
       "position": {
-        "x": 9,
+        "x": 11,
         "y": 1,
         "width": 1,
         "height": 1,
@@ -2243,7 +2311,7 @@
         "number": 89
       },
       "position": {
-        "x": 9,
+        "x": 11,
         "y": 2,
         "width": 1,
         "height": 1,
@@ -2262,7 +2330,7 @@
         "number": 91
       },
       "position": {
-        "x": 11,
+        "x": 12,
         "y": 0,
         "width": 1,
         "height": 1,
@@ -2281,7 +2349,7 @@
         "number": 93
       },
       "position": {
-        "x": 12,
+        "x": 13,
         "y": 0,
         "width": 1,
         "height": 1,
@@ -2300,7 +2368,7 @@
         "number": 102
       },
       "position": {
-        "x": 13,
+        "x": 14,
         "y": 0,
         "width": 1,
         "height": 1,
@@ -2319,8 +2387,8 @@
         "number": 13
       },
       "position": {
-        "x": 15,
-        "y": 0,
+        "x": 14,
+        "y": 1.5,
         "width": 1,
         "height": 1,
         "shape": "circle"
@@ -2340,8 +2408,8 @@
         "number": 47
       },
       "position": {
-        "x": 15,
-        "y": 1,
+        "x": 8,
+        "y": 8,
         "width": 1,
         "height": 1,
         "shape": "circle"
@@ -2361,7 +2429,7 @@
         "number": 90
       },
       "position": {
-        "x": 11,
+        "x": 12,
         "y": 1,
         "width": 1,
         "height": 1,
@@ -2380,7 +2448,7 @@
         "number": 99
       },
       "position": {
-        "x": 12,
+        "x": 13,
         "y": 1,
         "width": 1,
         "height": 1,
@@ -2399,7 +2467,7 @@
         "number": 101
       },
       "position": {
-        "x": 11,
+        "x": 13,
         "y": 2,
         "width": 1,
         "height": 1,
@@ -2444,7 +2512,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -2463,7 +2531,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -2482,7 +2550,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -2501,7 +2569,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -2520,7 +2588,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -2539,7 +2607,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -2558,7 +2626,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -2577,7 +2645,7 @@
         "shape": "circle"
       },
       "capabilities": {
-        "motorized": false
+        "motorized": true
       }
     },
     {
@@ -2820,7 +2888,7 @@
         "x": 14,
         "y": 10,
         "width": 1,
-        "height": 1,
+        "height": 0.5,
         "shape": "rect"
       },
       "capabilities": {
@@ -2836,10 +2904,10 @@
         "number": 103
       },
       "position": {
-        "x": 14,
-        "y": 11,
+        "x": 15,
+        "y": 10,
         "width": 1,
-        "height": 1,
+        "height": 0.5,
         "shape": "rect"
       },
       "capabilities": {

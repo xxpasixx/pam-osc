@@ -79,6 +79,20 @@ const testDevice = {
       capabilities: { led: "on-off" },
     },
     {
+      id: "btn-qk-master",
+      type: "button",
+      midi: { kind: "note", number: 29 },
+      position: { x: 2, y: 7, width: 1, height: 1 },
+      capabilities: { led: "on-off" },
+    },
+    {
+      id: "btn-fine2",
+      type: "button",
+      midi: { kind: "note", number: 30 },
+      position: { x: 3, y: 7, width: 1, height: 1 },
+      capabilities: { led: "on-off" },
+    },
+    {
       id: "btn-qk",
       type: "button",
       midi: { kind: "note", number: 21 },
@@ -168,7 +182,15 @@ const testMapping = {
     { controlId: "btn-pad", action: { type: "executor", number: 302 }, options: { minValue: 30 } },
     { controlId: "btn-cmd", action: { type: "command", command: "HIGHLIGHT" }, feedback: { type: "on-off" } },
     { controlId: "btn-qk", action: { type: "quickKey", key: "CLEAR" } },
+    // A grand-master QuickKey — gets /masterEnabled LED feedback like btn-cmd.
+    { controlId: "btn-qk-master", action: { type: "quickKey", key: "HIGHLIGHT" }, feedback: { type: "on-off" } },
     { controlId: "btn-fine", action: { type: "modifier", modifier: "encoderFine" }, feedback: { type: "on-off" } },
+    // PAM-31: a second fine button with its own resolution factor.
+    {
+      controlId: "btn-fine2",
+      action: { type: "modifier", modifier: "encoderFine", factor: 2 },
+      feedback: { type: "on-off" },
+    },
     { controlId: "btn-rough", action: { type: "modifier", modifier: "encoderRough" }, feedback: { type: "on-off" } },
     {
       controlId: "btn-attr-dim",
@@ -203,6 +225,7 @@ export const TEST_TIMING: EngineTiming = {
   holdOffMs: 50,
   cmdAckTimeoutMs: 40,
   configHeartbeatMs: 50,
+  feedbackResendMs: 30,
 };
 
 export interface FixtureOptions {
@@ -248,6 +271,24 @@ export function secondUnitMapping(port: string): unknown {
     name: "Test Mapping 2",
     midiPort: { input: port, output: port },
     enableTimecodeSend: false,
+  };
+}
+
+/**
+ * PAM-25: the test board with resendFeedback on, plus a mapping binding it to
+ * `port` — for the periodic cache-replay tests (AC-2).
+ */
+export function resendVariant(port: string): { device: unknown; mapping: unknown } {
+  return {
+    device: { ...testDevice, id: "resend-board", name: "Resend Board", resendFeedback: true },
+    mapping: {
+      ...testMapping,
+      id: "resend-map",
+      name: "Resend Mapping",
+      deviceDefinitionId: "resend-board",
+      midiPort: { input: port, output: port },
+      enableTimecodeSend: false,
+    },
   };
 }
 

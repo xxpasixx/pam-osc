@@ -19,7 +19,13 @@ function device(id: string, image?: string) {
     ...(image ? { image } : {}),
     layout: { width: 2, height: 2 },
     controls: [
-      { id: "b1", type: "button", midi: { kind: "note", number: 1 }, position: { x: 0, y: 0, width: 1, height: 1 }, capabilities: { led: "none" } },
+      {
+        id: "b1",
+        type: "button",
+        midi: { kind: "note", number: 1 },
+        position: { x: 0, y: 0, width: 1, height: 1 },
+        capabilities: { led: "none" },
+      },
     ],
   };
 }
@@ -53,7 +59,11 @@ describe("Catalog.deviceImage (PAM-21)", () => {
   });
 
   it("honours an explicit image override with the right MIME (AC-2)", async () => {
-    await writeFile(join(paths.userDevicesDir, "ov-board.json"), JSON.stringify(device("ov-board", "shot.jpg")), "utf8");
+    await writeFile(
+      join(paths.userDevicesDir, "ov-board.json"),
+      JSON.stringify(device("ov-board", "shot.jpg")),
+      "utf8"
+    );
     await writeFile(join(userImagesDir, "shot.jpg"), Buffer.from([0xff, 0xd8, 0xff]));
     await catalog.refresh();
     const url = await catalog.deviceImage("ov-board");

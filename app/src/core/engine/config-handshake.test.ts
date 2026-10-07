@@ -81,9 +81,15 @@ describe("buildPamConfig (ConfigBuilder)", () => {
     expect(buildPamConfig([a, b])).toMatchObject({
       sendColors: true, // true OR false
       sendNames: false, // false OR false
-      resendButtons: true, // false OR true
       sendTimecode: true, // false OR true (enableTimecodeSend)
     });
+  });
+
+  it("pins resendButtons to 0 even when a mapping still sets it (PAM-25 AC-3/AC-4)", () => {
+    const legacy = makeMapping({ id: "legacy", resendButtons: true });
+    const config = buildPamConfig([legacy]);
+    expect(config.resendButtons).toBe(false);
+    expect(serializePamConfig(config)).toContain(";r=0;");
   });
 
   it("carries the global fixedPage through; treats absent / <1 as 0 (follow current page)", () => {

@@ -55,7 +55,13 @@ const mapping = mappingSchema.parse({
 
 function harness() {
   const unit = buildUnit(mapping, device, []);
-  const unitRuntime: UnitRuntime = { unit, connection: undefined, cache: new Map(), colors: new Array(8).fill(0), rgb: new Map() };
+  const unitRuntime: UnitRuntime = {
+    unit,
+    connection: undefined,
+    cache: new Map(),
+    colors: new Array(8).fill(0),
+    rgb: new Map(),
+  };
   const sent: OscMessage[] = [];
   const context: InputContext = {
     state: createRuntimeState(),
@@ -65,7 +71,8 @@ function harness() {
     enqueueCmdKey: () => {},
     log: () => {},
   };
-  const turn = (value: number) => handleMidiEvent(context, unitRuntime, { kind: "cc", channel: 1, controller: 47, value });
+  const turn = (value: number) =>
+    handleMidiEvent(context, unitRuntime, { kind: "cc", channel: 1, controller: 47, value });
   const lastFader = () => sent.filter((m) => m.address === "/Page1/Fader211").at(-1);
   return { turn, lastFader };
 }

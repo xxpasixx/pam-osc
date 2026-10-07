@@ -115,6 +115,13 @@ function indexInput(unit: Unit, entry: RoutingEntry, issues: EngineIssue[]): voi
   switch (control.midi.kind) {
     case "note":
       push(unit.byNote, midiKey(entry.channel, control.midi.number));
+      // Note-pair encoders (PAM-27): the counter-clockwise note routes to the
+      // same entry — the input router derives the direction from which of the
+      // two notes fired.
+      if (control.type === "encoder" && control.capabilities.encoding.mode === "note-pair") {
+        const ccw = control.capabilities.encoding.decrementNote;
+        if (ccw !== undefined) push(unit.byNote, midiKey(entry.channel, ccw));
+      }
       return;
     case "cc":
       push(unit.byCc, midiKey(entry.channel, control.midi.number));
@@ -136,6 +143,10 @@ function indexInput(unit: Unit, entry: RoutingEntry, issues: EngineIssue[]): voi
   }
 }
 
+/** Grand-master states the plugin reports via /masterEnabled/<name> — the
+ * lowercased QuickKey codes that toggle exactly these states. */
+const MASTER_STATE_KEYS = new Set(["highlight", "lowlight", "solo", "blind"]);
+
 function indexFeedback(unit: Unit, entry: RoutingEntry): void {
   const { assignment } = entry;
   switch (assignment.action.type) {
@@ -148,6 +159,16 @@ function indexFeedback(unit: Unit, entry: RoutingEntry): void {
     case "command": {
       // masterEnabled matching is case-insensitive on the full text (v1).
       const key = assignment.action.command.toLowerCase();
+      const list = unit.byCommand.get(key) ?? [];
+      list.push(entry);
+      unit.byCommand.set(key, list);
+      return;
+    }
+    case "quickKey": {
+      // QuickKeys that toggle a grand-master state get the same
+      // /masterEnabled/<name> LED feedback as their command-action twins.
+      const key = assignment.action.key.toLowerCase();
+      if (!MASTER_STATE_KEYS.has(key)) return;
       const list = unit.byCommand.get(key) ?? [];
       list.push(entry);
       unit.byCommand.set(key, list);

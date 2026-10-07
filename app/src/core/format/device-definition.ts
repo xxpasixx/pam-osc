@@ -24,6 +24,48 @@ export const midiAddressSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+/**
+ * PAM-24: a complete MIDI System-Exclusive frame the engine sends to the board
+ * on connect (e.g. the APC40 mkII "Introduction message" that switches it into
+ * Ableton Live Mode). Opaque to the engine — it just emits the bytes. Framing
+ * bytes 0xF0/0xF7 are 240/247, so the array is 0-255; inner data bytes must stay
+ * 7-bit. Length is bounded so a shared/user board file can't push a huge buffer.
+ */
+export const sysexFrameSchema = z
+  .array(z.number().int().min(0).max(255))
+  .min(2)
+  .max(64)
+  .superRefine((bytes, ctx) => {
+    if (bytes[0] !== 0xf0) {
+      ctx.addIssue({ code: "custom", path: [0], message: "SysEx frame must start with 0xF0" });
+    }
+    if (bytes[bytes.length - 1] !== 0xf7) {
+      ctx.addIssue({ code: "custom", path: [bytes.length - 1], message: "SysEx frame must end with 0xF7" });
+    }
+    for (let i = 1; i < bytes.length - 1; i++) {
+      if (bytes[i]! > 127) {
+        ctx.addIssue({ code: "custom", path: [i], message: "SysEx data bytes must be 0-127" });
+      }
+    }
+  });
+
+/**
+ * PAM-24 AC-8: control-change messages the engine sends on connect, right after
+ * initSysEx. Used to configure host-controlled hardware that isn't a mode blob —
+ * e.g. the APC40 mkII per-knob LED-ring TYPE (0=off, 1=Single, 2=Volume, 3=Pan).
+ * This is where a board sets its ring style, so it is configurable per device.
+ * `channel` defaults to 1 when omitted. Bounded so a shared file can't spam.
+ */
+export const initCcSchema = z
+  .array(
+    z.strictObject({
+      controller: midiValueSchema,
+      value: midiValueSchema,
+      channel: midiChannelSchema.optional(),
+    })
+  )
+  .max(64);
+
 export const positionSchema = z.strictObject({
   x: z.number(),
   y: z.number(),
@@ -78,12 +120,17 @@ export const controlSchema = z.discriminatedUnion("type", [
       // PAM-20: relative decode mode. "range" (default) is the original
       // X-Touch behaviour driven by increment/decrement windows; "signed" is
       // the Akai two's-complement scheme (1..63 = +, 64..127 = −) that needs no
-      // ranges. Additive with a default, so existing files load unchanged.
+      // ranges. "note-pair" (PAM-27) is for encoders that fire a note press per
+      // detent on two distinct notes: the control's own midi note is clockwise
+      // (+1), decrementNote is counter-clockwise (−1) — e.g. the X-Touch
+      // Compact MC-mode side encoders 15/16. Additive with a default, so
+      // existing files load unchanged.
       encoding: z
         .strictObject({
-          mode: z.enum(["range", "signed"]).default("range"),
+          mode: z.enum(["range", "signed", "note-pair"]).default("range"),
           increment: encoderRangeSchema.optional(),
           decrement: encoderRangeSchema.optional(),
+          decrementNote: midiValueSchema.optional(),
         })
         .superRefine((encoding, ctx) => {
           if (encoding.mode === "range") {
@@ -91,6 +138,20 @@ export const controlSchema = z.discriminatedUnion("type", [
               ctx.addIssue({ code: "custom", path: ["increment"], message: '"range" encoding requires increment' });
             if (!encoding.decrement)
               ctx.addIssue({ code: "custom", path: ["decrement"], message: '"range" encoding requires decrement' });
+          }
+          if (encoding.mode === "note-pair" && encoding.decrementNote === undefined) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["decrementNote"],
+              message: '"note-pair" encoding requires decrementNote (the counter-clockwise note)',
+            });
+          }
+          if (encoding.mode !== "note-pair" && encoding.decrementNote !== undefined) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["decrementNote"],
+              message: 'decrementNote is only valid with "note-pair" encoding',
+            });
           }
         }),
       // The ring is driven via its own CC number (e.g. X-Touch: encoder on
@@ -138,6 +199,21 @@ export const deviceDefinitionSchema = z
       .regex(/^[A-Za-z0-9._-]+\.(png|jpe?g|webp)$/i, "must be a plain image filename (png/jpg/jpeg/webp)")
       .optional(),
     mode: z.enum(["standard", "mc"]).default("standard"),
+    // PAM-28: short user-facing setup steps shown when the board is picked
+    // (e.g. how to switch the hardware into the mode this definition expects).
+    // Plain text, newlines = steps. Bounded so a shared file can't flood the UI.
+    setupInstructions: z.string().min(1).max(1000).optional(),
+    // PAM-24: raw SysEx frame sent to the board's MIDI OUT once on every connect
+    // (before any other output). Absent = nothing sent. Used to put controllers
+    // like the APC40 mkII into a host-controllable mode.
+    initSysEx: sysexFrameSchema.optional(),
+    // PAM-24 AC-8: control-change messages sent on connect after initSysEx
+    // (e.g. per-knob LED-ring style). Absent = none sent.
+    initCC: initCcSchema.optional(),
+    // PAM-25: boards that lose LED state get their feedback cache replayed
+    // periodically by the APP (replaces the v1 console-side resendButtons —
+    // a board fact, so it lives on the device, not the mapping).
+    resendFeedback: z.boolean().default(false),
     defaultMidiChannel: midiChannelSchema.default(1),
     layout: z.strictObject({
       width: z.number().positive(),
@@ -156,6 +232,23 @@ export const deviceDefinitionSchema = z
         });
       }
       seen.add(control.id);
+      // "note-pair" encoders live on note addresses by definition — the two
+      // direction notes are what the hardware sends per detent.
+      if (control.type === "encoder" && control.capabilities.encoding.mode === "note-pair") {
+        if (control.midi.kind !== "note") {
+          ctx.addIssue({
+            code: "custom",
+            path: ["controls", index, "midi", "kind"],
+            message: '"note-pair" encoders must use a note midi address (the clockwise note)',
+          });
+        } else if (control.capabilities.encoding.decrementNote === control.midi.number) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["controls", index, "capabilities", "encoding", "decrementNote"],
+            message: "decrementNote must differ from the control's own (clockwise) note",
+          });
+        }
+      }
     });
   });
 

@@ -579,10 +579,7 @@ export function App() {
           </>
         )}
         {tab === "ma3" && (
-          <Ma3SetupView
-            values={draft.console}
-            pushNotice={(notice) => setNotices((current) => [...current, notice])}
-          />
+          <Ma3SetupView values={draft.console} pushNotice={(notice) => setNotices((current) => [...current, notice])} />
         )}
         {tab === "setup" && (
           <>

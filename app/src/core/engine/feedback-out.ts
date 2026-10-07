@@ -23,9 +23,20 @@ export function buttonFeedbackValue(entry: RoutingEntry, on: boolean): number | 
 
 export function sendButtonFeedback(unitRuntime: UnitRuntime, entry: RoutingEntry, on: boolean): void {
   if (entry.control.type !== "button") return;
-  if (entry.control.midi.kind !== "note") return;
   const velocity = buttonFeedbackValue(entry, on);
   if (velocity === undefined) return;
+  // CC-addressed buttons (e.g. the X32 Compact mute row in CC remote mode)
+  // take their LED value on the same CC; note buttons stay v1 wire shape.
+  if (entry.control.midi.kind === "cc") {
+    sendToUnit(unitRuntime, {
+      kind: "cc",
+      channel: entry.channel,
+      controller: entry.control.midi.number,
+      value: velocity,
+    });
+    return;
+  }
+  if (entry.control.midi.kind !== "note") return;
   sendToUnit(unitRuntime, {
     kind: "note",
     channel: entry.channel,
@@ -49,6 +60,25 @@ export function sendRgbColorFeedback(unitRuntime: UnitRuntime, entry: RoutingEnt
     note: entry.control.midi.number,
     velocity: state.running ? state.colorVelocity : feedback.offValue,
   });
+}
+
+/** PAM-31: fine/rough LEDs — lit while their modifier is active AND the
+ * button's factor is the active resolution (several buttons can offer
+ * different factors of the same modifier). */
+export function sendModifierLeds(unitRuntimes: UnitRuntime[], state: RuntimeState): void {
+  for (const unitRuntime of unitRuntimes) {
+    for (const entry of unitRuntime.unit.entries) {
+      const action = entry.assignment.action;
+      if (action.type !== "modifier") continue;
+      if (action.modifier !== "encoderFine" && action.modifier !== "encoderRough") continue;
+      const factor = action.factor ?? 10;
+      const on =
+        action.modifier === "encoderFine"
+          ? state.encoderFine && state.encoderFineFactor === factor
+          : state.encoderRough && state.encoderRoughFactor === factor;
+      sendButtonFeedback(unitRuntime, entry, on);
+    }
+  }
 }
 
 /** v1 sendAttributeLED: exactly the matching attributeSelect button is lit. */
@@ -182,18 +212,27 @@ export function sendFaderFeedback(unitRuntime: UnitRuntime, entry: RoutingEntry,
 }
 
 /**
+ * PAM-25: re-send the unit's last-sent feedback (the cache) verbatim — no
+ * state invention. Used on rebind (below) and periodically for boards that
+ * declare resendFeedback (LEDs going stale).
+ */
+export function replayCache(unitRuntime: UnitRuntime): void {
+  for (const message of unitRuntime.cache.values()) {
+    try {
+      unitRuntime.connection?.send(message);
+    } catch {
+      return; // yanked — the hot-plug poll will retry
+    }
+  }
+}
+
+/**
  * Restore a unit's hardware after (re)bind: replay what MA3 last told us,
  * then overwrite with the freshly computed engine state (attribute LEDs,
  * always-on values, timecode display) — no animation here by design.
  */
 export function restoreUnit(unitRuntime: UnitRuntime, state: RuntimeState): void {
-  for (const message of unitRuntime.cache.values()) {
-    try {
-      unitRuntime.connection?.send(message);
-    } catch {
-      return; // yanked again — the poll will retry
-    }
-  }
+  replayCache(unitRuntime);
   sendAlwaysOnFeedback(unitRuntime);
   sendAttributeLeds([unitRuntime], state);
   if (timecodeCapable(unitRuntime.unit)) {

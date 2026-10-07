@@ -8,7 +8,14 @@ import { buildPamConfig, serializePamConfig, ConfigSender, MAX_WATCH_SET } from 
 import { ConnectionChecker } from "./connection.js";
 import { DeviceManager, type UnitRuntime } from "./device-manager.js";
 import { handleOscMessage, type FeedbackContext } from "./feedback-router.js";
-import { restoreUnit, sendAlwaysOnFeedback, sendAttributeLeds, resetSegments, sendSlotDigit } from "./feedback-out.js";
+import {
+  replayCache,
+  restoreUnit,
+  sendAlwaysOnFeedback,
+  sendAttributeLeds,
+  resetSegments,
+  sendSlotDigit,
+} from "./feedback-out.js";
 import { handleMidiEvent, type InputContext } from "./input-router.js";
 import { buildUnit, type Unit } from "./routing-table.js";
 import { createRuntimeState, type RuntimeState } from "./state.js";
@@ -42,6 +49,8 @@ export class Engine {
   private configSender: ConfigSender | undefined;
   private animation: AnimationHandle | undefined;
   private animationDone = false;
+  /** PAM-25: periodic cache replay for devices with resendFeedback. */
+  private resendTimer: ReturnType<typeof setInterval> | undefined;
   private running = false;
   /** On-demand output tests (PAM-4 AC-4), one per mapping at most. */
   private readonly testAnimations = new Map<string, AnimationHandle>();
@@ -168,6 +177,17 @@ export class Engine {
 
       this.animationDone = false;
       this.deviceManager.start(units);
+
+      // PAM-25 (AC-2): boards that lose LED state get their last-sent feedback
+      // replayed periodically — app-side, zero console traffic. Waits for the
+      // startup animation (its frames bypass the cache on purpose) and skips
+      // unbound units and boards without the flag.
+      this.resendTimer = setInterval(() => {
+        if (!this.animationDone || !this.deviceManager) return;
+        for (const unitRuntime of this.deviceManager.bound()) {
+          if (unitRuntime.unit.device.resendFeedback) replayCache(unitRuntime);
+        }
+      }, this.timing.feedbackResendMs);
 
       // Startup (AC-9): animation on what is bound now → restore start state
       // → plugin force-reload → connection check. Later binds skip the show.
@@ -370,6 +390,8 @@ export class Engine {
   }
 
   private async shutdown(): Promise<void> {
+    if (this.resendTimer) clearInterval(this.resendTimer);
+    this.resendTimer = undefined;
     this.animation?.cancel();
     this.animation = undefined;
     for (const handle of this.testAnimations.values()) handle.cancel();

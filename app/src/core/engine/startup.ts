@@ -83,7 +83,7 @@ export function playStartupAnimation(
   }
 
   const totalFrames = Math.round(timing.animationMs / timing.animationFrameMs);
-  const waves = 2; // v1: the wave travels across each device twice
+  const waves = 1; // the wave travels across each device once
   let frame = 0;
   let finished = false;
 

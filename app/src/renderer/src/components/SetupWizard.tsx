@@ -43,7 +43,11 @@ function connectionReadout(
   }
   switch (connection.state) {
     case "connected":
-      return { led: "ok", text: "Connected — GrandMA3 is reachable and the pam-osc plugin is running.", connected: true };
+      return {
+        led: "ok",
+        text: "Connected — GrandMA3 is reachable and the pam-osc plugin is running.",
+        connected: true,
+      };
     case "plugin-missing":
       return {
         led: "warn",
@@ -254,8 +258,8 @@ export function SetupWizard({
         {step === 4 && (
           <>
             <p className="wizard-intro">
-              Install the pam-osc files into your GrandMA3 library. onPC on this machine is detected automatically; for a
-              real console use the USB route shown below.
+              Install the pam-osc files into your GrandMA3 library. onPC on this machine is detected automatically; for
+              a real console use the USB route shown below.
             </p>
             <Ma3SetupView values={consoleSettings} mode="install" />
           </>
@@ -296,8 +300,8 @@ export function SetupWizard({
               </p>
             ) : (
               <p className="inspector-meta">
-                Feedback isn’t confirmed yet. You can still finish — the bridge {engineState === "running" ? "is" : "will keep"}{" "}
-                trying, and you can diagnose it anytime under{" "}
+                Feedback isn’t confirmed yet. You can still finish — the bridge{" "}
+                {engineState === "running" ? "is" : "will keep"} trying, and you can diagnose it anytime under{" "}
                 <button className="subtle" onClick={onOpenDiagnostics}>
                   Status / diagnostics
                 </button>

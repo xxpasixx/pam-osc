@@ -83,7 +83,9 @@ export function TrafficLog({ entries }: { entries: TrafficEntry[] }) {
           className={`subtle ${copyState === "failed" ? "danger" : ""}`}
           onClick={() => void copy()}
           disabled={visible.length === 0}
-          title={copyState === "failed" ? "Clipboard access was denied — select the log text manually to copy it" : undefined}
+          title={
+            copyState === "failed" ? "Clipboard access was denied — select the log text manually to copy it" : undefined
+          }
         >
           {copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy failed" : "Copy"}
         </button>

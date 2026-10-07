@@ -33,7 +33,8 @@ const LEGACY_FIXTURES: Array<{
   { file: "xTouch1.json", deviceId: "x-touch" },
   { file: "xTouch2.json", deviceId: "x-touch" },
   { file: "xTouchCompact1.json", deviceId: "x-touch-compact" },
-  { file: "xTouchCompactRltv1.json", deviceId: "x-touch-compact" },
+  // PAM-30: v1 relative configs target the split-out relative board.
+  { file: "xTouchCompactRltv1.json", deviceId: "x-touch-compact-relative" },
   {
     file: "akiApcMini1.json",
     deviceId: "apc-mini",

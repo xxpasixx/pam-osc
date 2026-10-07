@@ -82,7 +82,8 @@ describe("Catalog (AC-2, EC-4)", () => {
     const entry = catalog.entries().find((candidate) => candidate.id === "test-map")!;
     expect(entry.origin).toBe("user");
     expect(entry.midiPort.input).toBe("My Unit In");
-    expect(catalog.notices().some((notice) => notice.message.includes("overrides"))).toBe(true);
+    // expected shadowing is not surfaced as a startup notice
+    expect(catalog.notices().some((notice) => notice.message.includes("overrides"))).toBe(false);
   });
 
   it("rewrites a user mapping's ports in place and skips unchanged ones", async () => {

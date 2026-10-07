@@ -4,6 +4,11 @@
  */
 export interface FormatIssue {
   severity: "error" | "info";
+  /**
+   * Expected user-over-bundled shadowing (materialized copies). Kept in the
+   * issue list for diagnostics, but not shown as a startup notice.
+   */
+  kind?: "override";
   /** Path of the file the issue belongs to. */
   file: string;
   /** Location inside the file, e.g. "controls[3].midi.number". */

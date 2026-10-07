@@ -1,6 +1,12 @@
 import type { OscMessage } from "../../transports/osc.js";
 import type { RgbButtonState, UnitRuntime } from "./device-manager.js";
-import { sendButtonFeedback, sendFaderFeedback, sendRgbColorFeedback, sendStripColors, sendStripText } from "./feedback-out.js";
+import {
+  sendButtonFeedback,
+  sendFaderFeedback,
+  sendRgbColorFeedback,
+  sendStripColors,
+  sendStripText,
+} from "./feedback-out.js";
 import { nearestPaletteVelocity } from "./led-palette.js";
 import { accumulatorKey } from "./state.js";
 import type { RuntimeState } from "./state.js";

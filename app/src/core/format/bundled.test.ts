@@ -28,17 +28,21 @@ describe("bundled resources", () => {
     expect(result.issues).toEqual([]);
   });
 
-  it("ship the complete inventory: the five v1 board types + APC40 mkII + X-Touch Extender, and their default mappings (AC-1, AC-3)", async () => {
+  it("ship the complete inventory: the five v1 board types + APC40 mkII + X-Touch Extender + Launchpad Mini MK3 + X32 Compact (CC remote) + X-Touch Compact (MC mode), and their default mappings (AC-1, AC-3)", async () => {
     const result = await loadBundled();
     expect(result.devices.map((device) => device.id).sort()).toEqual([
       "apc-40-mk2",
       "apc-mini",
       "apc-mini-mk2",
       "launchpad",
+      "launchpad-mini-mk3",
       "mpx16",
       "x-touch",
       "x-touch-compact",
+      "x-touch-compact-mc",
+      "x-touch-compact-relative",
       "x-touch-extender",
+      "x32-compact-cc",
     ]);
     expect(result.mappings.map((mapping) => mapping.id).sort()).toEqual([
       "apc-40-mk2-default-1",
@@ -49,12 +53,42 @@ describe("bundled resources", () => {
       "launchpad-triflats",
       "mpx16-default-1",
       "x-touch-compact-default-1",
+      "x-touch-compact-mc-playback-1",
       "x-touch-compact-relative-1",
       "x-touch-default-1",
       "x-touch-default-2",
       "x-touch-extender-default-1",
       "x-touch-extension-1",
+      "x32-compact-cc-default-1",
     ]);
+  });
+
+  it("ships the X-Touch Compact MC board with its power-on setup instructions (PAM-28 AC-3)", async () => {
+    const result = await loadBundled();
+    const mc = result.devices.find((device) => device.id === "x-touch-compact-mc");
+    expect(mc?.mode).toBe("mc");
+    expect(mc?.setupInstructions).toContain("MC LED");
+  });
+
+  it("ships the APC40 mkII Ableton-Live-Mode (Mode 1) Introduction SysEx as initSysEx (PAM-24 AC-4)", async () => {
+    const result = await loadBundled();
+    const apc = result.devices.find((device) => device.id === "apc-40-mk2");
+    expect(apc?.initSysEx).toEqual([0xf0, 0x47, 0x7f, 0x29, 0x60, 0x0, 0x4, 0x41, 0x1, 0x1, 0x1, 0xf7]);
+  });
+
+  it("configures the APC40 mkII knob LED rings: Volume-style ring type + fader-position feedback (PAM-24 AC-8)", async () => {
+    const result = await loadBundled();
+    const apc = result.devices.find((device) => device.id === "apc-40-mk2");
+    // 16 ring-type CCs (device knobs 0x18-0x1F, track knobs 0x38-0x3F), all Volume style (2).
+    const ringTypeControllers = [24, 25, 26, 27, 28, 29, 30, 31, 56, 57, 58, 59, 60, 61, 62, 63];
+    expect(apc?.initCC).toEqual(ringTypeControllers.map((controller) => ({ controller, value: 2 })));
+
+    // The 16 knobs echo their value back (lights the ring); non-knob controls unaffected.
+    const mapping = result.mappings.find((m) => m.id === "apc-40-mk2-default-1");
+    const knobIds = new Set([...Array(8)].flatMap((_, i) => [`track-knob-${i + 1}`, `device-knob-${i + 1}`]));
+    const knobFeedback = mapping?.assignments.filter((a) => knobIds.has(a.controlId)).map((a) => a.feedback.type);
+    expect(knobFeedback).toHaveLength(16);
+    expect(knobFeedback?.every((type) => type === "fader-position")).toBe(true);
   });
 
   it("uses every action facility of the v1 feature set somewhere (AC-3)", async () => {
@@ -100,18 +134,17 @@ describe("bundled resources", () => {
     }
   });
 
-  it("ships every hardware-verified bundled mapping as status 'tested' (PAM-19 AC-4)", async () => {
+  it("ships every bundled mapping as 'community' until hardware-verified as 'tested' (PAM-19 AC-4)", async () => {
     const result = await loadBundled();
     expect(result.mappings.length).toBeGreaterThan(0);
-    // Newly contributed boards that have not yet been verified on real
-    // hardware ship as 'community' (honest self-declaration) until confirmed.
-    const notYetHardwareVerified = new Set([
-      "apc-40-mk2-default-1",
-      "x-touch-extender-default-1",
-      "x-touch-extension-1",
+    // All bundled mappings ship as 'community' (honest self-declaration);
+    // a mapping moves here once it has been confirmed on real hardware.
+    const hardwareVerified = new Set<string>([
+      "x-touch-compact-default-1",
+      "x-touch-compact-mc-playback-1", // confirmed on the real unit 2026-08-01
     ]);
     for (const mapping of result.mappings) {
-      const expected = notYetHardwareVerified.has(mapping.id) ? "community" : "tested";
+      const expected = hardwareVerified.has(mapping.id) ? "tested" : "community";
       expect(mapping.status, `${mapping.id} should ship as ${expected}`).toBe(expected);
     }
   });
@@ -123,7 +156,7 @@ describe("bundled resources", () => {
         if (assignment.action.type === "quickKey") {
           expect(
             isKnownQuickKey(assignment.action.key),
-            `${mapping.id}: quickKey "${assignment.action.key}" is not a canonical code — the plugin pool has no matching object`,
+            `${mapping.id}: quickKey "${assignment.action.key}" is not a canonical code — the plugin pool has no matching object`
           ).toBe(true);
         }
       }

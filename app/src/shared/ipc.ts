@@ -70,6 +70,10 @@ export interface BoardInfo {
   id: string;
   name: string;
   origin: "bundled" | "user";
+  /** For the picker search (PAM-29). */
+  manufacturer?: string;
+  /** Short user-facing setup steps, shown when the board is picked (PAM-28). */
+  setupInstructions?: string;
 }
 
 // ---- PAM-6 visual mapping editor ----

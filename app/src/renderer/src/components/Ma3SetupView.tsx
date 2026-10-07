@@ -92,7 +92,9 @@ function InstallRow({
       )}
       {confirmReplace ? (
         <>
-          <span className="board">Replace {confirmReplace.version ?? "the installed file"} with {bundledLabel}?</span>
+          <span className="board">
+            Replace {confirmReplace.version ?? "the installed file"} with {bundledLabel}?
+          </span>
           <button className="primary" onClick={() => void run(true)}>
             Replace
           </button>
@@ -229,7 +231,8 @@ function ImportPluginCard() {
       <h2>Step 3 — Import &amp; start the plugin</h2>
       <ol className="guide-steps">
         <li>
-          Open a <strong>Plugins pool</strong> window on the console, edit an empty slot and choose <strong>Import</strong>.
+          Open a <strong>Plugins pool</strong> window on the console, edit an empty slot and choose{" "}
+          <strong>Import</strong>.
         </li>
         <li>
           Pick <code>pam-osc</code> from the list (installed in step 1) and import both plugins.
@@ -356,8 +359,15 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
     <section className="card" aria-label="Copy to a USB stick">
       <h2>Copy to a USB stick (for a real console)</h2>
       <p className="inspector-meta">
-        Copies the plugin{info?.bundledVersion ? <> (version <code>{info.bundledVersion}</code>)</> : null} and the OSC
-        config onto a stick under <code>grandMA3/gma3_library/…</code>, ready to import at the console. GrandMA3 reads
+        Copies the plugin
+        {info?.bundledVersion ? (
+          <>
+            {" "}
+            (version <code>{info.bundledVersion}</code>)
+          </>
+        ) : null}{" "}
+        and the OSC config onto a stick under <code>grandMA3/gma3_library/…</code>, ready to import at the console.
+        GrandMA3 reads
         <strong> FAT32</strong> sticks reliably.
       </p>
 
@@ -388,10 +398,7 @@ function UsbExportCard({ pushNotice }: { pushNotice: (notice: Notice) => void })
           <span className={`led ${readableHint(selected.consoleReadable).led}`} aria-hidden="true" />{" "}
           {readableHint(selected.consoleReadable).text}
           {selected.consoleReadable === "no" && (
-            <>
-              {" "}
-              — copying is still allowed, but reformat the stick as FAT32 if the console shows nothing.
-            </>
+            <> — copying is still allowed, but reformat the stick as FAT32 if the console shows nothing.</>
           )}
         </p>
       )}

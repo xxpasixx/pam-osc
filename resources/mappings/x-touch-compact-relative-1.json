@@ -3,8 +3,8 @@
   "id": "x-touch-compact-relative-1",
   "name": "X-Touch Compact Relative 1",
   "status": "community",
-  "notes": "Re-expressed from v1 mappings/xTouchCompactRltv1.json. Same as the default mapping, but the right-side encoders 9-16 are set to relative mode (via the X-Touch editor) and control fixture attributes; pushing encoder 9 toggles fine, encoder 10 toggles rough sensitivity. v1 defined no LED-ring feedback for these encoders, so their feedback is none. The remaining right-knob pushes (v1 notes 10-15) and all layer-B right-knob pushes had no v1 assignment.",
-  "deviceDefinitionId": "x-touch-compact",
+  "notes": "Targets the 'x-touch-compact-relative' board (side encoders 9-16 in relative mode via X-TOUCH Editor). Re-expressed from v1 mappings/xTouchCompactRltv1.json. Same as the default mapping, but the right-side encoders 9-16 are set to relative mode (via the X-Touch editor) and control fixture attributes; pushing encoder 9 toggles fine, encoder 10 toggles rough sensitivity. v1 defined no LED-ring feedback for these encoders, so their feedback is none. The remaining right-knob pushes (v1 notes 10-15) and all layer-B right-knob pushes had no v1 assignment. Side-button block (both layers where present): Highlight | Clear / Prev | Next / Page Down | Page Up (QuickKeys, changed 2026-07-27). Layer-B knob rotations (1-16, all relative encoders since 2026-08-01) target the same executor as their push with feedback none; the top row 410-417 additionally gets the relative /Encoder message (executor > 300). Layer-A side buttons changed 2026-07-27: Highlight | Clear (row 1), encoder resolution Fine /2 | Rough x2 (row 2, PAM-31 modifier factor with LED), Page Down | Page Up (row 3). Layer B keeps the QuickKey block.",
+  "deviceDefinitionId": "x-touch-compact-relative",
   "midiPort": {
     "input": "X-TOUCH COMPACT",
     "output": "X-TOUCH COMPACT"
@@ -271,7 +271,7 @@
       }
     },
     {
-      "controlId": "knob-9-rel",
+      "controlId": "knob-9",
       "action": {
         "type": "attribute",
         "attribute": "dimmer"
@@ -284,7 +284,7 @@
       }
     },
     {
-      "controlId": "knob-10-rel",
+      "controlId": "knob-10",
       "action": {
         "type": "attribute",
         "attribute": "Gobo1"
@@ -297,7 +297,7 @@
       }
     },
     {
-      "controlId": "knob-11-rel",
+      "controlId": "knob-11",
       "action": {
         "type": "attribute",
         "attribute": "pan"
@@ -310,7 +310,7 @@
       }
     },
     {
-      "controlId": "knob-12-rel",
+      "controlId": "knob-12",
       "action": {
         "type": "attribute",
         "attribute": "tilt"
@@ -323,7 +323,7 @@
       }
     },
     {
-      "controlId": "knob-13-rel",
+      "controlId": "knob-13",
       "action": {
         "type": "attribute",
         "attribute": "ColorRGB_R"
@@ -336,7 +336,7 @@
       }
     },
     {
-      "controlId": "knob-14-rel",
+      "controlId": "knob-14",
       "action": {
         "type": "attribute",
         "attribute": "ColorRGB_G"
@@ -349,7 +349,7 @@
       }
     },
     {
-      "controlId": "knob-15-rel",
+      "controlId": "knob-15",
       "action": {
         "type": "attribute",
         "attribute": "ColorRGB_B"
@@ -362,7 +362,7 @@
       }
     },
     {
-      "controlId": "knob-16-rel",
+      "controlId": "knob-16",
       "action": {
         "type": "attribute",
         "attribute": "Color1"
@@ -869,24 +869,20 @@
     {
       "controlId": "btn-side-1",
       "action": {
-        "type": "command",
-        "command": "Previous Page"
-      },
-      "options": {
-        "minValue": 100
+        "type": "quickKey",
+        "key": "HIGHLIGHT"
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
       "controlId": "btn-side-2",
       "action": {
-        "type": "command",
-        "command": "Next Page"
-      },
-      "options": {
-        "minValue": 100
+        "type": "quickKey",
+        "key": "CLEAR"
       },
       "feedback": {
         "type": "none"
@@ -895,8 +891,9 @@
     {
       "controlId": "btn-side-3",
       "action": {
-        "type": "executor",
-        "number": 319
+        "type": "modifier",
+        "modifier": "encoderFine",
+        "factor": 2
       },
       "feedback": {
         "type": "on-off",
@@ -907,8 +904,9 @@
     {
       "controlId": "btn-side-4",
       "action": {
-        "type": "executor",
-        "number": 320
+        "type": "modifier",
+        "modifier": "encoderRough",
+        "factor": 2
       },
       "feedback": {
         "type": "on-off",
@@ -919,29 +917,25 @@
     {
       "controlId": "btn-side-5",
       "action": {
-        "type": "executor",
-        "number": 119
+        "type": "quickKey",
+        "key": "PAGE_DOWN"
       },
       "feedback": {
-        "type": "on-off",
-        "onValue": 127,
-        "offValue": 0
+        "type": "none"
       }
     },
     {
       "controlId": "btn-side-6",
       "action": {
-        "type": "executor",
-        "number": 120
+        "type": "quickKey",
+        "key": "PAGE_UP"
       },
       "feedback": {
-        "type": "on-off",
-        "onValue": 127,
-        "offValue": 0
+        "type": "none"
       }
     },
     {
-      "controlId": "knob-9-rel",
+      "controlId": "knob-9",
       "part": "push",
       "action": {
         "type": "modifier",
@@ -957,7 +951,7 @@
       }
     },
     {
-      "controlId": "knob-10-rel",
+      "controlId": "knob-10",
       "part": "push",
       "action": {
         "type": "modifier",
@@ -1563,24 +1557,20 @@
     {
       "controlId": "btn-side-1-b",
       "action": {
-        "type": "command",
-        "command": "Previous Page"
-      },
-      "options": {
-        "minValue": 100
+        "type": "quickKey",
+        "key": "HIGHLIGHT"
       },
       "feedback": {
-        "type": "none"
+        "type": "on-off",
+        "onValue": 127,
+        "offValue": 0
       }
     },
     {
       "controlId": "btn-side-2-b",
       "action": {
-        "type": "command",
-        "command": "Next Page"
-      },
-      "options": {
-        "minValue": 100
+        "type": "quickKey",
+        "key": "CLEAR"
       },
       "feedback": {
         "type": "none"
@@ -1589,49 +1579,201 @@
     {
       "controlId": "btn-side-3-b",
       "action": {
-        "type": "executor",
-        "number": 321
+        "type": "quickKey",
+        "key": "PREV"
       },
       "feedback": {
-        "type": "on-off",
-        "onValue": 127,
-        "offValue": 0
+        "type": "none"
       }
     },
     {
       "controlId": "btn-side-4-b",
       "action": {
-        "type": "executor",
-        "number": 322
+        "type": "quickKey",
+        "key": "NEXT"
       },
       "feedback": {
-        "type": "on-off",
-        "onValue": 127,
-        "offValue": 0
+        "type": "none"
       }
     },
     {
       "controlId": "btn-side-5-b",
       "action": {
-        "type": "executor",
-        "number": 221
+        "type": "quickKey",
+        "key": "PAGE_DOWN"
       },
       "feedback": {
-        "type": "on-off",
-        "onValue": 127,
-        "offValue": 0
+        "type": "none"
       }
     },
     {
       "controlId": "btn-side-6-b",
       "action": {
-        "type": "executor",
-        "number": 222
+        "type": "quickKey",
+        "key": "PAGE_UP"
       },
       "feedback": {
-        "type": "on-off",
-        "onValue": 127,
-        "offValue": 0
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-1-b",
+      "action": {
+        "type": "executor",
+        "number": 410
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-2-b",
+      "action": {
+        "type": "executor",
+        "number": 411
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-3-b",
+      "action": {
+        "type": "executor",
+        "number": 412
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-4-b",
+      "action": {
+        "type": "executor",
+        "number": 413
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-5-b",
+      "action": {
+        "type": "executor",
+        "number": 414
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-6-b",
+      "action": {
+        "type": "executor",
+        "number": 415
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-7-b",
+      "action": {
+        "type": "executor",
+        "number": 416
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-8-b",
+      "action": {
+        "type": "executor",
+        "number": 417
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-9-b",
+      "action": {
+        "type": "executor",
+        "number": 191
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-10-b",
+      "action": {
+        "type": "executor",
+        "number": 192
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-11-b",
+      "action": {
+        "type": "executor",
+        "number": 193
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-12-b",
+      "action": {
+        "type": "executor",
+        "number": 194
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-13-b",
+      "action": {
+        "type": "executor",
+        "number": 195
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-14-b",
+      "action": {
+        "type": "executor",
+        "number": 196
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-15-b",
+      "action": {
+        "type": "executor",
+        "number": 197
+      },
+      "feedback": {
+        "type": "none"
+      }
+    },
+    {
+      "controlId": "knob-16-b",
+      "action": {
+        "type": "executor",
+        "number": 198
+      },
+      "feedback": {
+        "type": "none"
       }
     }
   ]

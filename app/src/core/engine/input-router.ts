@@ -4,7 +4,7 @@ import { oscFloat, oscInteger, oscString } from "../../transports/osc.js";
 import { canonicalQuickKey } from "../format/quickkeys.js";
 import { cmdModeActive } from "./cmd-keys.js";
 import type { UnitRuntime } from "./device-manager.js";
-import { sendAttributeLeds, sendButtonFeedback } from "./feedback-out.js";
+import { sendAttributeLeds, sendModifierLeds } from "./feedback-out.js";
 import { midiKey, type RoutingEntry } from "./routing-table.js";
 import { accumulatorKey, type RuntimeState } from "./state.js";
 import { handleTimecodePlayPause, handleTimecodeSelect } from "./timecode.js";
@@ -63,7 +63,12 @@ export function handleMidiEvent(context: InputContext, unitRuntime: UnitRuntime,
     case "note": {
       const entries = unit.byNote.get(midiKey(event.channel, event.note));
       if (!entries) return;
-      for (const entry of entries) handleNoteEntry(context, unitRuntime, entry, event.value);
+      for (const entry of entries) {
+        // Note-pair encoders (PAM-27) are indexed under both direction notes;
+        // which note fired decides the direction.
+        if (entry.control.type === "encoder") handleNotePairEntry(context, unitRuntime, entry, event.note, event.value);
+        else handleNoteEntry(context, unitRuntime, entry, event.value);
+      }
       return;
     }
   }
@@ -71,6 +76,13 @@ export function handleMidiEvent(context: InputContext, unitRuntime: UnitRuntime,
 
 function handleCcEntry(context: InputContext, unitRuntime: UnitRuntime, entry: RoutingEntry, value: number): void {
   const { control, assignment } = entry;
+
+  // CC-addressed buttons (e.g. the X32 Compact mute row in CC remote mode,
+  // 127 = pressed / 0 = released) carry note-button semantics on a CC.
+  if (control.type === "button") {
+    handleNoteEntry(context, unitRuntime, entry, value);
+    return;
+  }
 
   // Absolute CC fader (incl. absolute knobs) → executor fader, v1 formula.
   if (control.type === "fader") {
@@ -96,6 +108,31 @@ function handleCcEntry(context: InputContext, unitRuntime: UnitRuntime, entry: R
     return;
   }
   if (detents === undefined) return; // no change / outside both ranges — ignored
+  applyEncoderDetents(context, unitRuntime, entry, detents);
+}
+
+/**
+ * Note-pair encoder (PAM-27): each rotation detent fires a note press — the
+ * control's own note clockwise, encoding.decrementNote counter-clockwise
+ * (X-Touch Compact MC-mode side encoders 15/16). One press = one detent.
+ */
+function handleNotePairEntry(
+  context: InputContext,
+  unitRuntime: UnitRuntime,
+  entry: RoutingEntry,
+  note: number,
+  value: number
+): void {
+  const { control } = entry;
+  if (control.type !== "encoder" || control.capabilities.encoding.mode !== "note-pair") return;
+  if (control.midi.kind !== "note") return; // schema guarantees this; narrows the type
+  if (value <= 0) return; // the release of the detent press carries no motion
+  applyEncoderDetents(context, unitRuntime, entry, note === control.midi.number ? 1 : -1);
+}
+
+/** Shared encoder tail: detents → executor fader/knob or attribute command. */
+function applyEncoderDetents(context: InputContext, unitRuntime: UnitRuntime, entry: RoutingEntry, detents: number): void {
+  const { control, assignment } = entry;
 
   if (assignment.action.type === "executor") {
     const executor = assignment.action.number;
@@ -122,8 +159,8 @@ function handleCcEntry(context: InputContext, unitRuntime: UnitRuntime, entry: R
 
   if (assignment.action.type === "attribute") {
     let change = detents * (assignment.options?.amount ?? 1);
-    change = context.state.encoderFine ? change / 10 : change;
-    change = context.state.encoderRough ? change * 10 : change;
+    change = context.state.encoderFine ? change / context.state.encoderFineFactor : change;
+    change = context.state.encoderRough ? change * context.state.encoderRoughFactor : change;
     const plusMinus = change > 0 ? " + " : " - ";
     const attribute = assignment.action.attribute === "current" ? context.state.attribute : assignment.action.attribute;
     // v1's exact command string — including the double space after "at".
@@ -233,14 +270,27 @@ function handleModifier(
   attribute: string | undefined
 ): void {
   const state = context.state;
+  const factor = entry.assignment.action.type === "modifier" ? (entry.assignment.action.factor ?? 10) : 10;
   switch (modifier) {
+    // PAM-31: several buttons may carry the same modifier with different
+    // factors — same factor toggles off, another factor switches resolution.
     case "encoderRough":
-      state.encoderRough = !state.encoderRough;
-      sendButtonFeedback(unitRuntime, entry, state.encoderRough);
+      if (state.encoderRough && state.encoderRoughFactor !== factor) {
+        state.encoderRoughFactor = factor;
+      } else {
+        state.encoderRough = !state.encoderRough;
+        state.encoderRoughFactor = factor;
+      }
+      sendModifierLeds(context.allUnits(), state);
       return;
     case "encoderFine":
-      state.encoderFine = !state.encoderFine;
-      sendButtonFeedback(unitRuntime, entry, state.encoderFine);
+      if (state.encoderFine && state.encoderFineFactor !== factor) {
+        state.encoderFineFactor = factor;
+      } else {
+        state.encoderFine = !state.encoderFine;
+        state.encoderFineFactor = factor;
+      }
+      sendModifierLeds(context.allUnits(), state);
       return;
     case "attributeSelect":
       if (!attribute) return;

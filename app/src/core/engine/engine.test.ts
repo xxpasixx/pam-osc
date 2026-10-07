@@ -2,7 +2,15 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Engine } from "./engine.js";
 import type { ConnectionStatus, DeviceStatus, EngineIssue } from "./types.js";
 import { FakeMidiTransport, FakeOscTransport } from "../../testing/fake-transports.js";
-import { secondUnitMapping, sleep, testConfig, writeFixtures, TEST_PORT, TEST_TIMING } from "../../testing/fixtures.js";
+import {
+  resendVariant,
+  secondUnitMapping,
+  sleep,
+  testConfig,
+  writeFixtures,
+  TEST_PORT,
+  TEST_TIMING,
+} from "../../testing/fixtures.js";
 import type { FormatSource } from "../format/index.js";
 import { waitFor } from "../../testing/virtual-midi.js";
 
@@ -14,7 +22,11 @@ import { waitFor } from "../../testing/virtual-midi.js";
 let sources: FormatSource[];
 
 beforeAll(async () => {
-  sources = await writeFixtures({ extraMappings: { "test-map-2": secondUnitMapping("Second Unit") } });
+  const resend = resendVariant("Second Unit");
+  sources = await writeFixtures({
+    extraDevices: { "resend-board": resend.device },
+    extraMappings: { "test-map-2": secondUnitMapping("Second Unit"), "resend-map": resend.mapping },
+  });
 });
 
 interface Harness {
@@ -117,8 +129,11 @@ describe("input routing (AC-1, AC-2, AC-3)", () => {
     unit.emit({ kind: "note", channel: 1, note: 22, value: 127 }); // encoderFine on
     unit.emit({ kind: "cc", channel: 1, controller: 18, value: 65 }); // -1 × 5 ÷ 10
     expect(osc.socket().commands().at(-1)).toBe("Attribute dimmer at  - 0.5");
-    const fineLed = midi.connection(TEST_PORT).sent.at(-1);
-    expect(fineLed).toEqual({ kind: "note", channel: 1, note: 22, velocity: 127 });
+    // PAM-31: the toggle refreshes every fine/rough LED — the pressed fine
+    // button is lit, the (inactive) rough button explicitly off.
+    const modifierLeds = midi.connection(TEST_PORT).sent.filter((m) => m.kind === "note" && m.note >= 22);
+    expect(modifierLeds).toContainEqual({ kind: "note", channel: 1, note: 22, velocity: 127 });
+    expect(modifierLeds.at(-1)).toEqual({ kind: "note", channel: 1, note: 23, velocity: 0 });
 
     unit.emit({ kind: "note", channel: 1, note: 22, value: 127 }); // fine off again
     unit.emit({ kind: "note", channel: 1, note: 23, value: 127 }); // rough on
@@ -132,6 +147,30 @@ describe("input routing (AC-1, AC-2, AC-3)", () => {
     const leds = midi.connection(TEST_PORT).sent.filter((m) => m.kind === "note" && (m.note === 24 || m.note === 25));
     expect(leds.at(-2)).toEqual({ kind: "note", channel: 1, note: 24, velocity: 0 }); // dimmer off
     expect(leds.at(-1)).toEqual({ kind: "note", channel: 1, note: 25, velocity: 127 }); // pan lit
+  });
+
+  it("modifier factor (PAM-31): /2 button, switching to /10 keeps fine on, same button toggles off", async () => {
+    const { midi, osc } = await startedEngine();
+    const unit = midi.connection(TEST_PORT);
+
+    unit.emit({ kind: "note", channel: 1, note: 30, value: 127 }); // fine /2 on
+    unit.emit({ kind: "cc", channel: 1, controller: 18, value: 65 }); // -1 × 5 ÷ 2
+    expect(osc.socket().commands().at(-1)).toBe("Attribute dimmer at  - 2.5");
+    // LED: /2 button lit, the /10 button off
+    const leds1 = unit.sent.filter((m) => m.kind === "note" && (m.note === 22 || m.note === 30));
+    expect(leds1).toContainEqual({ kind: "note", channel: 1, note: 30, velocity: 127 });
+    expect(leds1).toContainEqual({ kind: "note", channel: 1, note: 22, velocity: 0 });
+
+    unit.emit({ kind: "note", channel: 1, note: 22, value: 127 }); // switch resolution: fine stays ON, now /10
+    unit.emit({ kind: "cc", channel: 1, controller: 18, value: 65 });
+    expect(osc.socket().commands().at(-1)).toBe("Attribute dimmer at  - 0.5");
+    const leds2 = unit.sent.filter((m) => m.kind === "note" && (m.note === 22 || m.note === 30));
+    expect(leds2.at(-2)).toEqual({ kind: "note", channel: 1, note: 22, velocity: 127 });
+    expect(leds2.at(-1)).toEqual({ kind: "note", channel: 1, note: 30, velocity: 0 });
+
+    unit.emit({ kind: "note", channel: 1, note: 22, value: 127 }); // same factor again -> fine off
+    unit.emit({ kind: "cc", channel: 1, controller: 18, value: 65 });
+    expect(osc.socket().commands().at(-1)).toBe("Attribute dimmer at  - 5");
   });
 
   it("routes buttons: executor press+release, quickKey/command press only, minValue threshold (AC-3)", async () => {
@@ -238,6 +277,8 @@ describe("feedback routing (AC-5, AC-6, AC-7)", () => {
       { kind: "note", channel: 1, note: 10, velocity: 127 },
       { kind: "note", channel: 1, note: 10, velocity: 0 },
       { kind: "note", channel: 1, note: 20, velocity: 127 },
+      // the HIGHLIGHT quickKey button gets the same masterEnabled LED
+      { kind: "note", channel: 1, note: 29, velocity: 127 },
       { kind: "note", channel: 1, note: 28, velocity: 64 },
     ]);
   });
@@ -586,5 +627,29 @@ describe("diagnostics (PAM-4)", () => {
     await harness.engine.stop();
     expect(() => harness.engine.checkConnection()).not.toThrow();
     expect((await harness.engine.outputTest("test-map")).ok).toBe(false);
+  });
+});
+
+describe("periodic feedback resend (PAM-25 AC-2)", () => {
+  const alwaysOnNote = (sent: readonly import("../../transports/midi.js").MidiOutputMessage[]) =>
+    sent.filter((m) => m.kind === "note" && m.note === 28).length;
+
+  it("replays the cache periodically for a device with resendFeedback", async () => {
+    const { midi } = await startedEngine({ activeMappingIds: ["resend-map"] });
+    const unit = midi.connection("Second Unit");
+
+    const after = alwaysOnNote(unit.sent); // ≥1: always-on feedback from startup
+    expect(after).toBeGreaterThanOrEqual(1);
+    await sleep(TEST_TIMING.feedbackResendMs * 4);
+    expect(alwaysOnNote(unit.sent)).toBeGreaterThan(after);
+  });
+
+  it("sends nothing extra for a device without the flag", async () => {
+    const { midi } = await startedEngine();
+    const unit = midi.connection(TEST_PORT);
+
+    const after = unit.sent.length;
+    await sleep(TEST_TIMING.feedbackResendMs * 4);
+    expect(unit.sent.length).toBe(after);
   });
 });

@@ -141,7 +141,11 @@ export function BoardsView({
               <button
                 className="icon-btn"
                 title={board.origin === "bundled" ? "Edit board (creates a copy)" : "Edit board"}
-                aria-label={board.origin === "bundled" ? `Edit board "${board.name}" (creates a copy)` : `Edit board "${board.name}"`}
+                aria-label={
+                  board.origin === "bundled"
+                    ? `Edit board "${board.name}" (creates a copy)`
+                    : `Edit board "${board.name}"`
+                }
                 onClick={() => onEdit(board.id)}
               >
                 <PencilIcon />
@@ -152,7 +156,8 @@ export function BoardsView({
                   title="Delete board"
                   aria-label={`Delete board "${board.name}"`}
                   onClick={() => {
-                    if (window.confirm(`Delete the board "${board.name}"? This cannot be undone.`)) onDeleteBoard(board.id);
+                    if (window.confirm(`Delete the board "${board.name}"? This cannot be undone.`))
+                      onDeleteBoard(board.id);
                   }}
                 >
                   <TrashIcon />
@@ -188,7 +193,8 @@ export function BoardsView({
                       title="Delete mapping"
                       aria-label={`Delete mapping "${entry.name}"`}
                       onClick={() => {
-                        if (window.confirm(`Delete the mapping "${entry.name}"? This cannot be undone.`)) onDeleteMapping(entry.id);
+                        if (window.confirm(`Delete the mapping "${entry.name}"? This cannot be undone.`))
+                          onDeleteMapping(entry.id);
                       }}
                     >
                       <TrashIcon />

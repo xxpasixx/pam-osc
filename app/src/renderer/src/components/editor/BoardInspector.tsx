@@ -178,6 +178,17 @@ export function BoardInspector({
             max={16}
             onChange={(channel) => onChangeBoard({ defaultMidiChannel: channel ?? 1 })}
           />
+          <label
+            className="check"
+            title="For boards that lose LED state: the app re-sends its last feedback values every few seconds (PAM-25 — local, no console traffic)"
+          >
+            <input
+              type="checkbox"
+              checked={device.resendFeedback === true}
+              onChange={(e) => onChangeBoard({ resendFeedback: e.target.checked })}
+            />
+            Re-send feedback periodically
+          </label>
         </details>
         <div className="field">
           <label htmlFor="board-notes">Notes</label>

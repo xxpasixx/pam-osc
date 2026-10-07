@@ -109,6 +109,42 @@ export class DeviceManager {
       unitRuntime.connection = undefined;
       return;
     }
+    // PAM-24: the board's connect-time init (e.g. APC40 mkII → Ableton Live
+    // Mode) must be the FIRST output — before the startup animation (initial
+    // bind) and before restoreUnit (rebind). Sent directly, not cached: it is a
+    // per-bind hardware handshake, not restorable feedback state. A re-plugged /
+    // power-cycled board (back in its default mode) is re-armed here every time.
+    const initSysEx = unitRuntime.unit.device.initSysEx;
+    if (initSysEx) {
+      try {
+        unitRuntime.connection.send({ kind: "sysex", bytes: initSysEx });
+        this.callbacks.log(
+          `sent connect-init SysEx (${initSysEx.length} bytes) to "${output ?? "(no output port)"}"` +
+            (output ? "" : " — board has no bound output, init NOT delivered")
+        );
+      } catch {
+        // Yanked between open and init — the hot-plug poll will rebind.
+      }
+    }
+    // PAM-24 AC-8: connect-init CCs (e.g. APC40 mkII LED-ring TYPE per knob),
+    // sent right after the mode SysEx so the rings render the value feedback
+    // that follows. Same per-bind, direct-send rationale as initSysEx.
+    const initCC = unitRuntime.unit.device.initCC;
+    if (initCC && initCC.length > 0) {
+      try {
+        for (const cc of initCC) {
+          unitRuntime.connection.send({
+            kind: "cc",
+            channel: cc.channel ?? 1,
+            controller: cc.controller,
+            value: cc.value,
+          });
+        }
+        this.callbacks.log(`sent ${initCC.length} connect-init CC(s) to "${output ?? "(no output port)"}"`);
+      } catch {
+        // Yanked mid-init — the hot-plug poll will rebind.
+      }
+    }
     this.callbacks.log(`MIDI device "${input}" bound (mapping "${unitRuntime.unit.mapping.id}")`);
     this.callbacks.onBind(unitRuntime);
     if (notify) this.callbacks.onStatusChange(this.statuses());

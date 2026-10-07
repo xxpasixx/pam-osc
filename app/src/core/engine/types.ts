@@ -31,6 +31,8 @@ export interface EngineTiming {
   cmdAckTimeoutMs: number;
   /** PAM-16 config handshake heartbeat: re-send pamConfig+forceReload this often (AC-3). */
   configHeartbeatMs: number;
+  /** PAM-25: replay the feedback cache this often to devices with resendFeedback. */
+  feedbackResendMs: number;
 }
 
 /** The v1 constants — bit-parity with the Open Stage Control module. */
@@ -44,6 +46,7 @@ export const DEFAULT_TIMING: EngineTiming = {
   holdOffMs: 500,
   cmdAckTimeoutMs: 300,
   configHeartbeatMs: 30000,
+  feedbackResendMs: 2000,
 };
 
 /**

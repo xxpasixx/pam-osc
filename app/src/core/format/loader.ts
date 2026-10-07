@@ -112,6 +112,7 @@ async function loadEntities<T extends { id: string }>(
       if (existing) {
         issues.push({
           severity: "info",
+          kind: "override",
           file,
           message: `${kind} "${entity.id}" overrides the ${existing.origin} version (${basename(existing.file)})`,
         });

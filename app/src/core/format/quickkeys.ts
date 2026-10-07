@@ -147,14 +147,10 @@ export const QUICKKEYS: QuickKeyDef[] = [
 ];
 
 /** Fast lookup by code. */
-export const QUICKKEY_BY_CODE: ReadonlyMap<string, QuickKeyDef> = new Map(
-  QUICKKEYS.map((qk) => [qk.code, qk]),
-);
+export const QUICKKEY_BY_CODE: ReadonlyMap<string, QuickKeyDef> = new Map(QUICKKEYS.map((qk) => [qk.code, qk]));
 
 /** Case-insensitive lookup by code (v1 mappings stored mixed-case labels like "Move"). */
-const QUICKKEY_BY_UPPER: ReadonlyMap<string, QuickKeyDef> = new Map(
-  QUICKKEYS.map((qk) => [qk.code.toUpperCase(), qk]),
-);
+const QUICKKEY_BY_UPPER: ReadonlyMap<string, QuickKeyDef> = new Map(QUICKKEYS.map((qk) => [qk.code.toUpperCase(), qk]));
 
 /**
  * v1 / legacy spellings that are NOT a case variant of a canonical code but still

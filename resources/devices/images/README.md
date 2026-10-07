@@ -12,11 +12,11 @@ images/<board-id>.png        (or .jpg / .jpeg / .webp)
 
 The board id is the `id` field of the board's JSON in `resources/devices/`, e.g.:
 
-| Board file                     | Image file                    |
-| ------------------------------ | ----------------------------- |
-| `resources/devices/apc-40-mk2.json` | `images/apc-40-mk2.png`  |
-| `resources/devices/apc-mini.json`   | `images/apc-mini.png`    |
-| `resources/devices/x-touch.json`    | `images/x-touch.png`     |
+| Board file                          | Image file              |
+| ----------------------------------- | ----------------------- |
+| `resources/devices/apc-40-mk2.json` | `images/apc-40-mk2.png` |
+| `resources/devices/apc-mini.json`   | `images/apc-mini.png`   |
+| `resources/devices/x-touch.json`    | `images/x-touch.png`    |
 
 A board JSON may also set an explicit `"image": "myfile.png"` to override the
 convention (plain filename only — no paths).

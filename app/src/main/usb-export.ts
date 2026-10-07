@@ -153,7 +153,7 @@ export function parseLsblkJson(json: string): DriveCandidate[] {
     const removable = parentRemovable || node.rm === true || node.hotplug === true || node.tran === "usb";
     const mount = node.mountpoint ?? undefined;
     if (mount && node.ro !== true && removable) {
-      const sizeNum = typeof node.size === "string" ? Number(node.size) : node.size ?? undefined;
+      const sizeNum = typeof node.size === "string" ? Number(node.size) : (node.size ?? undefined);
       out.push({
         id: mount,
         label: node.label && node.label.length > 0 ? node.label : mount,

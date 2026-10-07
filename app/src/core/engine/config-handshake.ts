@@ -23,7 +23,8 @@ import { forceReloadMessage } from "./startup.js";
  *                 separated; empty ("e=") when no executor/display action
  *     c=<0|1>     sendColors   (OR-merged across active mappings)
  *     n=<0|1>     sendNames    (OR-merged)
- *     r=<0|1>     resendButtons (OR-merged)
+ *     r=<0|1>     resendButtons — since PAM-25 always 0 (app-side resend); kept
+ *                 in the payload for wire compat with the v1 parser
  *     t=<0|1>     sendTimecode = enableTimecodeSend (OR-merged)
  *     p=<int>     fixedPage; 0 = follow the console's current page
  *
@@ -74,13 +75,11 @@ export function buildPamConfig(mappings: readonly Mapping[], fixedPage?: number)
   const executors = new Set<number>();
   let sendColors = false;
   let sendNames = false;
-  let resendButtons = false;
   let sendTimecode = false;
 
   for (const mapping of mappings) {
     if (mapping.sendColors) sendColors = true;
     if (mapping.sendNames) sendNames = true;
-    if (mapping.resendButtons) resendButtons = true;
     if (mapping.enableTimecodeSend) sendTimecode = true;
     for (const assignment of mapping.assignments) {
       const action = assignment.action;
@@ -96,7 +95,10 @@ export function buildPamConfig(mappings: readonly Mapping[], fixedPage?: number)
     executors: sortedExecutors,
     sendColors,
     sendNames,
-    resendButtons,
+    // PAM-25: pinned to false — the APP replays its feedback cache for boards
+    // with resendFeedback; the console-side resend is never activated anymore.
+    // The field stays in the payload (r=0) for wire compat with the v1 parser.
+    resendButtons: false,
     sendTimecode,
     fixedPage: fixedPage && fixedPage >= 1 ? Math.trunc(fixedPage) : 0,
   };

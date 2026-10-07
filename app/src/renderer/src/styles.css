@@ -425,6 +425,22 @@ button.subtle:hover {
   user-select: text;
 }
 
+/* PAM-28: per-board setup steps in the add-device dialog */
+.setup-instructions {
+  border-color: var(--accent);
+  margin: 0 0 10px;
+}
+
+.setup-instructions .msg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.setup-instructions .setup-step {
+  color: var(--text-dim);
+}
+
 /* footer */
 .footer {
   display: flex;
@@ -1125,6 +1141,13 @@ button.learning {
 .push-cap.flash {
   background: var(--accent);
   border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Children carry their own colors (e.g. the accent-yellow .control-summary),
+   which vanish on the accent-yellow flash background — force them dark too. */
+.board-control.flash .control-label,
+.board-control.flash .control-summary {
   color: var(--accent-text);
 }
 
