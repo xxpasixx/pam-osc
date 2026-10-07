@@ -345,6 +345,43 @@ local function getApereanceColor(sequence)
   return returnText
 end
 
+-- PAM-32: MA3 deprecated HasActivePlayback() in favour of IsRunningPlayback().
+-- The call sits in the executor loop of the ~10 Hz main loop and runs once per
+-- watched executor (up to 104), so the deprecated name floods the System Monitor
+-- with up to ~1000 warnings/s — which starves the SendOSC that carries the
+-- pluginPong and makes the app report "plugin not running" (AC-1).
+--
+-- The method is resolved ONCE on the first object and reused (AC-2): probing per
+-- call would trade one flood for another. Resolution tests for PRESENCE rather
+-- than calling, so a method that exists but raises for an unrelated reason does
+-- not latch us onto the deprecated name. Old GrandMA3 2.x builds that lack the
+-- new name keep working via the fallback.
+local playbackReader = nil
+
+local function resolvePlaybackReader(obj)
+    local ok, method = pcall(function() return obj.IsRunningPlayback end)
+    if ok and method ~= nil then
+        Printf("pam-OSC: playback state via IsRunningPlayback()")
+        return function(o) return o:IsRunningPlayback() end
+    end
+    Printf("pam-OSC: IsRunningPlayback() unavailable, falling back to HasActivePlayback()")
+    return function(o) return o:HasActivePlayback() end
+end
+
+-- Reads "is this executor running?". Guarded (AC-3): the original call was
+-- deliberately outside any pcall, so a raising read would unwind the whole main
+-- loop and kill the plugin. On failure we report "not running" instead.
+local function isRunningPlayback(obj)
+    if playbackReader == nil then
+        playbackReader = resolvePlaybackReader(obj)
+    end
+    local ok, result = pcall(playbackReader, obj)
+    if not ok then
+        return false
+    end
+    return result and true or false
+end
+
 local function getName(sequence)
     if sequence["CUENAME"] ~= nil then
         return sequence["NAME"] .. ";" .. sequence["CUENAME"]
@@ -545,11 +582,12 @@ local function main()
                     -- PR #42: spanned multi-executor assignments only carry
                     -- .Object on the master cell; follow .EXEC to reach it.
                     -- Guarded so a nil EXEC degrades to "no object" instead of
-                    -- throwing (this read is not inside a pcall).
+                    -- throwing. The playback read itself is pcall-guarded inside
+                    -- isRunningPlayback() (PAM-32 AC-3).
                     local exec = maValue.EXEC
                     local myobject = exec and exec.Object or nil
                     if myobject ~= nil then
-                        buttonValue = myobject:HasActivePlayback() and true or false
+                        buttonValue = isRunningPlayback(myobject)
                         if sendColors then
                             colorValue = getApereanceColor(myobject)
                         end
