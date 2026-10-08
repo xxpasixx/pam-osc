@@ -14,6 +14,10 @@ hardware and implies no endorsement.
 | `mpx16.jpg`      | [AKAI MPX16 SD Sample Recorder and Player](https://commons.wikimedia.org/wiki/File:AKAI_MPX16_SD_Sample_Recorder_and_Player.jpg)                                                     | David J; derivative: Clusternote | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)       |
 | `launchpad.jpg`  | [Novation Launchpad](https://commons.wikimedia.org/wiki/File:Novation_Launchpad.jpg)                                                                                                 | Marc Majcher                     | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) |
 
+`mpx16.jpg` is cropped from Clusternote's CC BY 3.0 derivative of
+[David J's original](<https://commons.wikimedia.org/wiki/File:Akai_MPX16_SD_Sample_Recorder_and_Player_(by_David_J).jpg>)
+(CC BY 2.0).
+
 `launchpad.jpg` is a derivative of a CC BY-SA work and is itself licensed
 **CC BY-SA 2.0**.
 

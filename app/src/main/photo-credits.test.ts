@@ -19,11 +19,18 @@ describe("PAM-21 in-app photo credits", () => {
     expect(formatPhotoCredits(credits)).toContain("“Novation Launchpad” by Marc Majcher, CC BY-SA 2.0");
   });
 
-  it("every bundled photo has a credit row", () => {
+  it("every bundled photo has a credit row and belongs to a bundled device", () => {
     const dir = resolve(import.meta.dirname, "../../../resources/devices/images");
     const markdown = readFileSync(`${dir}/CREDITS.md`, "utf8");
     const credited = new Set(parsePhotoCredits(markdown).map((credit) => credit.file));
     const photos = readdirSync(dir).filter((name) => /\.(jpe?g|png|webp)$/i.test(name));
-    for (const photo of photos) expect(credited.has(photo), `${photo} has no credit`).toBe(true);
+    const deviceIds = new Set(
+      readdirSync(resolve(dir, "..")).filter((name) => name.endsWith(".json")).map((name) => name.replace(/\.json$/, ""))
+    );
+    for (const photo of photos) {
+      expect(credited.has(photo), `${photo} has no credit`).toBe(true);
+      // Review F-1: a photo must be named after a bundled device id, or the app never shows it.
+      expect(deviceIds.has(photo.replace(/\.[^.]+$/, "")), `${photo} matches no bundled device`).toBe(true);
+    }
   });
 });
