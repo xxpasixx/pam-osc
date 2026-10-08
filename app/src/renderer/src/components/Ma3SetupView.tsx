@@ -14,6 +14,7 @@ import type {
 import { isPort, type OscConfigValues } from "../../../shared/osc-config.js";
 import { comparePluginVersions } from "../../../shared/plugin-version.js";
 import { ma3Checklist, settledConnection } from "../ma3-checklist.js";
+import { REIMPORT_HINT } from "../plugin-update.js";
 import { consoleRoute } from "../wizard-logic.js";
 import { ConnectionCheck, type CheckContext } from "./ConnectionCheck.js";
 import { Ma3Checklist } from "./Ma3Checklist.js";
@@ -109,6 +110,9 @@ function InstallRow({
         <span className="board">{present ? presentDetail : "not installed yet"}</span>
         {problem && <span className="board">{problem}</span>}
         {result?.status === "installed" && <span className="board">✓ installed to {result.target}</span>}
+        {result?.status === "installed" && asset === "plugin" && (
+          <span className="board">{REIMPORT_HINT}</span>
+        )}
         {result?.status === "error" && (
           <>
             <span className="board">failed: {result.error}</span>

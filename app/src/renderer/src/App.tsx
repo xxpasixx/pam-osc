@@ -19,6 +19,7 @@ import { EditorView, type EditorTarget } from "./components/editor/EditorView.js
 import { ImportV1Dialog, type ImportFlow } from "./components/ImportV1Dialog.js";
 import { Ma3SetupView } from "./components/Ma3SetupView.js";
 import { NoticesArea } from "./components/NoticesArea.js";
+import { updateLocalPlugin } from "./plugin-update.js";
 import { UpdateBar } from "./components/UpdateBar.js";
 import { SetupWizard } from "./components/SetupWizard.js";
 import { StatusBar } from "./components/StatusBar.js";
@@ -194,6 +195,8 @@ export function App() {
     for (const notice of notices) {
       if (autoDismissScheduled.current.has(notice)) continue;
       autoDismissScheduled.current.add(notice);
+      // Notices with buttons or an instruction stay until dismissed (PAM-9 AC-10).
+      if (notice.action || notice.persistent) continue;
       setTimeout(() => {
         setNotices((current) => current.filter((candidate) => candidate !== notice));
       }, NOTICE_DISMISS_MS);
@@ -436,6 +439,15 @@ export function App() {
       <NoticesArea
         notices={notices}
         onDismiss={(index) => setNotices((current) => current.filter((_, i) => i !== index))}
+        onAction={(notice, choice) => {
+          if (choice === "open-ma3") {
+            setTab("ma3");
+            return;
+          }
+          void updateLocalPlugin().then((result) =>
+            setNotices((current) => [...current.filter((candidate) => candidate !== notice), result])
+          );
+        }}
       />
     </div>
   );

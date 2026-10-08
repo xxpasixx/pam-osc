@@ -213,6 +213,10 @@ export interface Notice {
   severity: "error" | "warning" | "info";
   source?: string;
   message: string;
+  /** PAM-9 AC-10: offers buttons on the notice ("update-ma3-plugin": Install now / Open MA3 tab). */
+  action?: "update-ma3-plugin";
+  /** Stays until dismissed instead of fading after 15 s (also implied by `action`). */
+  persistent?: boolean;
 }
 
 // ---- PAM-23 USB plugin export ----

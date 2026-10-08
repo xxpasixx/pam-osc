@@ -425,6 +425,13 @@ button.subtle:hover {
   user-select: text;
 }
 
+/* PAM-9 AC-10: buttons on an action notice (plugin update). */
+.notice .notice-actions {
+  display: flex;
+  gap: 6px;
+  align-self: center;
+}
+
 /* PAM-28: per-board setup steps in the add-device dialog */
 .setup-instructions {
   border-color: var(--accent);
