@@ -29,15 +29,22 @@ This repo is **public and GPL-3.0**. Only add images you are allowed to
 distribute under those terms:
 
 - **Your own photos / renders** — you hold the copyright. ✅ Preferred.
-- Images with the **manufacturer's explicit written permission** for GPL
-  redistribution. ✅ (keep proof.)
+- **Freely licensed photos** (e.g. Wikimedia Commons under CC0 / CC BY /
+  CC BY-SA) — ✅ only with a row in [`CREDITS.md`](CREDITS.md) (author, licence,
+  source link, what was changed). Check the licence on the file page itself.
+- Images with the **manufacturer's explicit written permission** for
+  redistribution. ✅ (keep proof, note it in `CREDITS.md`.)
 - **Do NOT** drop in manufacturer press/product photos, web images, or stock
   photos — those are copyrighted and must not be committed here. ❌
+
+The bundled photos are listed in [`CREDITS.md`](CREDITS.md); they keep their own
+Creative Commons licences and are not GPL-licensed.
 
 User boards (created in-app) resolve images from the user devices folder's own
 `images/` subfolder — the same naming rule.
 
 ## Size
 
-Keep them small: ~256 px on the long edge, **under ~150 KB**. They are sent to
+Keep them small: ~320 px on the long edge, **under ~150 KB**. Crop tight to the
+board — the thumbnail shows the whole image letterboxed, any aspect ratio works. They are sent to
 the UI inline (base64), so large files bloat memory for no visible gain.

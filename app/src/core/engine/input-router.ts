@@ -77,8 +77,7 @@ export function handleMidiEvent(context: InputContext, unitRuntime: UnitRuntime,
 function handleCcEntry(context: InputContext, unitRuntime: UnitRuntime, entry: RoutingEntry, value: number): void {
   const { control, assignment } = entry;
 
-  // CC-addressed buttons (e.g. the X32 Compact mute row in CC remote mode,
-  // 127 = pressed / 0 = released) carry note-button semantics on a CC.
+  // CC-addressed buttons (127 = pressed / 0 = released, PAM-26) carry note-button semantics on a CC.
   if (control.type === "button") {
     handleNoteEntry(context, unitRuntime, entry, value);
     return;
@@ -131,7 +130,12 @@ function handleNotePairEntry(
 }
 
 /** Shared encoder tail: detents → executor fader/knob or attribute command. */
-function applyEncoderDetents(context: InputContext, unitRuntime: UnitRuntime, entry: RoutingEntry, detents: number): void {
+function applyEncoderDetents(
+  context: InputContext,
+  unitRuntime: UnitRuntime,
+  entry: RoutingEntry,
+  detents: number
+): void {
   const { control, assignment } = entry;
 
   if (assignment.action.type === "executor") {

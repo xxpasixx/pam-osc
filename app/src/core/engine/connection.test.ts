@@ -46,6 +46,15 @@ describe("ConnectionChecker quiet re-check", () => {
     expect(logs.at(-1)).toMatch(/plugin did not answer/);
   });
 
+  it("review BUG-3: the automatic retry after a quiet check stays quiet", () => {
+    const { checker, statuses, logs } = harness();
+    checker.checkNow({ quiet: true });
+    vi.advanceTimersByTime(timing.pingTimeoutMs); // unreachable → retry scheduled
+    vi.advanceTimersByTime(timing.pingRetryMs + timing.pingTimeoutMs); // the retry runs and evaluates
+    expect(statuses.some((status) => status.state === "checking")).toBe(false);
+    expect(logs.some((line) => line.startsWith("checking"))).toBe(false);
+  });
+
   it("a normal check still announces 'checking'", () => {
     const { checker, statuses, logs } = harness();
     checker.checkNow();

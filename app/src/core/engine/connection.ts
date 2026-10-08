@@ -130,7 +130,8 @@ export class ConnectionChecker {
     );
 
     if (!gaveUp) {
-      this.retryTimer = setTimeout(() => this.sendPing(), this.timing.pingRetryMs);
+      // Keep a quiet check quiet on retry — no "checking" flicker, no log line (PAM-35 review BUG-3).
+      this.retryTimer = setTimeout(() => this.sendPing(quiet), this.timing.pingRetryMs);
     } else {
       this.log("giving up the automatic connection check — restart the engine to check again");
     }

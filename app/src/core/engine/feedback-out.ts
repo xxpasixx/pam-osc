@@ -25,8 +25,7 @@ export function sendButtonFeedback(unitRuntime: UnitRuntime, entry: RoutingEntry
   if (entry.control.type !== "button") return;
   const velocity = buttonFeedbackValue(entry, on);
   if (velocity === undefined) return;
-  // CC-addressed buttons (e.g. the X32 Compact mute row in CC remote mode)
-  // take their LED value on the same CC; note buttons stay v1 wire shape.
+  // CC-addressed buttons (PAM-26) take their LED value on the same CC; note buttons stay v1 wire shape.
   if (entry.control.midi.kind === "cc") {
     sendToUnit(unitRuntime, {
       kind: "cc",
