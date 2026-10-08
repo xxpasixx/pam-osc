@@ -17,8 +17,9 @@ const outFile = resolve(repoRoot, "gma3_library/datapools/plugins/pam-osc.xml");
  *  on real protocol breaks. 2.0.0.1: PR #42 EXEC.Object fix (multi-executor).
  *  2.0.0.2: PAM-16 pamConfig parser (app-driven watch-set + feature flags).
  *  2.0.0.3: PAM-32 IsRunningPlayback() with HasActivePlayback() fallback.
- *  2.0.0.4: PAM-13 one plugin "pam-osc" (settings merged in) + OSC self-check. */
-const PLUGIN_VERSION = "2.0.0.4";
+ *  2.0.0.4: PAM-13 one plugin "pam-osc" (settings merged in) + OSC self-check.
+ *  2.0.0.5: PAM-13 review — settings dialog handle restored, receive line on the default port preferred. */
+const PLUGIN_VERSION = "2.0.0.5";
 const DATA_VERSION = "2.0.2.0";
 const BLOCK_SIZE = 1024;
 

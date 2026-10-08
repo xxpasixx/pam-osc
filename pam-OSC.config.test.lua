@@ -65,6 +65,12 @@ check("oscFlag reads Yes/No/booleans", flag("Yes") and flag(true) and flag("1") 
 local p0 = plan({}, true)
 check("empty config -> create both", eqlist(p0.create, { "receive", "feedback" }) and #p0.warnings == 0)
 
+-- Review BUG-3: another app's command line on its own port must not win over ours.
+local companion = { name = "Companion", port = 8000, receive = true, receiveCommand = true }
+local customReceive = { name = "my-ma3-in", port = 9003, receive = true, receiveCommand = true }
+local pPick = plan({ companion, customReceive, feedbackOk }, true)
+check("prefers the command line on the default port", has(pPick.ok, 'receive entry "my-ma3-in"') and not has(pPick.ok, "Companion"))
+
 local p1 = plan({ receiveOk, feedbackOk }, false)
 check("working config -> nothing to create, no warnings", #p1.create == 0 and #p1.warnings == 0 and #p1.ok == 2)
 

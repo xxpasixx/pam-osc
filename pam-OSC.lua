@@ -14,6 +14,8 @@
 -- MA3 passes (pluginName, componentName, signalTable, handle) to the chunk;
 -- the settings dialog binds its button callbacks into signalTable.
 local signalTable = select(3, ...)
+-- The dialog controls bind PluginComponent = myHandle (review BUG-1: was lost in the merge).
+local myHandle = select(4, ...)
 
 local executorsToWatch = {}
 local oldValues = {}
@@ -931,6 +933,16 @@ local function planOscCheck(entries, isOnPC)
     local receive = nil
     for _, e in ipairs(entries) do
         if e.name == OSC_RECEIVE_ENTRY_NAME then receive = e break end
+    end
+    -- Prefer a line on the app's default port: another app's command line
+    -- (Companion, TouchOSC …) on a different port must not be mistaken for
+    -- ours (review BUG-3). Any other command line stays the fallback for
+    -- hand-made setups with custom ports (the port warning below explains it).
+    if receive == nil then
+        for _, e in ipairs(entries) do
+            if e.receive and e.receiveCommand and e.name ~= OSC_ENTRY_NAME
+                and tonumber(e.port) == OSC_DEFAULT_RECEIVE_PORT then receive = e break end
+        end
     end
     if receive == nil then
         for _, e in ipairs(entries) do
