@@ -437,7 +437,8 @@ async function main(): Promise<void> {
       pushNotice({
         severity: "info",
         source: "MA3 plugin",
-        message: `MA3 plugin update available — bundle ${bundledVersion} is newer than the version installed on this machine. Open the MA3 tab to update.`,
+        message: `MA3 plugin update available — ${bundledVersion} is newer than the plugin installed in onPC on this computer.`,
+        action: "update-ma3-plugin",
       });
     }
   })();
