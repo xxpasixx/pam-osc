@@ -25,3 +25,6 @@
 - Mac App Store als zusätzlicher Kanal — Hürden: App-Sandbox (MA3-Plugin-Install in onPC-Ordner, USB-Laufwerksliste, Port-Diagnose brauchen Umbau/Datei-Dialoge), eigener MAS-Build ohne Auto-Updater, App Review, GPL-3.0 vs. App-Store-Bedingungen (Relizenzierung/Zustimmung aller Contributors nötig). Vorerst: notarisierte dmg + Auto-Update reicht; günstigere Alternative: Homebrew-Cask (2026-10-07)
 - MA3-Setup-Checkliste: Werte (Ports, IP, Name pam-osc) als Kopier-Chips mit Klick-zum-Kopieren statt Inline-Code (PAM-36 out of scope, 2026-10-07)
 - PAM-37 Follow-up: "Start pam-osc at login" auch unter Linux (XDG-Autostart-Eintrag ~/.config/autostart/pam-osc.desktop) — bewusst aus PAM-37 ausgelagert (2026-10-08)
+- PAM-35 Review BUG-2 (Low): Wizard Schritt 3 „Next“ geht weiter, auch wenn Speichern fehlschlägt — Fehler anzeigen und stehen bleiben (seit PAM-14, 2026-10-08)
+- PAM-35 Review BUG-4 (Low): nur eine lokale Adresse, die nicht im Subnetz der Konsole liegt → wird still gewählt; Hinweis „liegt nicht im Netz der Konsole — Konsolen-IP prüfen“ anzeigen (2026-10-08)
+- PAM-35 Review BUG-5 (Low): Wizard Schritt 6 sagt „You're live“, auch wenn ein gewähltes Mapping keinen DeviceStatus hat — alle gewählten Controller mit bound/missing listen (2026-10-08)

@@ -333,6 +333,15 @@ export function SetupWizard({
               onFeedbackIpChoice={onFeedbackIpChoice}
               check={check}
             />
+            {activeMappings.length === 0 && (
+              // PAM-35 EC-1 (review BUG-1): the check needs a controller — offer the way back.
+              <p className="inspector-meta">
+                No controller selected, so the bridge can’t check the console.{" "}
+                <button className="subtle" onClick={() => setStep(2)}>
+                  Back to the controller step
+                </button>
+              </p>
+            )}
             <p className="inspector-meta">
               Stuck? You can continue anyway, or{" "}
               <button className="subtle" onClick={onOpenDiagnostics}>
@@ -354,6 +363,15 @@ export function SetupWizard({
               onFeedbackIpChoice={onFeedbackIpChoice}
               check={check}
             />
+            {activeMappings.length === 0 && (
+              // PAM-35 EC-1 (review BUG-1): the check needs a controller — offer the way back.
+              <p className="inspector-meta">
+                No controller selected, so the bridge can’t check the console.{" "}
+                <button className="subtle" onClick={() => setStep(2)}>
+                  Back to the controller step
+                </button>
+              </p>
+            )}
             {connected && missingControllers.length === 0 && activeMappings.length > 0 && (
               <p className="wizard-success">
                 <span className="led ok" aria-hidden="true" /> You’re live — move a fader on your controller and watch

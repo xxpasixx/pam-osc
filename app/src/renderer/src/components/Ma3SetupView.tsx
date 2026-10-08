@@ -373,6 +373,13 @@ function UsbExportCard({ pushNotice, osc }: { pushNotice: (notice: Notice) => vo
   return (
     <section className="card" aria-label="Copy to a USB stick or folder">
       <h2>USB stick or folder (console or another computer)</h2>
+      {"values" in osc && osc.values.feedbackIp === "127.0.0.1" && (
+        // PAM-35 review BUG-6: a loopback config only works for onPC on this very computer.
+        <p className="field-hint warn">
+          This OSC config sends feedback to <code>127.0.0.1</code> — fine for onPC on this computer, but a console on
+          the network needs this computer’s address. Set the console IP under Setup first.
+        </p>
+      )}
       <p className="inspector-meta">
         Copies the plugin
         {info?.bundledVersion ? (
