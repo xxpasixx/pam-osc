@@ -26,6 +26,7 @@ import { MidiLearn } from "./midi-learn.js";
 import { MidiPortLister } from "./midi-ports.js";
 import { diagnoseUdpPort } from "./port-diagnosis.js";
 import { SessionLog } from "./session-log.js";
+import { showPhotoCredits } from "./photo-credits.js";
 import { launchInstallFor, startUpdates, updatesMenuItems } from "./update-wiring.js";
 import type { UpdateService } from "./updater.js";
 import { SettingsStore } from "./settings-store.js";
@@ -633,7 +634,15 @@ async function main(): Promise<void> {
       { role: "viewMenu" },
       { role: "windowMenu" },
       // PAM-34: updates live here, not in the Setup view.
-      { role: "help", submenu: updatesMenuItems(() => updates, () => window) },
+      {
+        role: "help",
+        submenu: [
+          ...updatesMenuItems(() => updates, () => window),
+          { type: "separator" },
+          // PAM-21: CC attribution for the bundled board photos.
+          { label: "Board Photo Credits…", click: () => void showPhotoCredits(window, bundledRoot) },
+        ],
+      },
     ];
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   }

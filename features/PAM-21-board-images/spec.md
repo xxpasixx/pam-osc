@@ -39,6 +39,10 @@ it provides the mechanism and shows a placeholder until the user drops files in.
   Wikimedia Commons.
 - **AC-7** _(added 2026-10-07)_ The thumbnail shows the **whole** image
   letterboxed (no cropping by the UI) — boards range from 2:1 to square.
+- **AC-8** _(added 2026-10-08, maintainer decision)_ The attributions are
+  reachable **in the app**: Help → **Board Photo Credits…** lists every
+  credited photo (file, title, author, licence, source URL) from the bundled
+  `CREDITS.md` and offers to open the file.
 
 ## Out of Scope
 

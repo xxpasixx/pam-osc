@@ -24,3 +24,4 @@
 - Wizard Controller-Schritt: "Drück eine Taste"-Bestätigung über den vorhandenen MIDI-Indicate-Modus (beweist den richtigen Port, nicht nur seine Anwesenheit) — aus PAM-35 Out of Scope (2026-10-07)
 - Mac App Store als zusätzlicher Kanal — Hürden: App-Sandbox (MA3-Plugin-Install in onPC-Ordner, USB-Laufwerksliste, Port-Diagnose brauchen Umbau/Datei-Dialoge), eigener MAS-Build ohne Auto-Updater, App Review, GPL-3.0 vs. App-Store-Bedingungen (Relizenzierung/Zustimmung aller Contributors nötig). Vorerst: notarisierte dmg + Auto-Update reicht; günstigere Alternative: Homebrew-Cask (2026-10-07)
 - MA3-Setup-Checkliste: Werte (Ports, IP, Name pam-osc) als Kopier-Chips mit Klick-zum-Kopieren statt Inline-Code (PAM-36 out of scope, 2026-10-07)
+- PAM-37 Follow-up: "Start pam-osc at login" auch unter Linux (XDG-Autostart-Eintrag ~/.config/autostart/pam-osc.desktop) — bewusst aus PAM-37 ausgelagert (2026-10-08)

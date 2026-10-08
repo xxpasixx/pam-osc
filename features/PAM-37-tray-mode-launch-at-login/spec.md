@@ -4,12 +4,12 @@
      Owner: /spec (creates and updates — updates are deltas, IDs never renumbered).
      READ-ONLY during /build. -->
 
-## Status: Spec'd — DRAFT, awaiting maintainer approval
+## Status: Spec'd
 
-**Created:** 2026-10-07 · **Last Updated:** 2026-10-07
+**Created:** 2026-10-07 · **Last Updated:** 2026-10-08 (approved by the maintainer)
 
 > Lite spec. Direction from the maintainer in chat (2026-10-07: "Tray-Modus und optional
-> 'beim Login starten' einplanen"). Product decisions below are recommendations until approved.
+> 'beim Login starten' einplanen"). Product decisions approved by the maintainer on 2026-10-08.
 
 ## Why
 
@@ -63,9 +63,10 @@ window closed, and — if the user wants — come up on its own after a reboot o
 
 ## Open Questions
 
-- [ ] Default for AC-4 — recommendation **on** (show safety beats habit; the AC-3 notice explains it once). Maintainer to confirm.
-- [ ] Linux "start at login" — Electron's login-item API covers macOS/Windows only; Linux needs an XDG
-      autostart entry. Ship Linux in the same feature or mark it macOS/Windows-only? (`/design`)
+- [x] Default for AC-4 — **on** (show safety beats habit; the AC-3 notice explains it once). Confirmed by the maintainer 2026-10-08.
+- [x] Linux "start at login" — Electron's login-item API covers macOS/Windows only; Linux needs an XDG
+      autostart entry. **Resolved 2026-10-08: macOS/Windows in this feature; Linux login-start is a
+      follow-up** (parked in `docs/ideas.md`). AC-5 applies to macOS and Windows.
 
 ## Decision Log
 
@@ -73,6 +74,8 @@ window closed, and — if the user wants — come up on its own after a reboot o
 
 | Decision                              | Rationale                                                                      | Date       |
 | ------------------------------------- | ------------------------------------------------------------------------------ | ---------- |
-| Tray mode on by default (proposed)    | An accidental window close must not end the show; the notice prevents surprise | 2026-10-07 |
+| Tray mode on by default               | An accidental window close must not end the show; the notice prevents surprise | 2026-10-07 |
 | Start at login opt-in, off by default | Starting software at login is the user's call, not ours                        | 2026-10-07 |
+| Linux login-start as a follow-up      | Electron covers macOS/Windows; XDG autostart is separate work (maintainer)     | 2026-10-08 |
+| Spec approved as written              | Maintainer accepted all recommendations                                         | 2026-10-08 |
 | Login launch starts hidden, bridge on | A reboot of the show computer should come back bridging without a click        | 2026-10-07 |
